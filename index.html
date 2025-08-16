@@ -5,7 +5,9 @@
   <title>OpenNotes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+  <link rel="icon" type="image/png" href="resources/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
     :root{
@@ -46,19 +48,13 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
       z-index: 1;
     }
-    .title{
-      font-weight:700; letter-spacing:0.3px;
-      font-size: 5vw; /* Larger title */
-      color: #fff;
-    }
-    .title .dot{
-      width:1.5vw; height:1.5vw; border-radius:50%;
-      background:var(--accent); margin-left:10px;
-      box-shadow:0 0 20px var(--accent);
+    .title-logo {
+        width: 15vw;
+        height: auto;
+        max-width: 250px;
     }
     @media (max-width: 860px){
-      .title { font-size: 10vw; }
-      .title .dot { width: 3vw; height: 3vw; }
+      .title-logo { width: 40vw; }
     }
 
     /* Controls */
@@ -74,7 +70,7 @@
       z-index: 2;
     }
 
-    .left, .right{display:flex; align-items:center; gap:var(--gap)}
+    .left, .right{display:flex; align-items:center; gap:8px}
     .chip{
       background:var(--panel-2);
       padding:8px 10px; border-radius:999px; color:var(--text);
@@ -262,6 +258,29 @@
     .back:hover{ background:rgba(255,255,255,0.5) }
     .back:active{ transform: translateY(1px) }
 
+    .help-overlay-content {
+        padding: 2rem;
+        text-align: left;
+        color: #333;
+        line-height: 1.6;
+        font-family: "Noto Sans", sans-serif;
+        background: #fff;
+        border-radius: 12px;
+        height: 100%;
+        overflow-y: auto;
+    }
+    .help-overlay-content h1, .help-overlay-content h2 {
+        color: var(--text);
+    }
+    .help-overlay-content a {
+        color: var(--accent);
+        text-decoration: none;
+    }
+    .help-overlay-content a:hover {
+        text-decoration: underline;
+    }
+
+
     /* Helpers */
     .pill{
       color:#001; background:var(--accent); border-radius:999px; padding:4px 8px; font-weight:700; font-size:12px;
@@ -330,7 +349,7 @@
 
   <header>
     <div class="title-section">
-      <div class="title">OpenNotes <span class="dot"></span></div>
+      <img src="resources/logo.svg" alt="OpenNotes Logo" class="title-logo" />
     </div>
     <div class="controls">
       <select id="sortSelect" style="display:none">
@@ -348,10 +367,6 @@
       </select>
 
       <div class="left">
-        <div id="totalViewsChip" class="chip" style="display:none">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-          <strong id="totalViews">0</strong>
-        </div>
         <div class="sort-wrapper">
           <button id="sortBtn" class="btn icon-only" title="Sort (Last Updated)">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h18v2H3V4zm4 7h10v2H7v-2zm3 7h4v2h-4v-2z"/></svg>
@@ -371,6 +386,9 @@
         </div>
       </div>
       <div class="right">
+        <button id="uploadBtn" class="btn icon-only" title="How to Upload">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13h-3v3H8v-3H5l4-4 4 4zm-1-8h2v2h-2z"/></svg>
+        </button>
         <div class="toggle" role="tablist" aria-label="View mode">
           <button id="gridBtn" class="btn active icon-only" aria-pressed="true" title="Box view">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
@@ -414,6 +432,16 @@
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div id="helpOverlay" class="overlay" aria-hidden="true">
+    <button id="helpBackBtn" class="back" aria-label="Back">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      Back
+    </button>
+    <div class="viewer" style="grid-template-columns: 1fr;">
+      <div class="help-overlay-content" id="helpContent"></div>
     </div>
   </div>
 
@@ -467,8 +495,10 @@
     const ovOpenRaw = document.getElementById("ovOpenRaw");
     const ovDownload = document.getElementById("ovDownload");
 
-    const totalViewsChip = document.getElementById("totalViewsChip");
-    const totalViewsEl = document.getElementById("totalViews");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const helpOverlay = document.getElementById("helpOverlay");
+    const helpBackBtn = document.getElementById("helpBackBtn");
+    const helpContent = document.getElementById("helpContent");
 
     // --- Utils ---
     const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
@@ -512,20 +542,6 @@
         console.error('Failed to increment download count:', e);
       }
       return null;
-    }
-
-    async function fetchWebsiteViews(){
-      try {
-        const res = await fetch(`${API_URL}?noteId=total-website-visits`);
-        if (res.ok) {
-          const data = await res.json();
-          return data.views;
-        }
-        return 0;
-      } catch (e) {
-        console.error('Failed to fetch website views:', e);
-        return 0;
-      }
     }
 
     async function incWebsiteView(){
@@ -586,6 +602,20 @@
 
       return items;
     }
+
+    async function fetchMarkdownFile(path) {
+        try {
+            const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${path}`;
+            const response = await fetch(url);
+            if (!response.ok) {
+                return `Failed to fetch markdown file from: ${url}`;
+            }
+            return await response.text();
+        } catch (e) {
+            return `Error fetching markdown file: ${e.message}`;
+        }
+    }
+
 
     // --- Rendering ---
     function render(){
@@ -916,9 +946,28 @@
       }, {once: true});
     }
 
-    backBtn.addEventListener("click", closeOverlay);
-    overlay.addEventListener("click", (e)=> { if(e.target === overlay) closeOverlay(); });
-    document.addEventListener("keydown", (e)=> { if(e.key === "Escape" && overlay.classList.contains("open")) closeOverlay(); });
+    function openHelpOverlay() {
+      helpOverlay.style.display = 'block';
+      helpOverlay.setAttribute("aria-hidden", "false");
+      requestAnimationFrame(() => { helpOverlay.classList.add("open"); });
+
+      helpContent.innerHTML = "Loading...";
+
+      fetchMarkdownFile("resources/upload.md").then(mdContent => {
+        helpContent.innerHTML = marked.parse(mdContent);
+      }).catch(e => {
+        helpContent.innerHTML = `Failed to load help content: ${e}`;
+      });
+    }
+
+    function closeHelpOverlay() {
+      helpOverlay.classList.remove("open");
+      helpOverlay.addEventListener("transitionend", function handler() {
+        helpOverlay.style.display = 'none';
+        helpOverlay.setAttribute("aria-hidden", "true");
+        helpOverlay.removeEventListener("transitionend", handler);
+      }, {once: true});
+    }
 
     // --- Events ---
     sortSelect.addEventListener("change", render);
@@ -936,6 +985,14 @@
       gridBtn.classList.remove("active"); gridBtn.setAttribute("aria-pressed","false");
       render();
     });
+
+    backBtn.addEventListener("click", closeOverlay);
+    overlay.addEventListener("click", (e)=> { if(e.target === overlay) closeOverlay(); });
+    document.addEventListener("keydown", (e)=> { if(e.key === "Escape" && overlay.classList.contains("open")) closeOverlay(); });
+
+    uploadBtn.addEventListener("click", openHelpOverlay);
+    helpBackBtn.addEventListener("click", closeHelpOverlay);
+    helpOverlay.addEventListener("click", (e)=> { if(e.target === helpOverlay) closeHelpOverlay(); });
 
     // --- Init ---
     (async function init(){
@@ -970,12 +1027,6 @@
           }
         });
         await Promise.all(notePromises);
-
-        const totalViews = await fetchWebsiteViews();
-        if (totalViews > 0) {
-          totalViewsChip.style.display = 'flex';
-          totalViewsEl.textContent = totalViews;
-        }
 
         render();
 
