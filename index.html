@@ -397,8 +397,10 @@
     // --- Configuration (set these to your repo) ---
     const REPO_OWNER = "<your-username-or-org>";
     const REPO_NAME  = "<your-repo>";
-    const BRANCH     = "main"; // or "master"
+    const BRANCH     = "main";
     const NOTES_PATH = "Notes";
+    const API_URL = "https://open-notes.tebby2008-li.workers.dev";
+
 
     // If this file lives inside the same repo on GitHub Pages, you can auto-detect owner/repo:
     (function tryAutoDetect(){
@@ -421,8 +423,6 @@
     // --- State ---
     let allItems = []; // {name, title, path, download_url, html_url, format, updatedAt, author}
     let viewMode = "grid"; // "grid" | "list"
-    const countsKey = "opennotes-counts-v1";
-    let counts = JSON.parse(localStorage.getItem(countsKey) || "{}");
 
     // --- Elements ---
     const container = document.getElementById("itemsContainer");
@@ -457,20 +457,31 @@
     const stripExt = (name)=> name.replace(/\.[^/.]+$/, "");
     const extOf = (name)=> (name.split('.').pop() || "").toLowerCase();
 
-    function saveCounts(){
-      localStorage.setItem(countsKey, JSON.stringify(counts));
+    async function incView(path){
+      // We use the 'type' query parameter to specify what we're tracking
+      const res = await fetch(`${API_URL}?type=note&noteId=${path}`, { method: 'POST' });
+      const data = await res.json();
+      // The API returns the updated view count, so we use that.
+      return data.views;
     }
-    function getCounts(path){
-      counts[path] ||= {views:0, downloads:0};
-      return counts[path];
+
+    async function incDownload(path){
+      // We don't have a separate download counter in the backend. 
+      // It's a view counter, but we can call it on download events as well.
+      const res = await fetch(`${API_URL}?type=note&noteId=${path}`, { method: 'POST' });
+      const data = await res.json();
+      return data.views;
     }
-    function incView(path){
-      const c = getCounts(path);
-      c.views++; saveCounts(); return c.views;
+
+    // And for the total website visits, call this once when the page loads
+    async function incWebsiteView(){
+      await fetch(`${API_URL}?type=website`, { method: 'POST' });
     }
-    function incDownload(path){
-      const c = getCounts(path);
-      c.downloads++; saveCounts(); return c.downloads;
+    async function getApiKeys(){
+      // Now calls the new endpoint to get keys from the sorted set
+      const res = await fetch(`${API_URL}?list=true`, { method: 'GET' });
+      if(!res.ok) return [];
+      return await res.json();
     }
 
     // --- Data fetch ---
@@ -641,10 +652,10 @@
 
       const stats = document.createElement("div");
       stats.className = "stats";
-      const c = getCounts(it.path);
+      // Use the views from the `it` object, which was fetched from the API
       stats.innerHTML = `
-        <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${c.views}</span></span>
-        <span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${c.downloads}</span></span>
+        <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views}</span></span>
+        <span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.views}</span></span>
       `;
 
       const dlBtn = document.createElement("button");
@@ -766,10 +777,10 @@
 
       const cellStats = document.createElement("div");
       cellStats.className = "cell muted";
-      const c = getCounts(it.path);
+      // Use the views from the `it` object
       cellStats.innerHTML = `
-        <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${c.views}</span></span>
-        <span class="stat" style="margin-left:10px;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${c.downloads}</span></span>
+        <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views}</span></span>
+        <span class="stat" style="margin-left:10px;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.views}</span></span>
       `;
 
       main.appendChild(cellTitle);
@@ -805,35 +816,42 @@
       overlay.classList.add("open");
       overlay.setAttribute("aria-hidden", "false");
 
-      // Increment view count
-      incView(it.path);
-      const c = getCounts(it.path);
-      if(statsNode) statsNode.querySelector('[data-view]').textContent = c.views;
+      // Increment view count via the API
+      incView(it.path).then(newViewCount => {
+        // Update the numbers in the overlay and the card/row
+        ovViews.textContent = newViewCount;
+        ovDownloads.textContent = newViewCount; // Show the same number for downloads
+        if(statsNode) {
+          statsNode.querySelector('[data-view]').textContent = newViewCount;
+          statsNode.querySelector('[data-dl]').textContent = newViewCount;
+        }
+      }).catch(e => {
+        console.error('Failed to increment view count:', e);
+      });
 
-      // Populate
+      // Populate other details
       ovTitle.textContent = it.title;
       ovFormat.textContent = it.format.toUpperCase();
       ovFormat.className = `pill ${it.format==='docx' ? 'docx' : ''}`;
       ovDate.textContent = fmtDate(it.updatedAt);
       ovAuthor.textContent = it.author || "Unknown";
-      ovViews.textContent = c.views;
-      ovDownloads.textContent = c.downloads;
       ovOpenRaw.href = `view.html?file=${encodeURIComponent(it.download_url)}`;
       ovOpenRaw.target = "_blank";
 
-
-      // Viewer: PDF direct, DOCX via Office viewer
-      // Replace your openOverlay PDF section with:
       docFrame.src = `view.html?file=${encodeURIComponent(it.download_url)}`;
 
-
-      // Download in overlay
+      // The download button also increments the same counter
       ovDownload.onclick = ()=>{
-        incDownload(it.path);
-        ovDownloads.textContent = getCounts(it.path).downloads;
-        const a = document.createElement("a");
-        a.href = it.download_url; a.download = it.name;
-        document.body.appendChild(a); a.click(); a.remove();
+        incDownload(it.path).then(newDownloadCount => {
+          ovDownloads.textContent = newDownloadCount;
+          // Also update the stat in the card/row
+          if(statsNode) statsNode.querySelector('[data-dl]').textContent = newDownloadCount;
+          const a = document.createElement("a");
+          a.href = it.download_url; a.download = it.name;
+          document.body.appendChild(a); a.click(); a.remove();
+        }).catch(e => {
+          console.error('Failed to increment download count:', e);
+        });
       };
     }
 
@@ -863,12 +881,69 @@
       gridBtn.classList.remove("active"); gridBtn.setAttribute("aria-pressed","false");
       render();
     });
+    // Add this function to your script block
+    async function fetchCountsForNotes(notes) {
+      const notePromises = notes.map(async (note) => {
+        try {
+          const res = await fetch(`${API_URL}?noteId=${note.path}`, { method: 'GET' });
+          if (res.ok) {
+            const data = await res.json();
+            // Return the note with the views data added
+            return { ...note, views: data.views };
+          }
+        } catch (e) {
+          console.error('Failed to fetch count for note:', note.path, e);
+        }
+        return { ...note, views: 0 }; // Default to 0 views if request fails
+      });
+      return Promise.all(notePromises);
+    }
+
 
     // --- Init ---
     (async function init(){
       try{
+        // First, get all the notes from GitHub
         allItems = await fetchNotes();
+        const githubPaths = new Set(allItems.map(item => item.path));
+
+        // Get the list of existing keys from your database
+        const dbKeys = await getApiKeys();
+
+        // Filter out the website visit key before deleting
+        const noteKeysToDelete = dbKeys.filter(key => key !== 'total-website-visits');
+
+        // Delete any keys that no longer exist on GitHub
+        for (const key of noteKeysToDelete) {
+          if (!githubPaths.has(key)) {
+            console.log(`Deleting counter for removed note: ${key}`);
+            await fetch(`${API_URL}?noteId=${key}`, { method: 'DELETE' });
+          }
+        }
+
+        // Now, fetch the counts for all current notes and store them
+        const notePromises = allItems.map(async (note) => {
+          try {
+            const res = await fetch(`${API_URL}?noteId=${note.path}`, { method: 'GET' });
+            if (res.ok) {
+              const data = await res.json();
+              note.views = data.views || 0;
+            } else {
+              note.views = 0;
+            }
+          } catch (e) {
+            console.error('Failed to fetch count for note:', note.path, e);
+            note.views = 0;
+          }
+        });
+        await Promise.all(notePromises);
+
+        // Finally, render everything
         render();
+
+        // And increment the total website view counter
+        incWebsiteView();
+
       }catch(e){
         console.error(e);
         container.innerHTML = `
@@ -879,6 +954,7 @@
         `;
       }
     })();
+    
   </script>
 </body>
 </html>
