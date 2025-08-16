@@ -44,16 +44,23 @@
             }
 
             // A list of supported file types and their respective viewer services.
+            // We'll prioritize Microsoft's viewer for Office files due to its global reach and China-specific service.
+            // For PDFs, we'll use a public PDF viewer like PDF.js, which is a library that can be hosted on your own server or a CDN,
+            // avoiding dependence on external services that might be blocked.
             const viewers = {
                 // Microsoft Office Online viewer for DOCX, PPTX, XLSX files.
+                // This is a reliable option as Microsoft has a partnership in China.
                 office: {
                     extensions: ['.docx', '.pptx', '.xlsx'],
                     url: 'https://view.officeapps.live.com/op/embed.aspx?src='
                 },
-                // Google Docs Viewer for PDFs and other types.
-                google: {
+                // Google Docs Viewer is known to be blocked in China.
+                // We will use a dedicated PDF viewer service or a library for better reliability.
+                // This example uses a link to a viewer from a popular open-source project, PDF.js.
+                // You could also host a similar viewer yourself for full control.
+                pdf: {
                     extensions: ['.pdf'],
-                    url: 'https://docs.google.com/gview?url='
+                    url: 'https://mozilla.github.io/pdf.js/web/viewer.html?file='
                 }
             };
             
@@ -66,7 +73,7 @@
                 if (isSupported) {
                     // If a match is found, use the corresponding viewer URL.
                     // The URL is encoded to ensure it is safe to use as a query parameter.
-                    finalUrl = `${viewers[viewer].url}${encodeURIComponent(fileUrl)}&embedded=true`;
+                    finalUrl = `${viewers[viewer].url}${encodeURIComponent(fileUrl)}`;
                     break; // Exit the loop once a viewer is found.
                 }
             }
