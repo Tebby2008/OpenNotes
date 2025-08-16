@@ -347,6 +347,10 @@
       </div>
 
       <div class="right">
+        <div id="totalViewsChip" class="chip" style="display:none">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <strong id="totalViews">0</strong>
+        </div>
         <div class="toggle" role="tablist" aria-label="View mode">
           <button id="gridBtn" class="btn active icon-only" aria-pressed="true" title="Box view">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
@@ -396,8 +400,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
   <script>
     // --- Configuration (set these to your repo) ---
-    const REPO_OWNER = "<your-username-or-org>";
-    const REPO_NAME  = "<your-repo>";
+    const REPO_OWNER = "Tebby2008";
+    const REPO_NAME  = "OpenNotes";
     const BRANCH     = "main";
     const NOTES_PATH = "Notes";
     const API_URL = "https://open-notes.tebby2008-li.workers.dev";
@@ -422,7 +426,7 @@
     const repo  = window.__repo  || REPO_NAME;
 
     // --- State ---
-    let allItems = []; // {name, title, path, download_url, html_url, format, updatedAt, author, views}
+    let allItems = []; // {name, title, path, download_url, html_url, format, updatedAt, author, views, downloads} // CHANGED: added downloads
     let viewMode = "grid"; // "grid" | "list"
 
     // --- Elements ---
@@ -445,6 +449,10 @@
     const ovOpenRaw = document.getElementById("ovOpenRaw");
     const ovDownload = document.getElementById("ovDownload");
 
+    // ADDED
+    const totalViewsChip = document.getElementById("totalViewsChip");
+    const totalViewsEl = document.getElementById("totalViews");
+
     // --- Utils ---
     const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
     const fmtDate = (iso)=> {
@@ -458,16 +466,33 @@
     const stripExt = (name)=> name.replace(/\.[^/.]+$/, "");
     const extOf = (name)=> (name.split('.').pop() || "").toLowerCase();
 
+    // CHANGED: Added counter parameter to POST request
     async function incView(path){
-      const res = await fetch(`${API_URL}?type=note&noteId=${path}`, { method: 'POST' });
+      const res = await fetch(`${API_URL}?type=note&noteId=${path}&counter=views`, { method: 'POST' });
       const data = await res.json();
-      return data.views;
+      return data;
     }
 
+    // CHANGED: Added counter parameter to POST request
     async function incDownload(path){
-      const res = await fetch(`${API_URL}?type=note&noteId=${path}`, { method: 'POST' });
+      const res = await fetch(`${API_URL}?type=note&noteId=${path}&counter=downloads`, { method: 'POST' });
       const data = await res.json();
-      return data.views;
+      return data;
+    }
+    
+    // ADDED: New function to get website visits
+    async function fetchWebsiteViews(){
+      try {
+        const res = await fetch(`${API_URL}?noteId=total-website-visits`);
+        if (res.ok) {
+          const data = await res.json();
+          return data.views;
+        }
+        return 0;
+      } catch (e) {
+        console.error('Failed to fetch website views:', e);
+        return 0;
+      }
     }
 
     async function incWebsiteView(){
@@ -504,6 +529,8 @@
           format: extOf(f.name),
           updatedAt: null,
           author: null,
+          views: 0, // ADDED: default values
+          downloads: 0, // ADDED: default values
         };
         items.push(item);
       }
@@ -644,9 +671,10 @@
 
       const stats = document.createElement("div");
       stats.className = "stats";
+      // CHANGED: Added separate data attributes for views and downloads
       stats.innerHTML = `
         <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views || 0}</span></span>
-        <span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.views || 0}</span></span>
+        <span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads || 0}</span></span>
       `;
 
       const dlBtn = document.createElement("button");
@@ -654,9 +682,9 @@
       dlBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`;
       dlBtn.addEventListener("click", async (e)=> {
           e.stopPropagation();
-          const newDownloadCount = await incDownload(it.path);
-          if (newDownloadCount !== undefined) {
-              stats.querySelector('[data-dl]').textContent = newDownloadCount;
+          const data = await incDownload(it.path);
+          if (data && data.downloads !== undefined) {
+              stats.querySelector('[data-dl]').textContent = data.downloads;
           }
           const a = document.createElement("a");
           a.href = it.download_url;
@@ -766,9 +794,10 @@
 
       const cellStats = document.createElement("div");
       cellStats.className = "cell muted";
+      // CHANGED: Added separate data attributes for views and downloads
       cellStats.innerHTML = `
         <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views || 0}</span></span>
-        <span class="stat" style="margin-left:10px;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.views || 0}</span></span>
+        <span class="stat" style="margin-left:10px;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads || 0}</span></span>
       `;
 
       main.appendChild(cellTitle);
@@ -786,9 +815,9 @@
       dlCircle.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`;
       dlCircle.addEventListener("click", async (e)=> {
         e.stopPropagation();
-        const newDownloadCount = await incDownload(it.path);
-        if (newDownloadCount !== undefined) {
-          cellStats.querySelector('[data-dl]').textContent = newDownloadCount;
+        const data = await incDownload(it.path);
+        if (data && data.downloads !== undefined) {
+          cellStats.querySelector('[data-dl]').textContent = data.downloads;
         }
         const a = document.createElement("a");
         a.href = it.download_url; a.download = it.name; document.body.appendChild(a); a.click(); a.remove();
@@ -816,27 +845,34 @@
 
       docFrame.src = `view.html?file=${encodeURIComponent(it.download_url)}`;
 
-      // Use the views property from the initial fetch
+      // CHANGED: Use separate views and downloads properties from the item object
       ovViews.textContent = it.views || 0;
-      ovDownloads.textContent = it.views || 0;
+      ovDownloads.textContent = it.downloads || 0;
 
       // Increment view count via the API on open
-      incView(it.path).then(newViewCount => {
-        ovViews.textContent = newViewCount;
-        ovDownloads.textContent = newViewCount;
-        if(statsNode) {
-          statsNode.querySelector('[data-view]').textContent = newViewCount;
-          statsNode.querySelector('[data-dl]').textContent = newViewCount;
+      incView(it.path).then(data => {
+        if(data) {
+          ovViews.textContent = data.views;
+          ovDownloads.textContent = data.downloads; // CHANGED: also update downloads in case it was incremented while the overlay was closed
+          if(statsNode) {
+            statsNode.querySelector('[data-view]').textContent = data.views;
+            statsNode.querySelector('[data-dl]').textContent = data.downloads;
+          }
         }
       }).catch(e => {
         console.error('Failed to increment view count:', e);
       });
 
       ovDownload.onclick = async ()=>{
-        const newDownloadCount = await incDownload(it.path);
-        if (newDownloadCount !== undefined) {
-          ovDownloads.textContent = newDownloadCount;
-          if(statsNode) statsNode.querySelector('[data-dl]').textContent = newDownloadCount;
+        const data = await incDownload(it.path);
+        if (data && data.downloads !== undefined) {
+          ovDownloads.textContent = data.downloads;
+          // CHANGED: Also update views in case it was incremented while the overlay was closed
+          ovViews.textContent = data.views;
+          if(statsNode) {
+            statsNode.querySelector('[data-dl]').textContent = data.downloads;
+            statsNode.querySelector('[data-view]').textContent = data.views;
+          }
         }
         const a = document.createElement("a");
         a.href = it.download_url; a.download = it.name;
@@ -893,16 +929,27 @@
             const res = await fetch(`${API_URL}?noteId=${note.path}`, { method: 'GET' });
             if (res.ok) {
               const data = await res.json();
+              // CHANGED: Assign both views and downloads from the API response
               note.views = data.views || 0;
+              note.downloads = data.downloads || 0;
             } else {
               note.views = 0;
+              note.downloads = 0;
             }
           } catch (e) {
             console.error('Failed to fetch count for note:', note.path, e);
             note.views = 0;
+            note.downloads = 0;
           }
         });
         await Promise.all(notePromises);
+
+        // ADDED: Fetch and display website views
+        const totalViews = await fetchWebsiteViews();
+        if (totalViews > 0) {
+          totalViewsChip.style.display = 'flex';
+          totalViewsEl.textContent = totalViews;
+        }
 
         render();
 
