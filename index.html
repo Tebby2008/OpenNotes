@@ -5,297 +5,299 @@
   <title>OpenNotes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- Google Font: Noto Sans -->
+  <!-- Noto Sans -->
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- PDF.js (for PDF thumbnails) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js" integrity="sha512-R5hQp1f0C3lQb2e3oRr9r5v1hvs2eV5nC4m15hV9u0bQ4pRno3xDkBqK5cO6uM3b1n6QpQYb0tCwF2Q7mc3y4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- PDF.js core -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script>
-    // PDF.js worker
     if (window['pdfjsLib']) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js";
     }
   </script>
 
   <style>
-    :root{
-      --bg:#0b0c0f;
-      --panel:#12151a;
-      --panel-2:#161a21;
-      --text:#eef2f6;
-      --muted:#9aa4b2;
-      --accent:#7dd3fc; /* sky pastel blue */
-      --accent-2:#a7f3d0; /* minty green */
-      --shadow:0 10px 30px rgba(0,0,0,0.25);
-      --radius:16px;
-      --radius-sm:12px;
-      --radius-lg:22px;
-      --gap:14px;
-      --gap-lg:22px;
+    :root {
+      --bg: #0b0c0f;
+      --panel: #12151a;
+      --panel-2: #161a21;
+      --text: #eef2f6;
+      --muted: #a6b1bf;
+      --line: rgba(255,255,255,0.08);
+      --accent: #7dd3fc; /* sky pastel blue */
+      --accent-2: #a7f3d0; /* mint mint */
+      --shadow: 0 10px 30px rgba(0,0,0,0.25);
+      --radius: 16px;
+      --radius-sm: 12px;
+      --radius-lg: 22px;
+      --gap: 14px;
+      --gap-lg: 22px;
+    }
+    /* Light theme */
+    :root[data-theme="light"] {
+      --bg: #f7fafc;
+      --panel: #ffffff;
+      --panel-2: #f3f6fa;
+      --text: #0b1420;
+      --muted: #5e6b7a;
+      --line: rgba(0,0,0,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.09);
+    }
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme]) { color-scheme: light; }
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme]) { color-scheme: dark; }
     }
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      background:linear-gradient(180deg, #0b0c0f 0%, #0e1117 100%);
-      color:var(--text);
-      font-family:"Noto Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
+    * { box-sizing: border-box }
+    html, body { height: 100% }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Noto Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Header / Banner */
-    .banner{
-      padding:32px 18px 18px;
-      position:sticky; top:0; z-index:30;
-      background:linear-gradient(180deg, rgba(14,17,23,0.95) 0%, rgba(14,17,23,0.75) 60%, rgba(14,17,23,0.0) 100%);
+    /* Header */
+    .banner {
+      position: sticky; top: 0; z-index: 30;
+      background: linear-gradient(180deg, color-mix(in oklab, var(--panel) 92%, transparent) 0%, transparent 100%);
       backdrop-filter: blur(8px);
+      padding: 44px 18px 24px; /* taller header */
     }
-    .title{
-      width:100%;
-      display:flex; align-items:center; justify-content:center;
-      font-weight:700; letter-spacing:0.3px; font-size:28px;
-      padding-bottom:10px;
+    .title {
+      width: 100%; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 32px; letter-spacing: 0.2px; margin-bottom: 12px;
     }
-    .title .dot{
-      width:10px; height:10px; border-radius:50%;
-      background:var(--accent); margin-left:10px;
-      box-shadow:0 0 20px var(--accent);
+    .title .dot {
+      width: 10px; height: 10px; border-radius: 50%; background: var(--accent); margin-left: 10px;
+      box-shadow: 0 0 20px var(--accent);
+    }
+    .controls {
+      display: flex; align-items: center; justify-content: space-between; gap: var(--gap); flex-wrap: wrap;
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px;
+      box-shadow: var(--shadow);
+    }
+    .left, .right { display: flex; align-items: center; gap: var(--gap); }
+
+    /* Icon buttons */
+    .icon-btn {
+      background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+      border-radius: 999px; padding: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .1s, box-shadow .2s, color .2s;
+    }
+    .icon-btn:hover { background: color-mix(in oklab, var(--panel-2) 80%, var(--accent) 20%); }
+    .icon-btn:active { transform: translateY(1px) }
+    .icon-btn svg { width: 18px; height: 18px; display: block; }
+    .icon-btn.active {
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 30%, transparent) inset;
+    }
+    .icon-btn.badge::after {
+      content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--accent);
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 30%, transparent); margin-left: -4px; margin-top: -12px; position: absolute;
+    }
+    .cluster { display:flex; gap:8px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 6px; }
+
+    /* Search */
+    .search {
+      display: flex; align-items: center; gap: 8px; background: var(--panel-2);
+      border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; transition: box-shadow .2s;
+    }
+    .search:hover { box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 25%, transparent) inset; }
+    .search svg { width: 18px; height: 18px; color: var(--muted); }
+    .search input {
+      width: 110px; background: transparent; border: none; outline: none; color: var(--text);
+      transition: width .25s ease; font: inherit;
+    }
+    .search input::placeholder { color: var(--muted); }
+    .search:focus-within input { width: 240px; }
+
+    /* Custom dropdown (Sort) */
+    .dropdown { position: relative; }
+    .menu {
+      position: absolute; top: calc(100% + 8px); left: 0; min-width: 220px; background: var(--panel);
+      border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow);
+      padding: 8px; display: none; z-index: 100;
+    }
+    .menu.open { display: block; animation: fadeIn .12s ease; }
+    @keyframes fadeIn { from {opacity: 0; transform: translateY(-4px);} to {opacity: 1; transform: translateY(0);} }
+    .menu button {
+      width: 100%; text-align: left; background: transparent; border: none; color: var(--text);
+      padding: 10px 10px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px;
+    }
+    .menu button:hover { background: var(--panel-2); }
+    .menu button .radio {
+      width: 16px; height: 16px; border-radius: 999px; border: 2px solid var(--muted); display: inline-flex; align-items: center; justify-content: center;
+    }
+    .menu button[aria-checked="true"] .radio { border-color: var(--accent); }
+    .menu button[aria-checked="true"] .radio::after { content: ""; width: 8px; height: 8px; border-radius: 999px; background: var(--accent); }
+
+    /* View toggle */
+    .toggle .icon-btn.active {
+      background: linear-gradient(90deg, color-mix(in oklab, var(--accent) 18%, transparent), color-mix(in oklab, var(--accent-2) 14%, transparent));
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 18%, transparent) inset;
     }
 
-    /* Controls */
-    .controls{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:var(--gap); flex-wrap:wrap;
-      background:var(--panel); border-radius:var(--radius);
-      padding:10px; box-shadow:var(--shadow);
-    }
+    /* Layout */
+    .wrap { padding: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; align-items: stretch; }
+    .list { display: flex; flex-direction: column; gap: 12px; }
 
-    .left, .right{display:flex; align-items:center; gap:var(--gap)}
-    .chip{
-      background:var(--panel-2);
-      padding:8px 10px; border-radius:999px; color:var(--text);
-      display:flex; align-items:center; gap:8px; border:1px solid rgba(255,255,255,0.06);
+    /* Cards */
+    .card {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow);
+      overflow: hidden; position: relative; transition: transform .18s ease, box-shadow .2s ease;
     }
-    .chip select{
-      background:transparent; color:var(--text); border:none; outline:none;
-      font:inherit; appearance:none; padding-right:18px; cursor:pointer;
+    .card:hover { transform: translateY(-2px); }
+    .thumb {
+      background: linear-gradient(180deg, color-mix(in oklab, var(--panel-2) 70%, #0f1320) 0%, var(--panel-2) 100%);
+      height: 180px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
     }
-    .chip .dot{
-      width:8px; height:8px; border-radius:50%; background:var(--accent);
-      box-shadow:0 0 12px var(--accent);
+    .thumb canvas, .thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+    .fmt-badge {
+      position: absolute; bottom: 10px; left: 10px; padding: 6px 10px; font-size: 12px; font-weight: 600; border-radius: 999px;
+      background: rgba(0,0,0,0.55); color: #fff; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(4px);
     }
+    :root[data-theme="light"] .fmt-badge { background: rgba(0,0,0,0.65); }
 
-    /* Expanding search */
-    .search{
-      display:flex; align-items:center; gap:8px;
-      background:var(--panel-2); border-radius:999px;
-      padding:8px 12px; border:1px solid rgba(255,255,255,0.06);
-      transition: box-shadow .2s ease;
+    .body { padding: 12px 14px 16px; }
+    .title-line {
+      font-weight: 600; font-size: 16px; margin: 6px 0 6px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .search:hover{ box-shadow:0 0 0 2px rgba(125,211,252,0.25) inset; }
-    .search svg{width:18px; height:18px; opacity:0.9}
-    .search input{
-      width:110px; background:transparent; border:none; outline:none; color:var(--text);
-      transition: width .25s ease; font:inherit;
-    }
-    .search input::placeholder{ color:var(--muted) }
-    .search:focus-within input{ width:240px }
+    .meta { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+    .meta .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+    .stats { margin-top: 10px; display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; }
+    .stat { display: inline-flex; align-items: center; gap: 6px; }
+    .stat svg { width: 16px; height: 16px; color: var(--muted); } /* icons inherit, visible on both themes */
 
-    /* Toggle buttons */
-    .toggle{
-      display:flex; gap:8px; background:var(--panel-2); padding:6px;
-      border-radius:999px; border:1px solid rgba(255,255,255,0.06);
+    /* Hover reveal (expands downward, floats) */
+    .reveal {
+      position: absolute; left: 10px; right: 10px; bottom: -14px;
+      background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+      padding: 10px; display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+      opacity: 0; transform: translateY(6px) scale(0.98); pointer-events: none; box-shadow: 0 16px 36px rgba(0,0,0,0.28);
+      transition: opacity .18s ease, transform .18s ease;
     }
-    .btn{
-      background:transparent; color:var(--text); border:none; border-radius:999px;
-      padding:8px 12px; display:flex; align-items:center; gap:8px;
-      cursor:pointer; transition: background .2s, transform .1s, box-shadow .2s;
+    .card.peek .reveal { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    .download-btn {
+      background: var(--accent); color: #061016; border: none; padding: 10px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 8px;
+      cursor: pointer; font-weight: 700; box-shadow: 0 8px 20px color-mix(in oklab, var(--accent) 30%, transparent);
+      transition: transform .1s ease, filter .2s ease, box-shadow .2s ease;
     }
-    .btn:hover{ background:rgba(255,255,255,0.06) }
-    .btn:active{ transform: translateY(1px) }
-    .btn svg{width:18px; height:18px}
-    .btn.active{
-      background:linear-gradient(90deg, rgba(125,211,252,0.18), rgba(167,243,208,0.15));
-      box-shadow:0 0 0 2px rgba(125,211,252,0.18) inset;
-    }
+    .download-btn:hover { filter: brightness(1.05); box-shadow: 0 10px 24px color-mix(in oklab, var(--accent) 40%, transparent); }
+    .download-btn:active { transform: translateY(1px); }
+    .download-btn svg { width: 18px; height: 18px; color: currentColor; }
 
-    /* Main content */
-    .wrap{ padding:18px }
-    .grid{
-      display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
-      gap:18px; align-items:stretch;
+    /* List view */
+    .row {
+      display: grid; grid-template-columns: 86px 1fr auto; gap: 14px; align-items: center;
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; box-shadow: var(--shadow);
+      transition: transform .18s, box-shadow .2s;
+      position: relative;
     }
-    .list{ display:flex; flex-direction:column; gap:12px }
+    .row:hover { transform: translateY(-1px); }
+    .row .thumb { height: 66px; border-radius: 12px; }
+    .row .main { display: grid; grid-template-columns: minmax(200px, 2fr) repeat(4, minmax(90px, 1fr)); gap: 10px; align-items: center; }
+    .row .main .cell { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .row .title-line { margin: 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .right-end { display: flex; align-items: center; gap: 8px; }
 
-    /* Card / Item */
-    .card{
-      background:var(--panel); border:1px solid rgba(255,255,255,0.06);
-      border-radius:var(--radius-lg); box-shadow:var(--shadow);
-      overflow:hidden; position:relative; transition: transform .2s ease, box-shadow .2s ease;
+    /* Overlay */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(2,4,8,0.72); backdrop-filter: blur(8px);
+      display: none; z-index: 1000; padding: 20px;
     }
-    .card:hover{ transform: translateY(-2px) }
-    .thumb{
-      background:linear-gradient(180deg, #0f1320 0%, #101522 100%);
-      height:180px; display:flex; align-items:center; justify-content:center;
-      overflow:hidden; position:relative;
+    .overlay.open { display: block; animation: fadeIn .18s ease; }
+    .viewer {
+      position: relative; background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow);
+      border-radius: var(--radius-lg); height: 100%; display: grid; grid-template-columns: 1fr minmax(280px, 360px); overflow: hidden;
     }
-    .thumb canvas, .thumb img, .thumb iframe, .thumb embed{
-      width:100%; height:100%; object-fit:cover; border-radius:12px;
+    .viewer .left { padding: 12px; background: var(--panel-2); border-right: 1px solid var(--line); overflow: hidden; }
+    .viewer .right { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .viewer .right .title { justify-content: flex-start; padding: 0; font-size: 22px; }
+    .back {
+      position: absolute; top: 26px; left: 26px; z-index: 1001; background: rgba(0,0,0,0.4); color: #fff;
+      border: 1px solid rgba(255,255,255,0.18); padding: 8px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 8px;
+      cursor: pointer; backdrop-filter: blur(4px); transition: transform .1s, background .2s;
     }
-    .fmt-badge{
-      position:absolute; bottom:10px; left:10px; padding:6px 10px;
-      font-size:12px; font-weight:600; border-radius:999px;
-      background:rgba(0,0,0,0.55); color:#fff; border:1px solid rgba(255,255,255,0.2);
-      backdrop-filter: blur(4px);
-    }
-    .fmt-pdf{ box-shadow:0 0 0 2px rgba(125,211,252,0.35) inset }
-    .fmt-docx{ box-shadow:0 0 0 2px rgba(167,243,208,0.35) inset }
+    .back:hover { background: rgba(0,0,0,0.5); }
+    .back:active { transform: translateY(1px); }
 
-    .body{ padding:12px 14px 14px }
-    .title-line{
-      font-weight:600; font-size:16px; margin:6px 0 6px; line-height:1.2;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    .pdfScroll {
+      width: 100%; height: 100%; overflow: auto; border-radius: 12px; background: var(--panel);
+      display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 12px;
     }
-    .meta{
-      display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px;
-    }
-    .meta .dot{ width:4px; height:4px; border-radius:50%; background:var(--muted) }
+    .pdfPage { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .docframe { width: 100%; height: 100%; border: none; border-radius: 12px; background: #0c0f14; }
 
-    .stats{
-      margin-top:10px; display:flex; align-items:center; gap:12px; color:var(--muted); font-size:12px;
-    }
-    .stat{ display:inline-flex; align-items:center; gap:6px }
-    .stat svg{ width:16px; height:16px; opacity:0.85 }
+    .pill { color: #001; background: var(--accent); border-radius: 999px; padding: 4px 8px; font-weight: 700; font-size: 12px; }
+    .pill.docx { background: var(--accent-2); }
 
-    /* Peek on hover after 2s */
-    .peek-action{
-      position:absolute; right:12px; bottom:12px; opacity:0; transform: translateY(8px) scale(0.98);
-      transition: opacity .2s ease, transform .2s ease; pointer-events:none;
-    }
-    .card.peek .peek-action{ opacity:1; transform: translateY(0) scale(1); pointer-events:auto }
-    .download-btn{
-      background:var(--accent); color:#002; border:none; padding:10px 12px; border-radius:999px;
-      display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:700;
-      box-shadow:0 8px 20px rgba(125,211,252,0.25); transition: transform .1s ease, box-shadow .2s ease, filter .2s ease;
-    }
-    .download-btn:hover{ filter:brightness(1.05); box-shadow:0 10px 24px rgba(125,211,252,0.32) }
-    .download-btn:active{ transform: translateY(1px) }
-    .download-btn svg{ width:18px; height:18px }
-
-    /* List view item */
-    .row{
-      display:grid; grid-template-columns:86px 1fr auto; gap:14px;
-      align-items:center; background:var(--panel); border:1px solid rgba(255,255,255,0.06);
-      border-radius:var(--radius); padding:10px; box-shadow:var(--shadow);
-      transition: transform .2s, box-shadow .2s;
-    }
-    .row:hover{ transform: translateY(-1px) }
-    .row .thumb{ height:66px; border-radius:12px }
-    .row .main{
-      display:grid; grid-template-columns: minmax(200px, 2fr) repeat(4, minmax(90px, 1fr));
-      gap:10px; align-items:center;
-    }
-    .row .main .cell{ display:flex; align-items:center; gap:6px; min-width:0 }
-    .row .title-line{ margin:0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-    .row .right-end{ display:flex; align-items:center; gap:8px }
-
-    /* Overlay viewer */
-    .overlay{
-      position:fixed; inset:0; background:rgba(2,4,8,0.72); backdrop-filter: blur(8px);
-      display:none; z-index:1000; padding:20px;
-    }
-    .overlay.open{ display:block; animation: fadeIn .18s ease }
-    @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
-
-    .viewer{
-      background:var(--panel); border:1px solid rgba(255,255,255,0.08); box-shadow:var(--shadow);
-      border-radius:var(--radius-lg); height:100%; display:grid; grid-template-columns: 1fr minmax(280px, 360px);
-      overflow:hidden;
-    }
-    .viewer .left{
-      padding:12px; background:var(--panel-2); border-right:1px solid rgba(255,255,255,0.06);
-    }
-    .docframe{
-      width:100%; height:100%; border:none; border-radius:12px; background:#0c0f14;
-    }
-    .viewer .right{
-      padding:16px; display:flex; flex-direction:column; gap:10px;
-    }
-    .viewer .right .title{ justify-content:flex-start; padding:0; font-size:22px }
-    .kv{ color:var(--muted); font-size:13px; display:flex; gap:8px; align-items:center }
-    .kv strong{ color:var(--text); font-weight:600 }
-    .back{
-      position:absolute; top:26px; left:26px; z-index:1001;
-      background:rgba(0,0,0,0.4); color:#fff; border:1px solid rgba(255,255,255,0.18);
-      padding:8px 12px; border-radius:999px; display:flex; align-items:center; gap:8px;
-      cursor:pointer; backdrop-filter: blur(4px);
-      transition: transform .1s, background .2s, box-shadow .2s;
-    }
-    .back:hover{ background:rgba(0,0,0,0.5) }
-    .back:active{ transform: translateY(1px) }
-
-    /* Helpers */
-    .pill{
-      color:#001; background:var(--accent); border-radius:999px; padding:4px 8px; font-weight:700; font-size:12px;
-    }
-    .pill.docx{ background:var(--accent-2) }
-
-    a.clean{ color:inherit; text-decoration:none }
-    .muted{ color:var(--muted) }
-    .hide{ display:none }
-
-    /* Small screens */
-    @media (max-width: 860px){
-      .viewer{ grid-template-columns: 1fr; }
-      .viewer .right{ border-top:1px solid rgba(255,255,255,0.06) }
+    @media (max-width: 860px) {
+      .viewer { grid-template-columns: 1fr; }
+      .viewer .right { border-top: 1px solid var(--line); }
     }
   </style>
 </head>
 <body>
-
   <header class="banner">
     <div class="title">OpenNotes <span class="dot"></span></div>
     <div class="controls">
       <div class="left">
-        <div class="chip" title="Sort">
-          <span class="dot"></span>
-          <select id="sortSelect" aria-label="Sort notes">
-            <option value="updated-desc">Last updated ↓</option>
-            <option value="updated-asc">Last updated ↑</option>
-            <option value="title-asc">Title A→Z</option>
-            <option value="title-desc">Title Z→A</option>
-            <option value="format-asc">Format A→Z</option>
-          </select>
+        <!-- Sort dropdown -->
+        <div class="dropdown">
+          <button id="sortBtn" class="icon-btn" aria-haspopup="menu" aria-expanded="false" title="Sort">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h6v-2H3v2zm0-5h12v-2H3v2zm0-7v2h18V6H3z"/></svg>
+          </button>
+          <div id="sortMenu" class="menu" role="menu" aria-label="Sort options">
+            <button role="menuitemradio" data-sort="updated-desc" aria-checked="true">
+              <span class="radio"></span> Last updated ↓
+            </button>
+            <button role="menuitemradio" data-sort="updated-asc" aria-checked="false">
+              <span class="radio"></span> Last updated ↑
+            </button>
+            <button role="menuitemradio" data-sort="title-asc" aria-checked="false">
+              <span class="radio"></span> Title A→Z
+            </button>
+            <button role="menuitemradio" data-sort="title-desc" aria-checked="false">
+              <span class="radio"></span> Title Z→A
+            </button>
+            <button role="menuitemradio" data-sort="format-asc" aria-checked="false">
+              <span class="radio"></span> Format A→Z
+            </button>
+          </div>
         </div>
 
-        <div class="chip" title="Format">
-          <span class="dot"></span>
-          <select id="formatSelect" aria-label="Filter by format">
-            <option value="all">All formats</option>
-            <option value="pdf">PDF</option>
-            <option value="docx">DOCX</option>
-          </select>
-        </div>
+        <!-- Format toggle: ALL → PDF → DOCX -->
+        <button id="fmtToggle" class="icon-btn" title="Format: ALL">
+          <svg id="fmtIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16v2H4V6zm0 5h10v2H4v-2zm0 5h16v2H4v-2z"/></svg>
+        </button>
 
+        <!-- Search -->
         <div class="search" role="search">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23C15.99 6.01 12.98 3 9.5 3S3.01 6.01 3.01 9.5 6.02 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23C15.99 6.01 12.98 3 9.5 3S3.01 6.01 3.01 9.5 6.02 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
           <input id="searchInput" type="text" placeholder="Search notes..." aria-label="Search notes" />
         </div>
       </div>
 
       <div class="right">
-        <div class="toggle" role="tablist" aria-label="View mode">
-          <button id="gridBtn" class="btn active" aria-pressed="true" title="Box view">
+        <!-- View toggle -->
+        <div class="cluster toggle" role="tablist" aria-label="View mode">
+          <button id="gridBtn" class="icon-btn active" aria-pressed="true" title="Box view">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
-            Box
           </button>
-          <button id="listBtn" class="btn" aria-pressed="false" title="List view">
+          <button id="listBtn" class="icon-btn" aria-pressed="false" title="List view">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"/></svg>
-            List
           </button>
         </div>
+
+        <!-- Theme toggle -->
+        <button id="themeBtn" class="icon-btn" title="Toggle theme">
+          <svg id="themeIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 15.31A8 8 0 0 1 8.69 4 8.001 8.001 0 1 0 20 15.31z"/></svg>
+        </button>
       </div>
     </div>
   </header>
@@ -304,7 +306,7 @@
     <section id="itemsContainer" class="grid" aria-live="polite"></section>
   </main>
 
-  <!-- Overlay viewer -->
+  <!-- Overlay -->
   <div id="overlay" class="overlay" aria-hidden="true">
     <button id="backBtn" class="back" aria-label="Back">
       <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
@@ -312,21 +314,21 @@
     </button>
     <div class="viewer" role="dialog" aria-modal="true" aria-label="Document viewer">
       <div class="left">
-        <iframe id="docFrame" class="docframe" title="Document preview"></iframe>
+        <div id="pdfScroll" class="pdfScroll" hidden></div>
+        <iframe id="docFrame" class="docframe" title="Document preview" hidden></iframe>
       </div>
       <div class="right">
         <div class="title" id="ovTitle">Title</div>
         <div class="kv"><span class="pill" id="ovFormat">PDF</span></div>
-        <div class="kv">Date: <strong id="ovDate">—</strong></div>
-        <div class="kv">Author: <strong id="ovAuthor">—</strong></div>
-        <div class="kv">Views: <strong id="ovViews">0</strong></div>
-        <div class="kv">Downloads: <strong id="ovDownloads">0</strong></div>
-        <div style="margin-top:8px; display:flex; gap:10px;">
-          <a id="ovOpenRaw" class="btn clean" target="_blank" rel="noopener">
+        <div class="kv" style="color: var(--muted); font-size:13px;">Date: <strong id="ovDate" style="margin-left:6px; color: var(--text); font-weight:600;">—</strong></div>
+        <div class="kv" style="color: var(--muted); font-size:13px;">Author: <strong id="ovAuthor" style="margin-left:6px; color: var(--text); font-weight:600;">—</strong></div>
+        <div class="kv" style="color: var(--muted); font-size:13px;">Views: <strong id="ovViews" style="margin-left:6px; color: var(--text); font-weight:600;">0</strong></div>
+        <div class="kv" style="color: var(--muted); font-size:13px;">Downloads: <strong id="ovDownloads" style="margin-left:6px; color: var(--text); font-weight:600;">0</strong></div>
+        <div style="margin-top:8px; display:flex; gap:10px; flex-wrap: wrap;">
+          <a id="ovOpenBlob" class="icon-btn" target="_blank" rel="noopener" title="Open on GitHub">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"/><path d="M5 5h5V3H3v7h2z"/></svg>
-            Open raw
           </a>
-          <button id="ovDownload" class="download-btn">
+          <button id="ovDownload" class="download-btn" title="Direct download">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>
             Download
           </button>
@@ -336,46 +338,60 @@
   </div>
 
   <script>
-    // --- Configuration (set these to your repo) ---
+    // --- Configure these ---
     const REPO_OWNER = "<your-username-or-org>";
     const REPO_NAME  = "<your-repo>";
-    const BRANCH     = "main"; // or "master"
+    const BRANCH     = "main";
     const NOTES_PATH = "Notes";
 
-    // If this file lives inside the same repo on GitHub Pages, you can auto-detect owner/repo:
+    // Auto-detect if served from GitHub Pages of the same repo
     (function tryAutoDetect(){
       try{
         const host = location.hostname;
-        const path = location.pathname.replace(/^\/+/,'').split('/');
+        const parts = location.pathname.replace(/^\/+/,'').split('/');
         const isPages = host.endsWith(".github.io");
         if(isPages){
           const owner = host.split(".github.io")[0];
-          const repo = path[0] || REPO_NAME;
+          const repo = parts[0] || REPO_NAME;
           if(REPO_OWNER.startsWith("<")) window['__owner']=owner;
           if(REPO_NAME.startsWith("<")) window['__repo']=repo;
         }
       }catch(e){}
     })();
-
     const owner = window.__owner || REPO_OWNER;
     const repo  = window.__repo  || REPO_NAME;
 
     // --- State ---
-    let allItems = []; // {name, title, path, download_url, html_url, format, updatedAt, author}
-    let viewMode = "grid"; // "grid" | "list"
-    const countsKey = "opennotes-counts-v1";
+    let allItems = []; // {name,title,path,download_url,html_url,format,updatedAt,author}
+    let viewMode = "grid";
+    let sortMode = "updated-desc";
+    let fmtMode = "all"; // "all" | "pdf" | "docx"
+    const countsKey = "opennotes-counts-v2";
     let counts = JSON.parse(localStorage.getItem(countsKey) || "{}");
+
+    function saveCounts(){ localStorage.setItem(countsKey, JSON.stringify(counts)); }
+    function getCounts(path){ counts[path] ||= {views:0, downloads:0}; return counts[path]; }
+    function incView(path){ const c = getCounts(path); c.views++; saveCounts(); return c.views; }
+    function incDownload(path){ const c = getCounts(path); c.downloads++; saveCounts(); return c.downloads; }
 
     // --- Elements ---
     const container = document.getElementById("itemsContainer");
-    const sortSelect = document.getElementById("sortSelect");
-    const formatSelect = document.getElementById("formatSelect");
     const searchInput = document.getElementById("searchInput");
     const gridBtn = document.getElementById("gridBtn");
     const listBtn = document.getElementById("listBtn");
 
+    const sortBtn = document.getElementById("sortBtn");
+    const sortMenu = document.getElementById("sortMenu");
+
+    const fmtToggle = document.getElementById("fmtToggle");
+    const fmtIcon = document.getElementById("fmtIcon");
+
+    const themeBtn = document.getElementById("themeBtn");
+    const themeIcon = document.getElementById("themeIcon");
+
     const overlay = document.getElementById("overlay");
     const backBtn = document.getElementById("backBtn");
+    const pdfScroll = document.getElementById("pdfScroll");
     const docFrame = document.getElementById("docFrame");
     const ovTitle = document.getElementById("ovTitle");
     const ovFormat = document.getElementById("ovFormat");
@@ -383,11 +399,35 @@
     const ovAuthor = document.getElementById("ovAuthor");
     const ovViews = document.getElementById("ovViews");
     const ovDownloads = document.getElementById("ovDownloads");
-    const ovOpenRaw = document.getElementById("ovOpenRaw");
+    const ovOpenBlob = document.getElementById("ovOpenBlob");
     const ovDownload = document.getElementById("ovDownload");
 
-    // --- Utils ---
-    const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
+    // --- Theme ---
+    const themeKey = "opennotes-theme";
+    (function initTheme(){
+      const saved = localStorage.getItem(themeKey);
+      if(saved) document.documentElement.setAttribute("data-theme", saved);
+      updateThemeIcon();
+    })();
+    function toggleTheme(){
+      const cur = document.documentElement.getAttribute("data-theme");
+      const next = cur === "light" ? "dark" : (cur === "dark" ? "" : "light");
+      if(next){ document.documentElement.setAttribute("data-theme", next); }
+      else { document.documentElement.removeAttribute("data-theme"); }
+      localStorage.setItem(themeKey, next || "");
+      updateThemeIcon();
+    }
+    function updateThemeIcon(){
+      const theme = document.documentElement.getAttribute("data-theme");
+      themeIcon.innerHTML = theme === "light"
+        ? '<path d="M6.76 4.84l-1.8-1.79L3.17 4.84l1.79 1.79 1.8-1.79zM1 13h3v-2H1v2zm10 10h2v-3h-2v3zm7.03-20.97l-1.79 1.79 1.8 1.79 1.79-1.79-1.8-1.79zM20 11v2h3v-2h-3zM17.24 19.16l1.79 1.79 1.79-1.79-1.79-1.8-1.79 1.8zM4.84 17.24l-1.79 1.8 1.79 1.79 1.79-1.79-1.79-1.8zM12 5a7 7 0 0 0 0 14 7 7 0 0 0 0-14z"/>'
+        : '<path d="M20 15.31A8 8 0 0 1 8.69 4 8.001 8.001 0 1 0 20 15.31z"/>';
+    }
+    themeBtn.addEventListener("click", toggleTheme);
+
+    // --- Helpers ---
+    const extOf = (n)=> (n.split('.').pop() || "").toLowerCase();
+    const stripExt = (n)=> n.replace(/\.[^/.]+$/, "");
     const fmtDate = (iso)=> {
       if(!iso) return "—";
       const d = new Date(iso);
@@ -396,94 +436,58 @@
       const yyyy = d.getFullYear();
       return `${dd}-${mm}-${yyyy}`;
     };
-    const stripExt = (name)=> name.replace(/\.[^/.]+$/, "");
-    const extOf = (name)=> (name.split('.').pop() || "").toLowerCase();
 
-    function saveCounts(){
-      localStorage.setItem(countsKey, JSON.stringify(counts));
-    }
-    function getCounts(path){
-      counts[path] ||= {views:0, downloads:0};
-      return counts[path];
-    }
-    function incView(path){
-      const c = getCounts(path);
-      c.views++; saveCounts(); return c.views;
-    }
-    function incDownload(path){
-      const c = getCounts(path);
-      c.downloads++; saveCounts(); return c.downloads;
+    // Fetch as ArrayBuffer for reliable PDF.js loading
+    async function fetchArrayBuffer(url){
+      const r = await fetch(url);
+      if(!r.ok) throw new Error("Fetch failed");
+      return await r.arrayBuffer();
     }
 
     // --- Data fetch ---
     async function fetchNotes(){
       const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(NOTES_PATH)}?ref=${encodeURIComponent(BRANCH)}`;
       const res = await fetch(url, {headers:{'Accept':'application/vnd.github+json'}});
-      if(!res.ok){
-        throw new Error("Failed to fetch repo contents. Check repo, owner, branch, and that Notes/ exists.");
-      }
+      if(!res.ok) throw new Error("Failed to load Notes/");
       const data = await res.json();
-      const files = data.filter(x=>{
-        if(x.type !== "file") return false;
-        const ext = extOf(x.name);
-        return ext === "pdf" || ext === "docx";
-      });
+      const files = data.filter(x=> x.type==="file" && ["pdf","docx"].includes(extOf(x.name)));
 
-      const items = [];
-      for(const f of files){
-        const item = {
-          name: f.name,
-          title: stripExt(f.name),
-          path: f.path,
-          download_url: f.download_url,
-          html_url: f.html_url,
-          format: extOf(f.name),
-          updatedAt: null,
-          author: null,
-        };
-        items.push(item);
-      }
+      const items = files.map(f => ({
+        name: f.name,
+        title: stripExt(f.name),
+        path: f.path,
+        download_url: f.download_url,
+        html_url: f.html_url,
+        format: extOf(f.name),
+        updatedAt: null,
+        author: null
+      }));
 
-      // Fetch last commit for each file to get author and updated date
-      // Note: unauthenticated calls are rate-limited; this is kept lightweight.
-      await Promise.all(items.map(async (it)=>{
+      await Promise.all(items.map(async it=>{
         try{
           const commitsUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(it.path)}&per_page=1&sha=${encodeURIComponent(BRANCH)}`;
           const r = await fetch(commitsUrl, {headers:{'Accept':'application/vnd.github+json'}});
           if(r.ok){
             const arr = await r.json();
-            if(Array.isArray(arr) && arr.length){
+            if(arr && arr.length){
               const c = arr[0];
-              it.updatedAt = c.commit && c.commit.author ? c.commit.author.date : null;
-              it.author = c.author && c.author.login ? c.author.login : (c.commit && c.commit.author ? c.commit.author.name : "Unknown");
+              it.updatedAt = c.commit?.author?.date || null;
+              it.author = c.author?.login || c.commit?.author?.name || "Unknown";
             }
           }
-        }catch(e){}
+        }catch(_){}
       }));
-
       return items;
     }
 
     // --- Rendering ---
     function render(){
       const query = searchInput.value.trim().toLowerCase();
-      const fmt = formatSelect.value;
+      let list = allItems.filter(x => fmtMode==="all" ? true : x.format===fmtMode);
+      if(query) list = list.filter(x => x.title.toLowerCase().includes(query));
 
-      let list = [...allItems];
-
-      // Filter by format
-      if(fmt !== "all"){
-        list = list.filter(x=> x.format === fmt);
-      }
-      // Text search (title)
-      if(query){
-        list = list.filter(x=> x.title.toLowerCase().includes(query));
-      }
-
-      // Sort
-      const sort = sortSelect.value;
       list.sort((a,b)=>{
-        switch(sort){
+        switch(sortMode){
           case "title-asc": return a.title.localeCompare(b.title);
           case "title-desc": return b.title.localeCompare(a.title);
           case "format-asc": return a.format.localeCompare(b.format) || a.title.localeCompare(b.title);
@@ -493,51 +497,31 @@
         }
       });
 
-      // Clear container
       container.innerHTML = "";
       container.className = viewMode === "grid" ? "grid" : "list";
-
-      // Render each item
       for(const it of list){
-        if(viewMode === "grid"){
-          container.appendChild(renderCard(it));
-        }else{
-          container.appendChild(renderRow(it));
-        }
+        container.appendChild(viewMode === "grid" ? renderCard(it) : renderRow(it));
       }
+
+      // Highlight sort icon when non-default
+      if(sortMode !== "updated-desc") sortBtn.classList.add("active"); else sortBtn.classList.remove("active");
+      // Update format toggle icon + title
+      updateFmtToggleUI();
     }
 
     function renderFormatBadge(fmt){
       const span = document.createElement("span");
-      span.className = `fmt-badge fmt-${fmt}`;
+      span.className = "fmt-badge";
       span.textContent = fmt.toUpperCase();
       return span;
     }
 
-    function makeThumb(fmt, url){
-      const holder = document.createElement("div");
-      holder.className = "thumb";
-      holder.style.borderRadius = "12px";
-
-      if(fmt === "pdf" && window['pdfjsLib']){
-        const canvas = document.createElement("canvas");
-        holder.appendChild(canvas);
-        renderPdfFirstPage(url, canvas).catch(()=>{
-          holder.innerHTML = fileIcon("pdf");
-        });
-      }else{
-        // DOCX or fallback: show a simple icon preview
-        holder.innerHTML = fileIcon(fmt);
-      }
-      return holder;
-    }
-
     function fileIcon(fmt){
       const label = fmt.toUpperCase();
-      const color = fmt === "pdf" ? "rgba(125,211,252,0.18)" : "rgba(167,243,208,0.18)";
+      const color = fmt === "pdf" ? "color-mix(in oklab, var(--accent) 18%, transparent)" : "color-mix(in oklab, var(--accent-2) 22%, transparent)";
       return `
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:${color}">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="42" height="42" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="42" height="42" aria-hidden="true" style="color: var(--text); opacity: .9;">
             <path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 4h7v5h5v11H6V4z"/>
           </svg>
           <div class="pill ${fmt==='docx'?'docx':''}" style="margin-top:8px;">${label}</div>
@@ -545,44 +529,60 @@
       `;
     }
 
-    async function renderPdfFirstPage(url, canvas){
-      // CORS: raw.githubusercontent.com supports cross-origin fetch
-      const pdf = await pdfjsLib.getDocument({url}).promise;
+    // PDF thumbnail (first page)
+    async function renderPdfThumb(url, canvas){
+      const data = await fetchArrayBuffer(url);
+      const pdf = await pdfjsLib.getDocument({ data }).promise;
       const page = await pdf.getPage(1);
-      const viewport = page.getViewport({scale: 0.5});
-      const scale = Math.min(1.2, Math.max(0.6, canvas.parentElement.clientWidth / (viewport.width*1.2)));
-      const vp = page.getViewport({scale});
-      const ctx = canvas.getContext('2d');
+      const baseViewport = page.getViewport({ scale: 1.0 });
+      const targetW = canvas.parentElement.clientWidth;
+      const scale = Math.max(0.5, Math.min(1.5, targetW / (baseViewport.width * 1.2)));
+      const vp = page.getViewport({ scale });
       canvas.width = vp.width; canvas.height = vp.height;
-      await page.render({canvasContext: ctx, viewport: vp}).promise;
+      const ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport: vp }).promise;
+    }
+
+    function makeThumb(it){
+      const holder = document.createElement("div");
+      holder.className = "thumb";
+      if(it.format === "pdf" && window['pdfjsLib']){
+        const canvas = document.createElement("canvas");
+        holder.appendChild(canvas);
+        renderPdfThumb(it.download_url, canvas).catch(()=>{
+          holder.innerHTML = fileIcon("pdf");
+        });
+      }else{
+        holder.innerHTML = fileIcon("docx");
+      }
+      holder.appendChild(renderFormatBadge(it.format));
+      return holder;
     }
 
     function renderCard(it){
       const card = document.createElement("article");
       card.className = "card";
       card.tabIndex = 0;
-      card.setAttribute("role", "button");
-      card.setAttribute("aria-label", `${it.title}`);
+      card.setAttribute("role","button");
+      card.setAttribute("aria-label", it.title);
 
-      // Hover "peek" after 2s
+      // Hover delay → peek
       let hoverTimer = null;
       card.addEventListener("mouseenter", ()=> {
         hoverTimer = setTimeout(()=> card.classList.add("peek"), 2000);
       });
       card.addEventListener("mouseleave", ()=> {
-        clearTimeout(hoverTimer); hoverTimer = null;
-        card.classList.remove("peek");
+        clearTimeout(hoverTimer); hoverTimer=null; card.classList.remove("peek");
       });
 
-      const thumb = makeThumb(it.format, it.download_url);
-      thumb.appendChild(renderFormatBadge(it.format));
+      const thumb = makeThumb(it);
+      card.appendChild(thumb);
 
       const body = document.createElement("div");
       body.className = "body";
       const title = document.createElement("div");
       title.className = "title-line";
       title.textContent = it.title;
-
       const meta = document.createElement("div");
       meta.className = "meta";
       meta.innerHTML = `
@@ -590,47 +590,42 @@
         <span class="dot"></span>
         <span>${fmtDate(it.updatedAt)}</span>
       `;
-
       const stats = document.createElement("div");
       stats.className = "stats";
       const c = getCounts(it.path);
       stats.innerHTML = `
-        <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${c.views}</span></span>
-        <span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${c.downloads}</span></span>
+        <span class="stat">
+          <svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg>
+          <span data-view>${c.views}</span>
+        </span>
+        <span class="stat">
+          <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>
+          <span data-dl>${c.downloads}</span>
+        </span>
       `;
 
-      const peek = document.createElement("div");
-      peek.className = "peek-action";
+      const reveal = document.createElement("div");
+      reveal.className = "reveal";
       const dlBtn = document.createElement("button");
       dlBtn.className = "download-btn";
       dlBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> Download`;
-      dlBtn.addEventListener("click", (e)=> {
+      dlBtn.addEventListener("click", (e)=>{
         e.stopPropagation();
         incDownload(it.path);
-        const a = document.createElement("a");
-        a.href = it.download_url;
-        a.download = it.name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        // reflect counts
         stats.querySelector('[data-dl]').textContent = getCounts(it.path).downloads;
+        const a = document.createElement("a");
+        a.href = it.download_url; a.download = it.name; document.body.appendChild(a); a.click(); a.remove();
       });
-      peek.appendChild(dlBtn);
+      reveal.appendChild(dlBtn);
 
-      const thumbWrap = document.createElement("div");
-      thumbWrap.className = "thumb";
-      thumbWrap.replaceWith(thumb); // Use the created thumb
-
-      card.appendChild(thumb);
-      card.appendChild(peek);
       body.appendChild(title);
       body.appendChild(meta);
       body.appendChild(stats);
       card.appendChild(body);
+      card.appendChild(reveal);
 
       card.addEventListener("click", ()=> openOverlay(it, stats));
-      card.addEventListener("keydown", (e)=> { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openOverlay(it, stats);} });
+      card.addEventListener("keydown", (e)=> { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openOverlay(it, stats);} });
 
       return card;
     }
@@ -639,44 +634,38 @@
       const row = document.createElement("article");
       row.className = "row";
       row.tabIndex = 0;
-      row.setAttribute("role", "button");
-      row.setAttribute("aria-label", `${it.title}`);
+      row.setAttribute("role","button");
+      row.setAttribute("aria-label", it.title);
 
-      const thumb = makeThumb(it.format, it.download_url);
-      thumb.appendChild(renderFormatBadge(it.format));
+      const thumb = makeThumb(it);
       thumb.style.height = "66px";
       row.appendChild(thumb);
 
       const main = document.createElement("div");
       main.className = "main";
-
       const cellTitle = document.createElement("div");
       cellTitle.className = "cell";
       cellTitle.innerHTML = `<div class="title-line">${it.title}</div>`;
-
       const cellAuthor = document.createElement("div");
-      cellAuthor.className = "cell muted";
-      cellAuthor.textContent = it.author || "Unknown";
-
+      cellAuthor.className = "cell muted"; cellAuthor.textContent = it.author || "Unknown";
       const cellDate = document.createElement("div");
-      cellDate.className = "cell muted";
-      cellDate.textContent = fmtDate(it.updatedAt);
-
+      cellDate.className = "cell muted"; cellDate.textContent = fmtDate(it.updatedAt);
       const cellFmt = document.createElement("div");
-      cellFmt.className = "cell";
-      const pill = document.createElement("span");
-      pill.className = `pill ${it.format==='docx'?'docx':''}`;
-      pill.textContent = it.format.toUpperCase();
-      cellFmt.appendChild(pill);
-
+      cellFmt.className = "cell"; const pill = document.createElement("span");
+      pill.className = `pill ${it.format==='docx'?'docx':''}`; pill.textContent = it.format.toUpperCase(); cellFmt.appendChild(pill);
       const cellStats = document.createElement("div");
       cellStats.className = "cell muted";
       const c = getCounts(it.path);
       cellStats.innerHTML = `
-        <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${c.views}</span></span>
-        <span class="stat" style="margin-left:10px;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${c.downloads}</span></span>
+        <span class="stat">
+          <svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg>
+          <span data-view>${c.views}</span>
+        </span>
+        <span class="stat" style="margin-left:10px;">
+          <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>
+          <span data-dl>${c.downloads}</span>
+        </span>
       `;
-
       main.appendChild(cellTitle);
       main.appendChild(cellAuthor);
       main.appendChild(cellDate);
@@ -687,77 +676,123 @@
       const rightEnd = document.createElement("div");
       rightEnd.className = "right-end";
       const dlCircle = document.createElement("button");
-      dlCircle.className = "btn";
-      dlCircle.title = "Download";
+      dlCircle.className = "icon-btn"; dlCircle.title = "Download";
       dlCircle.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`;
-      dlCircle.addEventListener("click", (e)=> {
+      dlCircle.addEventListener("click",(e)=> {
         e.stopPropagation();
         incDownload(it.path);
-        const a = document.createElement("a");
-        a.href = it.download_url; a.download = it.name; document.body.appendChild(a); a.click(); a.remove();
-        cellStats.querySelector('[data-dl]').textContent = getCounts(it.path).downloads;
+        main.querySelector('[data-dl]').textContent = getCounts(it.path).downloads;
+        const a=document.createElement("a"); a.href=it.download_url; a.download=it.name; document.body.appendChild(a); a.click(); a.remove();
       });
       rightEnd.appendChild(dlCircle);
       row.appendChild(rightEnd);
 
-      row.addEventListener("click", ()=> openOverlay(it, cellStats));
-      row.addEventListener("keydown", (e)=> { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openOverlay(it, cellStats);} });
+      row.addEventListener("click", ()=> openOverlay(it, main));
+      row.addEventListener("keydown", (e)=> { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openOverlay(it, main);} });
 
       return row;
     }
 
-    function openOverlay(it, statsNode){
+    // --- Overlay logic ---
+    async function openOverlay(it, statsNode){
       overlay.classList.add("open");
-      overlay.setAttribute("aria-hidden", "false");
+      overlay.setAttribute("aria-hidden","false");
 
-      // Increment view count
+      // counts
       incView(it.path);
       const c = getCounts(it.path);
-      if(statsNode) statsNode.querySelector('[data-view]').textContent = c.views;
+      statsNode?.querySelector?.('[data-view]')?.textContent = c.views;
 
-      // Populate
+      // fill
       ovTitle.textContent = it.title;
       ovFormat.textContent = it.format.toUpperCase();
-      ovFormat.className = `pill ${it.format==='docx' ? 'docx' : ''}`;
+      ovFormat.className = `pill ${it.format==='docx'?'docx':''}`;
       ovDate.textContent = fmtDate(it.updatedAt);
       ovAuthor.textContent = it.author || "Unknown";
       ovViews.textContent = c.views;
       ovDownloads.textContent = c.downloads;
-      ovOpenRaw.href = it.download_url;
 
-      // Viewer: PDF direct, DOCX via Office viewer
-      if(it.format === "pdf"){
-        // Native PDF viewer
-        docFrame.src = `${it.download_url}#view=FitH`;
-      }else{
-        const src = encodeURIComponent(it.download_url);
-        docFrame.src = `https://view.officeapps.live.com/op/embed.aspx?src=${src}`;
-      }
+      // open on GitHub blob (prevents forced download)
+      ovOpenBlob.href = it.html_url;
 
-      // Download in overlay
       ovDownload.onclick = ()=>{
         incDownload(it.path);
         ovDownloads.textContent = getCounts(it.path).downloads;
         const a = document.createElement("a");
-        a.href = it.download_url; a.download = it.name;
-        document.body.appendChild(a); a.click(); a.remove();
+        a.href = it.download_url; a.download = it.name; document.body.appendChild(a); a.click(); a.remove();
       };
+
+      // viewer
+      docFrame.hidden = true;
+      pdfScroll.hidden = true;
+      if(it.format === "pdf"){
+        pdfScroll.hidden = false;
+        await renderPdfInOverlay(it.download_url, pdfScroll);
+      }else{
+        docFrame.hidden = false;
+        const src = encodeURIComponent(it.download_url);
+        docFrame.src = `https://view.officeapps.live.com/op/embed.aspx?src=${src}`;
+      }
     }
 
     function closeOverlay(){
       overlay.classList.remove("open");
-      overlay.setAttribute("aria-hidden", "true");
+      overlay.setAttribute("aria-hidden","true");
+      // cleanup
       docFrame.src = "about:blank";
+      pdfScroll.innerHTML = "";
     }
-
     backBtn.addEventListener("click", closeOverlay);
     overlay.addEventListener("click", (e)=> { if(e.target === overlay) closeOverlay(); });
     document.addEventListener("keydown", (e)=> { if(e.key === "Escape" && overlay.classList.contains("open")) closeOverlay(); });
 
-    // --- Events ---
-    sortSelect.addEventListener("change", render);
-    formatSelect.addEventListener("change", render);
+    // Render full PDF in overlay (no controls)
+    async function renderPdfInOverlay(url, container){
+      try{
+        const data = await fetchArrayBuffer(url);
+        const pdf = await pdfjsLib.getDocument({ data }).promise;
+        container.innerHTML = "";
+
+        const pages = [];
+        for(let i=1;i<=pdf.numPages;i++){
+          const canvas = document.createElement("canvas");
+          canvas.className = "pdfPage";
+          canvas.style.maxWidth = "980px";
+          canvas.style.width = "100%";
+          canvas.height = 0;
+          container.appendChild(canvas);
+          pages.push({ i, canvas, rendered:false });
+        }
+
+        // Lazy render with IntersectionObserver
+        const io = new IntersectionObserver((entries)=>{
+          entries.forEach(async entry=>{
+            if(entry.isIntersecting){
+              const p = pages.find(x=>x.canvas===entry.target);
+              if(!p || p.rendered) return;
+              p.rendered = true;
+              const page = await pdf.getPage(p.i);
+              // fit to container width
+              const maxW = Math.min(980, container.clientWidth - 24);
+              const base = page.getViewport({ scale: 1 });
+              const scale = maxW / base.width;
+              const vp = page.getViewport({ scale });
+              p.canvas.width = vp.width;
+              p.canvas.height = vp.height;
+              await page.render({ canvasContext: p.canvas.getContext('2d'), viewport: vp }).promise;
+            }
+          });
+        }, { root: container, rootMargin: "200px 0px 400px 0px", threshold: 0.01 });
+
+        pages.forEach(p => io.observe(p.canvas));
+      }catch(e){
+        container.innerHTML = `<div style="padding:16px; color: var(--muted);">Could not render PDF.</div>`;
+      }
+    }
+
+    // --- Controls binding ---
     searchInput.addEventListener("input", render);
+
     gridBtn.addEventListener("click", ()=>{
       viewMode = "grid";
       gridBtn.classList.add("active"); gridBtn.setAttribute("aria-pressed","true");
@@ -771,19 +806,67 @@
       render();
     });
 
+    // Sort dropdown
+    function setSort(mode){
+      sortMode = mode;
+      [...sortMenu.querySelectorAll('button[role="menuitemradio"]')].forEach(btn=>{
+        btn.setAttribute("aria-checked", btn.dataset.sort === mode ? "true" : "false");
+      });
+      render();
+    }
+    sortBtn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      const open = sortMenu.classList.toggle("open");
+      sortBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    sortMenu.addEventListener("click", (e)=>{
+      const btn = e.target.closest('button[role="menuitemradio"]');
+      if(!btn) return;
+      setSort(btn.dataset.sort);
+      sortMenu.classList.remove("open");
+      sortBtn.setAttribute("aria-expanded","false");
+    });
+    document.addEventListener("click", ()=> {
+      if(sortMenu.classList.contains("open")) {
+        sortMenu.classList.remove("open");
+        sortBtn.setAttribute("aria-expanded","false");
+      }
+    });
+
+    // Format toggle
+    const fmtOrder = ["all","pdf","docx"];
+    function updateFmtToggleUI(){
+      const idx = fmtOrder.indexOf(fmtMode);
+      const title = fmtMode.toUpperCase();
+      fmtToggle.title = `Format: ${title}`;
+      if(fmtMode==="all"){
+        fmtIcon.innerHTML = '<path d="M4 6h16v2H4V6zm0 5h10v2H4v-2zm0 5h16v2H4v-2z"/>';
+      }else if(fmtMode==="pdf"){
+        fmtIcon.innerHTML = '<path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm8 7h4l-4-4v4z"/>';
+      }else{
+        fmtIcon.innerHTML = '<path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 4h7v5h5v11H6V4z"/>';
+      }
+    }
+    fmtToggle.addEventListener("click", ()=>{
+      const idx = fmtOrder.indexOf(fmtMode);
+      fmtMode = fmtOrder[(idx + 1) % fmtOrder.length];
+      updateFmtToggleUI();
+      render();
+    });
+
     // --- Init ---
     (async function init(){
-      try{
+      try {
         allItems = await fetchNotes();
         render();
-      }catch(e){
-        console.error(e);
+      } catch (e) {
         container.innerHTML = `
-          <div style="background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;">
+          <div style="background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;">
             <div style="font-weight:700;margin-bottom:6px;">Couldn’t load Notes/</div>
-            <div class="muted">Check that the repository, branch, and Notes folder exist and are public.</div>
+            <div style="color:var(--muted)">Verify owner/repo/branch and that Notes/ exists and is public.</div>
           </div>
         `;
+        console.error(e);
       }
     })();
   </script>
