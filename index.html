@@ -38,7 +38,7 @@
     html,body{height:100%}
     body{
       margin:0;
-      background:linear-gradient(180deg, #0b0c0f 0%, #0e1117 100%);
+      background:var(--bg);
       color:var(--text);
       font-family:"Noto Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
       -webkit-font-smoothing:antialiased;
@@ -140,14 +140,9 @@
       box-shadow: 0 8px 24px rgba(0,0,0,0.3);
       z-index: 10;
     }
-    .card .peek-action {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      pointer-events: auto;
-    }
 
     .thumb{
-      background:linear-gradient(180deg, #0f1320 0%, #101522 100%);
+      background:var(--panel-2);
       height:180px; display:flex; align-items:center; justify-content:center;
       overflow:hidden; position:relative;
     }
@@ -179,20 +174,22 @@
     .stat{ display:inline-flex; align-items:center; gap:6px }
     .stat svg{ width:16px; height:16px; opacity:0.85 }
 
-    /* Peek on hover after 2s */
-    .peek-action{
-      position:absolute; right:12px; bottom:12px; opacity:0; transform: translateY(8px) scale(0.98);
-      transition: opacity .2s ease, transform .2s ease; pointer-events:none;
+    .download-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-    .card.peek .peek-action{ opacity:1; transform: translateY(0) scale(1); pointer-events:auto }
-    .download-btn{
-      background:var(--accent); color:#002; border:none; padding:10px 12px; border-radius:999px;
-      display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:700;
-      box-shadow:0 8px 20px rgba(125,211,252,0.25); transition: transform .1s ease, box-shadow .2s ease, filter .2s ease;
+    .download-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: #fff;
     }
-    .download-btn:hover{ filter:brightness(1.05); box-shadow:0 10px 24px rgba(125,211,252,0.32) }
-    .download-btn:active{ transform: translateY(1px) }
-    .download-btn svg{ width:18px; height:18px }
 
     /* List view item */
     .row{
@@ -228,7 +225,7 @@
       padding:12px; background:var(--panel-2); border-right:1px solid rgba(255,255,255,0.06);
     }
     .docframe{
-      width:100%; height:100%; border:none; border-radius:12px; background:#0c0f14;
+      width:100%; height:100%; border:none; border-radius:12px; background:var(--panel-2);
     }
     .viewer .right{
       padding:16px; display:flex; flex-direction:column; gap:10px;
@@ -656,24 +653,22 @@
         <span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${c.downloads}</span></span>
       `;
 
-      const peek = document.createElement("div");
-      peek.className = "peek-action";
       const dlBtn = document.createElement("button");
       dlBtn.className = "download-btn";
-      dlBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> Download`;
+      dlBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`;
       dlBtn.addEventListener("click", (e)=> {
-        e.stopPropagation();
-        incDownload(it.path);
-        const a = document.createElement("a");
-        a.href = it.download_url;
-        a.download = it.name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        // reflect counts
-        stats.querySelector('[data-dl]').textContent = getCounts(it.path).downloads;
+          e.stopPropagation();
+          incDownload(it.path);
+          const a = document.createElement("a");
+          a.href = it.download_url;
+          a.download = it.name;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          stats.querySelector('[data-dl]').textContent = getCounts(it.path).downloads;
       });
-      peek.appendChild(dlBtn);
+      stats.appendChild(dlBtn);
+
 
       const thumbWrap = document.createElement("div");
       thumbWrap.className = "thumb";
@@ -836,13 +831,7 @@
 
       // Viewer: PDF direct, DOCX via Office viewer
       // Replace your openOverlay PDF section with:
-      if (it.format === "pdf") {
-          const url = it.download_url;
-          docFrame.src = `resources/web/viewer.html?file=${encodeURIComponent(url)}`;
-      } else if (it.format === "docx") {
-          const src = encodeURIComponent(it.download_url);
-          docFrame.src = `https://view.officeapps.live.com/op/embed.aspx?src=${src}`;
-      }
+      docFrame.src = `view.html?file=${encodeURIComponent(it.download_url)}`;
 
 
       // Download in overlay
