@@ -209,15 +209,12 @@
     .overlay{
       position:fixed; inset:0; background:rgba(255,255,255,0.72); backdrop-filter: blur(8px);
       display:none; z-index:1000; padding:20px;
-      opacity:0; transition: opacity .2s ease, transform .2s ease;
-      transform: scale(0.95);
+      opacity:0; transition: opacity .2s ease;
     }
     .overlay.open{
       display:block;
       opacity:1;
-      transform: scale(1);
     }
-
     .viewer{
       background:rgba(255,255,255,0.85);
       border:1px solid rgba(0,0,0,0.08);
@@ -849,8 +846,12 @@
     }
 
     function openOverlay(item){
-      overlay.classList.add("open");
+      overlay.style.display = 'block';
       overlay.setAttribute("aria-hidden", "false");
+
+      requestAnimationFrame(() => {
+        overlay.classList.add("open");
+      });
 
       ovTitle.textContent = item.title;
       ovFormat.textContent = item.format.toUpperCase();
