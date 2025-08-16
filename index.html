@@ -207,9 +207,10 @@
     .overlay{
       position:fixed; inset:0; background:rgba(255,255,255,0.72); backdrop-filter: blur(8px);
       display:none; z-index:1000; padding:20px;
+      opacity:0; transition: opacity .2s ease;
     }
-    .overlay.open{ display:block; animation: fadeIn .18s ease }
-    @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+    .overlay.open{ display:block; opacity:1; }
+    .overlay.closing{ opacity:0; }
 
     .viewer{
       background:rgba(255,255,255,0.85);
@@ -273,26 +274,16 @@
       display: flex;
       flex-direction: column;
       min-width: 180px;
-      animation: fadeIn 0.15s ease;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity 0.15s ease, transform 0.15s ease;
     }
 
-    .custom-dropdown.hidden {
-      display: none;
-    }
-
-    .custom-dropdown .option {
-      padding: 8px 12px;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-
-    .custom-dropdown .option:hover {
-      background: rgba(0,0,0,0.05);
-    }
-
-    .custom-dropdown .option.active {
-      background: var(--accent);
-      color: white;
+    .custom-dropdown.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
     }
 
 
@@ -323,7 +314,6 @@
       </select>
 
       <div class="left">
-
         <div class="sort-wrapper">
           <button id="sortBtn" class="btn icon-only" title="Sort (Last Updated)">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h18v2H3V4zm4 7h10v2H7v-2zm3 7h4v2h-4v-2z"/></svg>
@@ -336,16 +326,12 @@
             <div data-sort="format-asc" class="option">Format A→Z</div>
           </div>
         </div>
-
         <button id="typeBtn" class="btn">ALL</button>
-
         <div class="search" role="search">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23C15.99 6.01 12.98 3 9.5 3S3.01 6.01 3.01 9.5 6.02 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
           <input id="searchInput" type="text" placeholder="Search notes..." aria-label="Search notes" />
         </div>
-
       </div>
-
       <div class="right">
         <div id="totalViewsChip" class="chip" style="display:none">
           <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
@@ -360,7 +346,7 @@
           </button>
         </div>
       </div>
-
+    </div>
   </header>
 
   <main class="wrap">
@@ -406,8 +392,6 @@
     const NOTES_PATH = "Notes";
     const API_URL = "https://open-notes.tebby2008-li.workers.dev";
 
-
-    // If this file lives inside the same repo on GitHub Pages, you can auto-detect owner/repo:
     (function tryAutoDetect(){
       try{
         const host = location.hostname;
@@ -426,8 +410,8 @@
     const repo  = window.__repo  || REPO_NAME;
 
     // --- State ---
-    let allItems = []; // {name, title, path, download_url, html_url, format, updatedAt, author, views, downloads} // CHANGED: added downloads
-    let viewMode = "grid"; // "grid" | "list"
+    let allItems = [];
+    let viewMode = "grid";
 
     // --- Elements ---
     const container = document.getElementById("itemsContainer");
@@ -449,7 +433,6 @@
     const ovOpenRaw = document.getElementById("ovOpenRaw");
     const ovDownload = document.getElementById("ovDownload");
 
-    // ADDED
     const totalViewsChip = document.getElementById("totalViewsChip");
     const totalViewsEl = document.getElementById("totalViews");
 
@@ -466,21 +449,37 @@
     const stripExt = (name)=> name.replace(/\.[^/.]+$/, "");
     const extOf = (name)=> (name.split('.').pop() || "").toLowerCase();
 
-    // CHANGED: Added counter parameter to POST request
-    async function incView(path){
-      const res = await fetch(`${API_URL}?type=note&noteId=${path}&counter=views`, { method: 'POST' });
-      const data = await res.json();
-      return data;
+    // --- API Calls & Local State Updates ---
+    async function incView(item) {
+      try {
+        const res = await fetch(`${API_URL}?type=note&noteId=${item.path}&counter=views`, { method: 'POST' });
+        const data = await res.json();
+        if (data && data.views !== undefined) {
+          item.views = data.views;
+          item.downloads = data.downloads;
+          return { views: item.views, downloads: item.downloads };
+        }
+      } catch (e) {
+        console.error('Failed to increment view count:', e);
+      }
+      return null;
     }
 
-    // CHANGED: Added counter parameter to POST request
-    async function incDownload(path){
-      const res = await fetch(`${API_URL}?type=note&noteId=${path}&counter=downloads`, { method: 'POST' });
-      const data = await res.json();
-      return data;
+    async function incDownload(item) {
+      try {
+        const res = await fetch(`${API_URL}?type=note&noteId=${item.path}&counter=downloads`, { method: 'POST' });
+        const data = await res.json();
+        if (data && data.downloads !== undefined) {
+          item.views = data.views;
+          item.downloads = data.downloads;
+          return { views: item.views, downloads: item.downloads };
+        }
+      } catch (e) {
+        console.error('Failed to increment download count:', e);
+      }
+      return null;
     }
-    
-    // ADDED: New function to get website visits
+
     async function fetchWebsiteViews(){
       try {
         const res = await fetch(`${API_URL}?noteId=total-website-visits`);
@@ -498,6 +497,7 @@
     async function incWebsiteView(){
       await fetch(`${API_URL}?type=website`, { method: 'POST' });
     }
+
     async function getApiKeys(){
       const res = await fetch(`${API_URL}?list=true`, { method: 'GET' });
       if(!res.ok) return [];
@@ -529,8 +529,8 @@
           format: extOf(f.name),
           updatedAt: null,
           author: null,
-          views: 0, // ADDED: default values
-          downloads: 0, // ADDED: default values
+          views: 0,
+          downloads: 0,
         };
         items.push(item);
       }
@@ -615,7 +615,6 @@
           holder.innerHTML = fileIcon("pdf");
         });
       }else{
-        // DOCX or fallback: show a simple icon preview
         holder.innerHTML = fileIcon(fmt);
       }
       return holder;
@@ -671,7 +670,6 @@
 
       const stats = document.createElement("div");
       stats.className = "stats";
-      // CHANGED: Added separate data attributes for views and downloads
       stats.innerHTML = `
         <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views || 0}</span></span>
         <span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads || 0}</span></span>
@@ -682,8 +680,9 @@
       dlBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`;
       dlBtn.addEventListener("click", async (e)=> {
           e.stopPropagation();
-          const data = await incDownload(it.path);
-          if (data && data.downloads !== undefined) {
+          const data = await incDownload(it);
+          if (data) {
+              stats.querySelector('[data-view]').textContent = data.views;
               stats.querySelector('[data-dl]').textContent = data.downloads;
           }
           const a = document.createElement("a");
@@ -695,7 +694,6 @@
       });
       stats.appendChild(dlBtn);
 
-
       const thumbWrap = document.createElement("div");
       thumbWrap.className = "thumb";
       thumbWrap.replaceWith(thumb);
@@ -706,8 +704,8 @@
       body.appendChild(stats);
       card.appendChild(body);
 
-      card.addEventListener("click", ()=> openOverlay(it, stats));
-      card.addEventListener("keydown", (e)=> { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openOverlay(it, stats);} });
+      card.addEventListener("click", ()=> openOverlay(it));
+      card.addEventListener("keydown", (e)=> { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openOverlay(it);} });
 
       return card;
     }
@@ -716,18 +714,15 @@
     const sortBtn = document.getElementById("sortBtn");
     const sortDropdown = document.getElementById("sortDropdown");
     sortBtn.addEventListener("click", () => {
-      sortDropdown.classList.toggle("hidden");
+      sortDropdown.classList.toggle("open");
     });
     sortDropdown.querySelectorAll(".option").forEach(opt => {
       opt.addEventListener("click", () => {
         sortDropdown.querySelectorAll(".option").forEach(o => o.classList.remove("active"));
         opt.classList.add("active");
-
         sortSelect.value = opt.dataset.sort;
         render();
-
-        sortDropdown.classList.add("hidden");
-
+        sortDropdown.classList.remove("open");
         if (opt.dataset.sort !== "updated-desc") {
           sortBtn.classList.add("active");
         } else {
@@ -737,7 +732,7 @@
     });
     document.addEventListener("click", e => {
       if (!sortBtn.contains(e.target) && !sortDropdown.contains(e.target)) {
-        sortDropdown.classList.add("hidden");
+        sortDropdown.classList.remove("open");
       }
     });
 
@@ -750,7 +745,6 @@
       typeBtn.textContent = types[idx];
       formatSelect.value = types[idx] === "ALL" ? "all" : types[idx].toLowerCase();
       render();
-
       if (types[idx] !== "ALL") {
         typeBtn.classList.add("active");
       } else {
@@ -766,7 +760,6 @@
       row.setAttribute("aria-label", `${it.title}`);
 
       const thumb = makeThumb(it.format, it.download_url);
-      thumb.appendChild(renderFormatBadge(it.format));
       thumb.style.height = "66px";
       row.appendChild(thumb);
 
@@ -794,7 +787,6 @@
 
       const cellStats = document.createElement("div");
       cellStats.className = "cell muted";
-      // CHANGED: Added separate data attributes for views and downloads
       cellStats.innerHTML = `
         <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views || 0}</span></span>
         <span class="stat" style="margin-left:10px;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads || 0}</span></span>
@@ -815,8 +807,9 @@
       dlCircle.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`;
       dlCircle.addEventListener("click", async (e)=> {
         e.stopPropagation();
-        const data = await incDownload(it.path);
-        if (data && data.downloads !== undefined) {
+        const data = await incDownload(it);
+        if (data) {
+          cellStats.querySelector('[data-view]').textContent = data.views;
           cellStats.querySelector('[data-dl]').textContent = data.downloads;
         }
         const a = document.createElement("a");
@@ -825,65 +818,60 @@
       rightEnd.appendChild(dlCircle);
       row.appendChild(rightEnd);
 
-      row.addEventListener("click", ()=> openOverlay(it, cellStats));
-      row.addEventListener("keydown", (e)=> { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openOverlay(it, cellStats);} });
+      row.addEventListener("click", ()=> openOverlay(it));
+      row.addEventListener("keydown", (e)=> { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openOverlay(it);} });
 
       return row;
     }
 
-    function openOverlay(it, statsNode){
+    function openOverlay(item){
       overlay.classList.add("open");
       overlay.setAttribute("aria-hidden", "false");
 
-      ovTitle.textContent = it.title;
-      ovFormat.textContent = it.format.toUpperCase();
-      ovFormat.className = `pill ${it.format==='docx' ? 'docx' : ''}`;
-      ovDate.textContent = fmtDate(it.updatedAt);
-      ovAuthor.textContent = it.author || "Unknown";
-      ovOpenRaw.href = `view.html?file=${encodeURIComponent(it.download_url)}`;
+      ovTitle.textContent = item.title;
+      ovFormat.textContent = item.format.toUpperCase();
+      ovFormat.className = `pill ${item.format==='docx' ? 'docx' : ''}`;
+      ovDate.textContent = fmtDate(item.updatedAt);
+      ovAuthor.textContent = item.author || "Unknown";
+      ovOpenRaw.href = `view.html?file=${encodeURIComponent(item.download_url)}`;
       ovOpenRaw.target = "_blank";
 
-      docFrame.src = `view.html?file=${encodeURIComponent(it.download_url)}`;
+      docFrame.src = `view.html?file=${encodeURIComponent(item.download_url)}`;
 
-      // CHANGED: Use separate views and downloads properties from the item object
-      ovViews.textContent = it.views || 0;
-      ovDownloads.textContent = it.downloads || 0;
+      ovViews.textContent = item.views || 0;
+      ovDownloads.textContent = item.downloads || 0;
 
-      // Increment view count via the API on open
-      incView(it.path).then(data => {
+      incView(item).then(data => {
         if(data) {
           ovViews.textContent = data.views;
-          ovDownloads.textContent = data.downloads; // CHANGED: also update downloads in case it was incremented while the overlay was closed
-          if(statsNode) {
-            statsNode.querySelector('[data-view]').textContent = data.views;
-            statsNode.querySelector('[data-dl]').textContent = data.downloads;
-          }
+          ovDownloads.textContent = data.downloads;
+          render(); // Re-render to update the stats on the main page
         }
       }).catch(e => {
         console.error('Failed to increment view count:', e);
       });
 
       ovDownload.onclick = async ()=>{
-        const data = await incDownload(it.path);
-        if (data && data.downloads !== undefined) {
-          ovDownloads.textContent = data.downloads;
-          // CHANGED: Also update views in case it was incremented while the overlay was closed
+        const data = await incDownload(item);
+        if (data) {
           ovViews.textContent = data.views;
-          if(statsNode) {
-            statsNode.querySelector('[data-dl]').textContent = data.downloads;
-            statsNode.querySelector('[data-view]').textContent = data.views;
-          }
+          ovDownloads.textContent = data.downloads;
+          render(); // Re-render to update the stats on the main page
         }
         const a = document.createElement("a");
-        a.href = it.download_url; a.download = it.name;
+        a.href = item.download_url; a.download = item.name;
         document.body.appendChild(a); a.click(); a.remove();
       };
     }
 
     function closeOverlay(){
-      overlay.classList.remove("open");
-      overlay.setAttribute("aria-hidden", "true");
-      docFrame.src = "about:blank";
+      overlay.classList.add("closing");
+      overlay.addEventListener("transitionend", function handler() {
+        overlay.classList.remove("open", "closing");
+        overlay.setAttribute("aria-hidden", "true");
+        docFrame.src = "about:blank";
+        overlay.removeEventListener("transitionend", handler);
+      });
     }
 
     backBtn.addEventListener("click", closeOverlay);
@@ -915,13 +903,11 @@
 
         const dbKeys = await getApiKeys();
 
-        const noteKeysToDelete = dbKeys.filter(key => key !== 'total-website-visits');
+        const noteKeysToDelete = dbKeys.filter(key => key !== 'total-website-visits' && !githubPaths.has(key));
 
         for (const key of noteKeysToDelete) {
-          if (!githubPaths.has(key)) {
-            console.log(`Deleting counter for removed note: ${key}`);
-            await fetch(`${API_URL}?noteId=${key}`, { method: 'DELETE' });
-          }
+          console.log(`Deleting counter for removed note: ${key}`);
+          await fetch(`${API_URL}?noteId=${key}`, { method: 'DELETE' });
         }
 
         const notePromises = allItems.map(async (note) => {
@@ -929,7 +915,6 @@
             const res = await fetch(`${API_URL}?noteId=${note.path}`, { method: 'GET' });
             if (res.ok) {
               const data = await res.json();
-              // CHANGED: Assign both views and downloads from the API response
               note.views = data.views || 0;
               note.downloads = data.downloads || 0;
             } else {
@@ -944,7 +929,6 @@
         });
         await Promise.all(notePromises);
 
-        // ADDED: Fetch and display website views
         const totalViews = await fetchWebsiteViews();
         if (totalViews > 0) {
           totalViewsChip.style.display = 'flex';
