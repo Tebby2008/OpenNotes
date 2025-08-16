@@ -19,13 +19,13 @@
 
   <style>
     :root{
-      --bg:#0b0c0f;
-      --panel:#12151a;
-      --panel-2:#161a21;
-      --text:#eef2f6;
-      --muted:#9aa4b2;
-      --accent:#7dd3fc; /* sky pastel blue */
-      --accent-2:#a7f3d0; /* minty green */
+      --bg: #f8f9fa;
+      --panel: #ffffff;
+      --panel-2: #f1f3f5;
+      --text: #212529;
+      --muted: #6c757d;
+      --accent: #339af0;
+      --accent-2: #51cf66;
       --shadow:0 10px 30px rgba(0,0,0,0.25);
       --radius:16px;
       --radius-sm:12px;
@@ -130,12 +130,22 @@
     .list{ display:flex; flex-direction:column; gap:12px }
 
     /* Card / Item */
-    .card{
-      background:var(--panel); border:1px solid rgba(255,255,255,0.06);
-      border-radius:var(--radius-lg); box-shadow:var(--shadow);
-      overflow:hidden; position:relative; transition: transform .2s ease, box-shadow .2s ease;
+    .card {
+      position: relative;
+      transition: transform .2s ease, box-shadow .2s ease;
+      z-index: 0;
     }
-    .card:hover{ transform: translateY(-2px) }
+    .card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      z-index: 10;
+    }
+    .card .peek-action {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
     .thumb{
       background:linear-gradient(180deg, #0f1320 0%, #101522 100%);
       height:180px; display:flex; align-items:center; justify-content:center;
@@ -246,6 +256,49 @@
     .muted{ color:var(--muted) }
     .hide{ display:none }
 
+    .icon-only {
+      padding: 8px;
+    }
+
+    .sort-wrapper {
+      position: relative;
+    }
+
+    .custom-dropdown {
+      position: absolute;
+      top: 110%;
+      left: 0;
+      background: var(--panel);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      min-width: 180px;
+      animation: fadeIn 0.15s ease;
+    }
+
+    .custom-dropdown.hidden {
+      display: none;
+    }
+
+    .custom-dropdown .option {
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .custom-dropdown .option:hover {
+      background: rgba(0,0,0,0.05);
+    }
+
+    .custom-dropdown .option.active {
+      background: var(--accent);
+      color: white;
+    }
+
+
     /* Small screens */
     @media (max-width: 860px){
       .viewer{ grid-template-columns: 1fr; }
@@ -259,45 +312,43 @@
     <div class="title">OpenNotes <span class="dot"></span></div>
     <div class="controls">
       <div class="left">
-        <div class="chip" title="Sort">
-          <span class="dot"></span>
-          <select id="sortSelect" aria-label="Sort notes">
-            <option value="updated-desc">Last updated ↓</option>
-            <option value="updated-asc">Last updated ↑</option>
-            <option value="title-asc">Title A→Z</option>
-            <option value="title-desc">Title Z→A</option>
-            <option value="format-asc">Format A→Z</option>
-          </select>
+
+        <!-- Sort Button with Custom Dropdown -->
+        <div class="sort-wrapper">
+          <button id="sortBtn" class="btn icon-only" title="Sort (Last Updated)">
+            <!-- Funnel/filter icon -->
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h18v2H3V4zm4 7h10v2H7v-2zm3 7h4v2h-4v-2z"/></svg>
+          </button>
+          <div id="sortDropdown" class="custom-dropdown hidden">
+            <div data-sort="updated-desc" class="option active">Last updated ↓</div>
+            <div data-sort="updated-asc" class="option">Last updated ↑</div>
+            <div data-sort="title-asc" class="option">Title A→Z</div>
+            <div data-sort="title-desc" class="option">Title Z→A</div>
+            <div data-sort="format-asc" class="option">Format A→Z</div>
+          </div>
         </div>
 
-        <div class="chip" title="Format">
-          <span class="dot"></span>
-          <select id="formatSelect" aria-label="Filter by format">
-            <option value="all">All formats</option>
-            <option value="pdf">PDF</option>
-            <option value="docx">DOCX</option>
-          </select>
-        </div>
+        <!-- File type toggle -->
+        <button id="typeBtn" class="btn">ALL</button>
 
+        <!-- Search bar unchanged -->
         <div class="search" role="search">
-          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23C15.99 6.01 12.98 3 9.5 3S3.01 6.01 3.01 9.5 6.02 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23C15.99 6.01 12.98 3 9.5 3S3.01 6.01 3.01 9.5 6.02 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
           <input id="searchInput" type="text" placeholder="Search notes..." aria-label="Search notes" />
         </div>
+
       </div>
 
       <div class="right">
         <div class="toggle" role="tablist" aria-label="View mode">
-          <button id="gridBtn" class="btn active" aria-pressed="true" title="Box view">
+          <button id="gridBtn" class="btn active icon-only" aria-pressed="true" title="Box view">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
-            Box
           </button>
-          <button id="listBtn" class="btn" aria-pressed="false" title="List view">
+          <button id="listBtn" class="btn icon-only" aria-pressed="false" title="List view">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"/></svg>
-            List
           </button>
         </div>
       </div>
-    </div>
   </header>
 
   <main class="wrap">
@@ -564,16 +615,6 @@
       card.setAttribute("role", "button");
       card.setAttribute("aria-label", `${it.title}`);
 
-      // Hover "peek" after 2s
-      let hoverTimer = null;
-      card.addEventListener("mouseenter", ()=> {
-        hoverTimer = setTimeout(()=> card.classList.add("peek"), 2000);
-      });
-      card.addEventListener("mouseleave", ()=> {
-        clearTimeout(hoverTimer); hoverTimer = null;
-        card.classList.remove("peek");
-      });
-
       const thumb = makeThumb(it.format, it.download_url);
       thumb.appendChild(renderFormatBadge(it.format));
 
@@ -634,6 +675,56 @@
 
       return card;
     }
+
+    // SORT dropdown logic
+    const sortBtn = document.getElementById("sortBtn");
+    const sortDropdown = document.getElementById("sortDropdown");
+    sortBtn.addEventListener("click", () => {
+      sortDropdown.classList.toggle("hidden");
+    });
+    sortDropdown.querySelectorAll(".option").forEach(opt => {
+      opt.addEventListener("click", () => {
+        // Remove active
+        sortDropdown.querySelectorAll(".option").forEach(o => o.classList.remove("active"));
+        opt.classList.add("active");
+
+        sortSelect.value = opt.dataset.sort; // Set hidden native select
+        render();
+
+        sortDropdown.classList.add("hidden");
+
+        // If not default, highlight the icon
+        if (opt.dataset.sort !== "updated-desc") {
+          sortBtn.classList.add("active");
+        } else {
+          sortBtn.classList.remove("active");
+        }
+      });
+    });
+    // Close dropdown on outside click
+    document.addEventListener("click", e => {
+      if (!sortBtn.contains(e.target) && !sortDropdown.contains(e.target)) {
+        sortDropdown.classList.add("hidden");
+      }
+    });
+
+    // FILE TYPE toggle logic
+    const typeBtn = document.getElementById("typeBtn");
+    const types = ["ALL", "PDF", "DOCX"];
+    let idx = 0;
+    typeBtn.addEventListener("click", () => {
+      idx = (idx + 1) % types.length;
+      typeBtn.textContent = types[idx];
+      formatSelect.value = types[idx] === "ALL" ? "all" : types[idx].toLowerCase();
+      render();
+
+      // Highlight if not default
+      if (types[idx] !== "ALL") {
+        typeBtn.classList.add("active");
+      } else {
+        typeBtn.classList.remove("active");
+      }
+    });
 
     function renderRow(it){
       const row = document.createElement("article");
@@ -723,16 +814,20 @@
       ovAuthor.textContent = it.author || "Unknown";
       ovViews.textContent = c.views;
       ovDownloads.textContent = c.downloads;
-      ovOpenRaw.href = it.download_url;
+      ovOpenRaw.href = `view.html?file=${encodeURIComponent(it.download_url)}`;
+      ovOpenRaw.target = "_blank";
+
 
       // Viewer: PDF direct, DOCX via Office viewer
-      if(it.format === "pdf"){
-        // Native PDF viewer
-        docFrame.src = `${it.download_url}#view=FitH`;
-      }else{
-        const src = encodeURIComponent(it.download_url);
-        docFrame.src = `https://view.officeapps.live.com/op/embed.aspx?src=${src}`;
+      // Replace your openOverlay PDF section with:
+      if (it.format === "pdf") {
+          const url = it.download_url;
+          docFrame.src = `resources/web/viewer.html?file=${encodeURIComponent(url)}`;
+      } else if (it.format === "docx") {
+          const src = encodeURIComponent(it.download_url);
+          docFrame.src = `https://view.officeapps.live.com/op/embed.aspx?src=${src}`;
       }
+
 
       // Download in overlay
       ovDownload.onclick = ()=>{
