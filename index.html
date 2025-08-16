@@ -22,6 +22,7 @@
       --radius-lg:22px;
       --gap:14px;
       --gap-lg:22px;
+      --dark-header: #15202B;
     }
 
     *{box-sizing:border-box}
@@ -35,23 +36,36 @@
       -moz-osx-font-smoothing:grayscale;
     }
 
-    /* Header / Banner */
+    /* Redesigned Header */
     .banner{
-      padding:32px 18px 18px;
-      position:sticky; top:0; z-index:30;
-      background:rgba(255,255,255,0.6);
-      backdrop-filter: blur(12px);
+      position: relative;
+      background: var(--dark-header);
+      height: 50vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 18px;
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
+      box-shadow: var(--shadow);
+      z-index: 1;
     }
     .title{
       width:100%;
       display:flex; align-items:center; justify-content:center;
-      font-weight:700; letter-spacing:0.3px; font-size:28px;
-      padding-bottom:10px;
+      font-weight:700; letter-spacing:0.3px;
+      font-size: 5vw; /* Larger title */
+      color: #fff;
+      padding-bottom: 20px;
     }
     .title .dot{
-      width:10px; height:10px; border-radius:50%;
+      width:1.5vw; height:1.5vw; border-radius:50%;
       background:var(--accent); margin-left:10px;
       box-shadow:0 0 20px var(--accent);
+    }
+    @media (max-width: 860px){
+      .title { font-size: 10vw; }
+      .title .dot { width: 3vw; height: 3vw; }
     }
 
     /* Controls */
@@ -61,6 +75,9 @@
       background:var(--panel); border-radius:var(--radius);
       padding:10px; box-shadow:0 4px 12px rgba(0,0,0,0.08);
       border:1px solid rgba(0,0,0,0.06);
+      margin-bottom: -20px; /* Overlap with banner */
+      position: sticky; top: 0;
+      z-index: 2;
     }
 
     .left, .right{display:flex; align-items:center; gap:var(--gap)}
@@ -68,6 +85,10 @@
       background:var(--panel-2);
       padding:8px 10px; border-radius:999px; color:var(--text);
       display:flex; align-items:center; gap:8px; border:1px solid rgba(0,0,0,0.06);
+      cursor:pointer;
+    }
+    .chip:hover{
+      background: rgba(125,211,252,0.1);
     }
     .chip select{
       background:transparent; color:var(--text); border:none; outline:none;
@@ -113,7 +134,7 @@
     }
 
     /* Main content */
-    .wrap{ padding:18px }
+    .wrap{ padding:18px; z-index: 0; position:relative; }
     .grid{
       display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
       gap:18px; align-items:stretch;
