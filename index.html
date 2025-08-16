@@ -394,6 +394,11 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
   <script>
+    // **CRITICAL FIX**: Setting the worker source to fix the "Deprecated API usage" warning.
+    if (window.pdfjsLib) {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+    }
+    
     // --- Configuration (set these to your repo) ---
     const REPO_OWNER = "<your-username-or-org>";
     const REPO_NAME  = "<your-repo>";
@@ -458,24 +463,33 @@
     const extOf = (name)=> (name.split('.').pop() || "").toLowerCase();
 
     async function incView(path){
-      const res = await fetch(`${API_URL}?type=note&noteId=${path}`, { method: 'POST' });
-      const data = await res.json();
-      return data.views;
+      try {
+        const res = await fetch(`${API_URL}?type=note&noteId=${path}`, { method: 'POST' });
+        const data = await res.json();
+        return data.views;
+      } catch (e) {
+        console.error('Failed to increment view count:', e);
+        return null;
+      }
     }
 
     async function incDownload(path){
-      const res = await fetch(`${API_URL}?type=note&noteId=${path}`, { method: 'POST' });
-      const data = await res.json();
-      return data.views;
+      try {
+        const res = await fetch(`${API_URL}?type=note&noteId=${path}`, { method: 'POST' });
+        const data = await res.json();
+        return data.views;
+      } catch (e) {
+        console.error('Failed to increment download count:', e);
+        return null;
+      }
     }
 
     async function incWebsiteView(){
-      await fetch(`${API_URL}?type=website`, { method: 'POST' });
-    }
-    async function getApiKeys(){
-      const res = await fetch(`${API_URL}?list=true`, { method: 'GET' });
-      if(!res.ok) return [];
-      return await res.json();
+      try {
+        await fetch(`${API_URL}?type=website`, { method: 'POST' });
+      } catch(e) {
+        console.error('Failed to increment website view:', e);
+      }
     }
 
     // --- Data fetch ---
@@ -786,7 +800,7 @@
       dlCircle.addEventListener("click", async (e)=> {
         e.stopPropagation();
         const newDownloadCount = await incDownload(it.path);
-        if (newDownloadCount !== undefined) {
+        if (newDownloadCount !== null) {
           cellStats.querySelector('[data-dl]').textContent = newDownloadCount;
         }
         const a = document.createElement("a");
@@ -821,11 +835,12 @@
 
       // Increment view count via the API on open
       incView(it.path).then(newViewCount => {
-        ovViews.textContent = newViewCount;
-        // The download count is now a separate property in the object
-        it.views = newViewCount; // Update the view count in the object
-        if(statsNode) {
-          statsNode.querySelector('[data-view]').textContent = newViewCount;
+        if (newViewCount !== null) {
+          ovViews.textContent = newViewCount;
+          it.views = newViewCount; // Update the view count in the object
+          if(statsNode) {
+            statsNode.querySelector('[data-view]').textContent = newViewCount;
+          }
         }
       }).catch(e => {
         console.error('Failed to increment view count:', e);
@@ -833,9 +848,8 @@
 
       ovDownload.onclick = async ()=>{
         const newDownloadCount = await incDownload(it.path);
-        if (newDownloadCount !== undefined) {
+        if (newDownloadCount !== null) {
           ovDownloads.textContent = newDownloadCount;
-          // The download count is now a separate property in the object
           it.downloads = newDownloadCount; // Update the download count in the object
           if(statsNode) statsNode.querySelector('[data-dl]').textContent = newDownloadCount;
         }
@@ -876,26 +890,15 @@
     (async function init(){
       try{
         allItems = await fetchNotes();
-        const githubPaths = new Set(allItems.map(item => item.path));
-
-        const dbKeys = await getApiKeys();
-
-        const noteKeysToDelete = dbKeys.filter(key => key !== 'total-website-visits');
-
-        for (const key of noteKeysToDelete) {
-          if (!githubPaths.has(key)) {
-            console.log(`Deleting counter for removed note: ${key}`);
-            await fetch(`${API_URL}?noteId=${key}`, { method: 'DELETE' });
-          }
-        }
-
+        
+        // This is a more robust way to fetch data. We try, but if it fails, we still render the page.
         const notePromises = allItems.map(async (note) => {
           try {
             const res = await fetch(`${API_URL}?noteId=${note.path}`, { method: 'GET' });
             if (res.ok) {
               const data = await res.json();
               note.views = data.views || 0;
-              note.downloads = data.downloads || 0; // Ensure downloads are also fetched
+              note.downloads = data.downloads || 0;
             } else {
               note.views = 0;
               note.downloads = 0;
