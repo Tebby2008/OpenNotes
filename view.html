@@ -1,10 +1,77 @@
 <!DOCTYPE html>
-<html>
-<body style="margin:0">
-<iframe src="" id="doc" width="100%" height="100%" style="border:none"></iframe>
-<script>
-const params = new URLSearchParams(window.location.search);
-document.getElementById("doc").src = params.get("file");
-</script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Viewer</title>
+    <!-- Use Tailwind CSS for clean, modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Ensure the iframe fills the entire page */
+        #doc {
+            width: 100vw;
+            height: 100vh;
+            border: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center m-0 p-0">
+
+    <!-- 
+      The iframe is the core of this viewer. Its source will be set by JavaScript
+      to display the requested document. 
+    -->
+    <iframe src="" id="doc" style="border:none"></iframe>
+
+    <script>
+        // Use a function to ensure all logic is self-contained.
+        function displayDocument() {
+            // Get the 'file' URL parameter from the current page's URL.
+            const params = new URLSearchParams(window.location.search);
+            const fileUrl = params.get("file");
+
+            // Get the iframe element.
+            const docIframe = document.getElementById("doc");
+
+            // Check if a file URL was actually provided.
+            if (!fileUrl) {
+                console.error("No file URL provided in the 'file' query parameter.");
+                docIframe.contentDocument.body.innerHTML = '<p class="text-xl text-center text-gray-500 mt-20">No file to display. Please provide a URL in the `?file=` query parameter.</p>';
+                return;
+            }
+
+            // We need to use an external service to view non-native file types like .docx.
+            // The Microsoft Office Online viewer is a good, reliable option.
+            const officeViewerUrl = 'https://view.officeapps.live.com/op/embed.aspx?src=';
+
+            // Check the file extension to determine the correct viewer.
+            const lowerCaseFileUrl = fileUrl.toLowerCase();
+            let finalUrl = fileUrl;
+
+            // List of file extensions supported by the Office viewer.
+            const officeExtensions = ['.docx', '.pptx', '.xlsx'];
+
+            // Check if the file URL ends with any of the supported extensions.
+            const isOfficeFile = officeExtensions.some(ext => lowerCaseFileUrl.endsWith(ext));
+
+            if (isOfficeFile) {
+                // If it's an Office document, use the Microsoft viewer service.
+                // We encode the URL to make sure it's safe to use in a query parameter.
+                finalUrl = `${officeViewerUrl}${encodeURIComponent(fileUrl)}`;
+            }
+            
+            // Set the iframe's source to the final URL.
+            // For PDFs, images, etc., this will be the original URL.
+            // For Office files, it will be the viewer service URL.
+            docIframe.src = finalUrl;
+        }
+
+        // Call the function to display the document when the page loads.
+        window.onload = displayDocument;
+    </script>
+
 </body>
 </html>
