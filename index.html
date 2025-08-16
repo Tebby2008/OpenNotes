@@ -311,6 +311,21 @@
   <header class="banner">
     <div class="title">OpenNotes <span class="dot"></span></div>
     <div class="controls">
+      <!-- Hidden native selects so existing JS works -->
+      <select id="sortSelect" style="display:none">
+        <option value="updated-desc" selected>Last updated ↓</option>
+        <option value="updated-asc">Last updated ↑</option>
+        <option value="title-asc">Title A→Z</option>
+        <option value="title-desc">Title Z→A</option>
+        <option value="format-asc">Format A→Z</option>
+      </select>
+
+      <select id="formatSelect" style="display:none">
+        <option value="all" selected>All formats</option>
+        <option value="pdf">PDF</option>
+        <option value="docx">DOCX</option>
+      </select>
+
       <div class="left">
 
         <!-- Sort Button with Custom Dropdown -->
@@ -350,18 +365,6 @@
         </div>
       </div>
 
-
-      <div class="right">
-        <div class="toggle" role="tablist" aria-label="View mode">
-          <button id="gridBtn" class="btn active" aria-pressed="true" title="Box view">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
-          </button>
-          <button id="listBtn" class="btn" aria-pressed="false" title="List view">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
   </header>
 
   <main class="wrap">
