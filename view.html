@@ -43,29 +43,36 @@
                 return;
             }
 
-            // We need to use an external service to view non-native file types like .docx.
-            // The Microsoft Office Online viewer is a good, reliable option.
-            const officeViewerUrl = 'https://view.officeapps.live.com/op/embed.aspx?src=';
-
-            // Check the file extension to determine the correct viewer.
+            // A list of supported file types and their respective viewer services.
+            const viewers = {
+                // Microsoft Office Online viewer for DOCX, PPTX, XLSX files.
+                office: {
+                    extensions: ['.docx', '.pptx', '.xlsx'],
+                    url: 'https://view.officeapps.live.com/op/embed.aspx?src='
+                },
+                // Google Docs Viewer for PDFs and other types.
+                google: {
+                    extensions: ['.pdf'],
+                    url: 'https://docs.google.com/gview?url='
+                }
+            };
+            
             const lowerCaseFileUrl = fileUrl.toLowerCase();
             let finalUrl = fileUrl;
 
-            // List of file extensions supported by the Office viewer.
-            const officeExtensions = ['.docx', '.pptx', '.xlsx'];
-
-            // Check if the file URL ends with any of the supported extensions.
-            const isOfficeFile = officeExtensions.some(ext => lowerCaseFileUrl.endsWith(ext));
-
-            if (isOfficeFile) {
-                // If it's an Office document, use the Microsoft viewer service.
-                // We encode the URL to make sure it's safe to use in a query parameter.
-                finalUrl = `${officeViewerUrl}${encodeURIComponent(fileUrl)}`;
+            // Loop through the viewers to find a match for the file extension.
+            for (const viewer in viewers) {
+                const isSupported = viewers[viewer].extensions.some(ext => lowerCaseFileUrl.endsWith(ext));
+                if (isSupported) {
+                    // If a match is found, use the corresponding viewer URL.
+                    // The URL is encoded to ensure it is safe to use as a query parameter.
+                    finalUrl = `${viewers[viewer].url}${encodeURIComponent(fileUrl)}&embedded=true`;
+                    break; // Exit the loop once a viewer is found.
+                }
             }
             
             // Set the iframe's source to the final URL.
-            // For PDFs, images, etc., this will be the original URL.
-            // For Office files, it will be the viewer service URL.
+            // If no viewer was matched, it will default to the original URL.
             docIframe.src = finalUrl;
         }
 
