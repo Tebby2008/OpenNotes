@@ -645,7 +645,7 @@
       stats.className = "stats";
       stats.innerHTML = `
         <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views || 0}</span></span>
-        <span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.views || 0}</span></span>
+        <span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads || 0}</span></span>
       `;
 
       const dlBtn = document.createElement("button");
@@ -767,7 +767,7 @@
       cellStats.className = "cell muted";
       cellStats.innerHTML = `
         <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views || 0}</span></span>
-        <span class="stat" style="margin-left:10px;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.views || 0}</span></span>
+        <span class="stat" style="margin-left:10px;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads || 0}</span></span>
       `;
 
       main.appendChild(cellTitle);
@@ -817,15 +817,15 @@
 
       // Use the views property from the initial fetch
       ovViews.textContent = it.views || 0;
-      ovDownloads.textContent = it.views || 0;
+      ovDownloads.textContent = it.downloads || 0;
 
       // Increment view count via the API on open
       incView(it.path).then(newViewCount => {
         ovViews.textContent = newViewCount;
-        ovDownloads.textContent = newViewCount;
+        // The download count is now a separate property in the object
+        it.views = newViewCount; // Update the view count in the object
         if(statsNode) {
           statsNode.querySelector('[data-view]').textContent = newViewCount;
-          statsNode.querySelector('[data-dl]').textContent = newViewCount;
         }
       }).catch(e => {
         console.error('Failed to increment view count:', e);
@@ -835,6 +835,8 @@
         const newDownloadCount = await incDownload(it.path);
         if (newDownloadCount !== undefined) {
           ovDownloads.textContent = newDownloadCount;
+          // The download count is now a separate property in the object
+          it.downloads = newDownloadCount; // Update the download count in the object
           if(statsNode) statsNode.querySelector('[data-dl]').textContent = newDownloadCount;
         }
         const a = document.createElement("a");
@@ -893,12 +895,15 @@
             if (res.ok) {
               const data = await res.json();
               note.views = data.views || 0;
+              note.downloads = data.downloads || 0; // Ensure downloads are also fetched
             } else {
               note.views = 0;
+              note.downloads = 0;
             }
           } catch (e) {
             console.error('Failed to fetch count for note:', note.path, e);
             note.views = 0;
+            note.downloads = 0;
           }
         });
         await Promise.all(notePromises);
