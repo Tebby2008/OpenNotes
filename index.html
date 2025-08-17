@@ -9,8 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/docx-preview@0.1.15/dist/docx-preview.js"></script>
-
   <style>
     :root{
       --bg: #f8f9fa;
@@ -126,7 +124,7 @@
       box-shadow:0 0 12px var(--accent);
     }
 
-    /* Expanding search */
+    /* Expanding search -- MODIFIED WIDTH */
     .search{
       display:flex; align-items:center; gap:8px;
       background:var(--panel-2); border-radius:999px;
@@ -136,11 +134,11 @@
     .search:hover{ box-shadow:0 0 0 2px rgba(125,211,252,0.25) inset; }
     .search svg{width:18px; height:18px; opacity:0.9}
     .search input{
-      width:110px; background:transparent; border:none; outline:none; color:var(--text);
+      width:140px; background:transparent; border:none; outline:none; color:var(--text);
       transition: width .25s ease; font:inherit;
     }
     .search input::placeholder{ color:var(--muted) }
-    .search:focus-within input{ width:240px }
+    .search:focus-within input{ width:280px }
 
     /* Toggle buttons */
     .toggle{
@@ -162,6 +160,7 @@
     /* Style for the active AI toggle button */
     .btn.active-ai{
       background: #fffbeb;
+      color: #b38600;
       box-shadow: 0 0 0 2px var(--gold) inset;
     }
 
@@ -195,16 +194,7 @@
       height:180px; display:flex; align-items:center; justify-content:center;
       overflow:hidden; position:relative;
     }
-    /* Styles for DOCX preview */
-    .thumb .docx-wrapper{
-      background: white;
-      padding: 10px;
-      transform: scale(0.4);
-      transform-origin: top left;
-      width: 250%;
-      height: 250%;
-      overflow: hidden;
-    }
+    /* NOTE: Removed docx-wrapper style */
     .thumb canvas, .thumb img, .thumb iframe, .thumb embed{
       width:100%; height:100%; object-fit:cover; border-radius:12px;
     }
@@ -254,6 +244,7 @@
     .stat{ display:inline-flex; align-items:center; gap:6px }
     .stat svg{ width:16px; height:16px; opacity:0.85 }
 
+    /* Download button cursor fix */
     .download-btn {
       background: var(--accent);
       color: #fff;
@@ -266,6 +257,7 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      cursor: pointer;
     }
     .download-btn svg {
       width: 18px;
@@ -554,9 +546,7 @@
           </div>
         </div>
         <button id="typeBtn" class="btn">ALL</button>
-        <button id="aiToggleBtn" class="btn icon-only active-ai" title="Show AI Content">
-          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1, 'wght' 700;">auto_awesome</span>
-        </button>
+        <button id="aiToggleBtn" class="btn active-ai" title="Toggle AI Content">Show AI</button>
         <div class="search" role="search">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23C15.99 6.01 12.98 3 9.5 3S3.01 6.01 3.01 9.5 6.02 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
           <input id="searchInput" type="text" placeholder="Search notes..." aria-label="Search notes" />
@@ -874,17 +864,7 @@
         renderPdfFirstPage(url, canvas).catch(()=>{
           holder.innerHTML = fileIcon("pdf");
         });
-      } else if (fmt === 'docx' && window['docx']) {
-          const docxContainer = document.createElement("div");
-          holder.appendChild(docxContainer);
-          fetch(url)
-              .then(res => res.blob())
-              .then(blob => {
-                  docx.renderAsync(blob, docxContainer)
-                      .catch(() => { holder.innerHTML = fileIcon("docx"); });
-              })
-              .catch(() => { holder.innerHTML = fileIcon("docx"); });
-      } else{
+      } else { // Fallback for DOCX and other formats
         holder.innerHTML = fileIcon(fmt);
       }
       return holder;
@@ -1219,7 +1199,7 @@
     aiToggleBtn.addEventListener("click", () => {
         showAI = !showAI; // Toggle the state
         aiToggleBtn.classList.toggle("active-ai");
-        aiToggleBtn.title = showAI ? "Show AI Content" : "Hide AI Content";
+        aiToggleBtn.textContent = showAI ? "Show AI" : "Hide AI";
         render();
     });
 
