@@ -719,39 +719,12 @@
     } 
 
     // --- Data fetch --- 
-    async function fetchNotes(){ 
-      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(NOTES_PATH)}?ref=${BRANCH}`; 
-      try { 
-        const response = await fetch(url); 
-        const data = await response.json(); 
-        return data; 
-      } catch (e) { 
-        console.error("Error fetching notes from Github API:", e); 
-        return []; 
-      } 
-    } 
-    async function getFileMetadata(item){ 
-      const url = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURI(item.path)}&per_page=1`; 
-      try{ 
-        const response = await fetch(url); 
-        const data = await response.json(); 
-        if(data && data.length > 0){ 
-          item.last_updated = data[0].commit.committer.date; 
-          item.author = data[0].commit.author.name; 
-        } 
-      }catch(e){ 
-        console.error("Error fetching file metadata:", e); 
-      } 
-    } 
     async function getFileContent(filePath){ 
-      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(filePath)}?ref=${BRANCH}`; 
+      const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${encodeURI(filePath)}`; 
       try { 
         const response = await fetch(url); 
-        const data = await response.json(); 
-        if(data && data.content){ 
-          const decodedContent = atob(data.content); 
-          return decodedContent; 
-        } 
+        const data = await response.text();
+        return data; 
       }catch(e){ 
         console.error("Error fetching file content:", e); 
       } 
@@ -919,7 +892,7 @@
 
     // --- Overlay & Viewer logic ---
     function openViewer(item){
-      const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${item.path}`;
+      const rawUrl = item.download_url;
       const viewerUrl = `https://tebby2008.github.io/OpenNotes/view.html?file=${encodeURIComponent(rawUrl)}`;
 
       docFrame.src = viewerUrl;
@@ -929,8 +902,7 @@
       ovAuthor.textContent = item.author;
       ovViews.textContent = item.views || 0;
       ovDownloads.textContent = item.downloads || 0;
-      ovOpenRaw.href = viewerUrl;
-      ovDownload.onclick = () => incDownload(item).then(render);
+      ovOpenRaw.href = rawUrl;
       ovDownload.onclick = () => {
         incDownload(item).then(updated => {
           if (updated) {
@@ -1085,53 +1057,117 @@
     // --- Init ---
     async function init(){
       try{
-        const notes = await fetchNotes();
-        if(notes && notes.length > 0){
-          allItems = notes.filter(item=> extOf(item.name) === 'pdf' || extOf(item.name) === 'docx');
-          await Promise.all(allItems.map(getFileMetadata));
-
-          const allNoteKeys = allItems.map(n => n.path);
-          const apiKeys = await getApiKeys();
-          const noteKeysToDelete = apiKeys.filter(k => !allNoteKeys.includes(k));
-          for (const key of noteKeysToDelete) {
-            console.log(`Deleting counter for removed note: ${key}`);
-            await fetch(`${API_URL}?noteId=${key}`, { method: 'DELETE' });
+        const notes_metadata = [
+          {
+            "name": "AP Calculus AB Notes.pdf",
+            "path": "Notes/AP Calculus AB Notes.pdf",
+            "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/AP%20Calculus%20AB%20Notes.pdf",
+            "author": "tebby",
+            "last_updated": "2025-08-17T02:06:16Z",
+            "is_ai_generated": false
+          },
+          {
+            "name": "AP Calculus AB Review Sheet.pdf",
+            "path": "Notes/AP Calculus AB Review Sheet.pdf",
+            "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/AP%20Calculus%20AB%20Review%20Sheet.pdf",
+            "author": "Tebby2008",
+            "last_updated": "2025-08-17T01:29:18Z",
+            "is_ai_generated": false
+          },
+          {
+            "name": "AP Calculus BC Exclusive.pdf",
+            "path": "Notes/AP Calculus BC Exclusive.pdf",
+            "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/AP%20Calculus%20BC%20Exclusive.pdf",
+            "author": "Tebby2008",
+            "last_updated": "2025-08-17T01:29:18Z",
+            "is_ai_generated": false
+          },
+          {
+            "name": "AP Macroeconomics Notes.pdf",
+            "path": "Notes/AP Macroeconomics Notes.pdf",
+            "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/AP%20Macroeconomics%20Notes.pdf",
+            "author": "tebby",
+            "last_updated": "2025-08-17T01:35:00Z",
+            "is_ai_generated": false
+          },
+          {
+            "name": "IB Chemistry Yr 1 Study Guide (AI).docx",
+            "path": "Notes/IB Chemistry Yr 1 Study Guide (AI).docx",
+            "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Chemistry%20Yr%201%20Study%20Guide%20(AI).docx",
+            "author": "tebby",
+            "last_updated": "2025-08-17T01:57:26Z",
+            "is_ai_generated": true
+          },
+          {
+            "name": "IB Economics Real World Examples.pdf",
+            "path": "Notes/IB Economics Real World Examples.pdf",
+            "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Economics%20Real%20World%20Examples.pdf",
+            "author": "Tebby2008",
+            "last_updated": "2025-08-17T01:29:18Z",
+            "is_ai_generated": false
+          },
+          {
+            "name": "IB Economics Yr 1 Study Guide (AI).docx",
+            "path": "Notes/IB Economics Yr 1 Study Guide (AI).docx",
+            "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Economics%20Yr%201%20Study%20Guide%20(AI).docx",
+            "author": "tebby",
+            "last_updated": "2025-08-17T01:57:26Z",
+            "is_ai_generated": true
+          },
+          {
+            "name": "Python Guide (AI).docx",
+            "path": "Notes/Python Guide (AI).docx",
+            "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/Python%20Guide%20(AI).docx",
+            "author": "tebby",
+            "last_updated": "2025-08-17T02:42:25Z",
+            "is_ai_generated": true
+          },
+          {
+            "name": "SAT Reading & Writing Notes.pdf",
+            "path": "Notes/SAT Reading & Writing Notes.pdf",
+            "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/SAT%20Reading%20%26%20Writing%20Notes.pdf",
+            "author": "Tebby2008",
+            "last_updated": "2025-08-17T01:29:18Z",
+            "is_ai_generated": false
           }
+        ];
+        
+        allItems = notes_metadata;
 
-          const notePromises = allItems.map(async (note) => {
-            try {
-              const res = await fetch(`${API_URL}?noteId=${note.path}`, { method: 'GET' });
-              if (res.ok) {
-                const data = await res.json();
-                note.views = data.views || 0;
-                note.downloads = data.downloads || 0;
-              } else {
-                note.views = 0;
-                note.downloads = 0;
-              }
-            } catch (e) {
-              console.error('Failed to fetch count for note:', note.path, e);
+        const allNoteKeys = allItems.map(n => n.path);
+        const apiKeys = await getApiKeys();
+        const noteKeysToDelete = apiKeys.filter(k => !allNoteKeys.includes(k));
+        for (const key of noteKeysToDelete) {
+          console.log(`Deleting counter for removed note: ${key}`);
+          await fetch(`${API_URL}?noteId=${key}`, { method: 'DELETE' });
+        }
+
+        const notePromises = allItems.map(async (note) => {
+          try {
+            const res = await fetch(`${API_URL}?noteId=${note.path}`, { method: 'GET' });
+            if (res.ok) {
+              const data = await res.json();
+              note.views = data.views || 0;
+              note.downloads = data.downloads || 0;
+            } else {
               note.views = 0;
               note.downloads = 0;
             }
-          });
-          await Promise.all(notePromises);
-
-          const newViews = await incWebsiteView();
-          if (newViews !== null) {
-            websiteViewsEl.textContent = newViews;
+          } catch (e) {
+            console.error('Failed to fetch count for note:', note.path, e);
+            note.views = 0;
+            note.downloads = 0;
           }
+        });
+        await Promise.all(notePromises);
 
-          render();
-
-        }else{
-          container.innerHTML = `
-            <div style="background:var(--panel);border:1px solid rgba(0,0,0,0.06);border-radius:16px;padding:18px;">
-              <div style="font-weight:600; font-size:18px;">Notes not found.</div>
-              <p style="color:var(--muted); font-size:14px; margin-top:6px;">Please check the configuration variables in the script: REPO_OWNER, REPO_NAME, BRANCH, NOTES_PATH. Make sure your notes are located at the specified path in your GitHub repository.</p>
-            </div>
-          `;
+        const newViews = await incWebsiteView();
+        if (newViews !== null) {
+          websiteViewsEl.textContent = newViews;
         }
+
+        render();
+
       }catch(e){
         console.error(e);
         container.innerHTML = `
