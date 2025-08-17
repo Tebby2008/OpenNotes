@@ -7,6 +7,9 @@ on:
     paths:
       - 'Notes/**'
 
+permissions:
+  contents: write
+
 jobs:
   generate-json:
     runs-on: ubuntu-latest
@@ -26,12 +29,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          node .github/workflows/generate-notes-metadata.js
+          # Use your own script to generate the JSON file
+          node .github/workflows/generate-notes-data.js
           
           # Stage the changes to the JSON file
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git add notes_metadata.json
+          git add notes_data.json
           git commit -m "feat(ci): Auto-generate notes metadata"
           
           # Push the changes to the repository
