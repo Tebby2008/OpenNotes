@@ -11,494 +11,649 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root{
-      --bg: #f8f9fa;
-      --panel: #ffffff;
-      --panel-2: #e9ecef;
-      --text: #212529;
-      --muted: #6c757d;
-      --accent: #96bfea;
-      --accent-2: #b9d9f9;
-      --gold: #ffc107;
-      --shadow:0 10px 30px rgba(0,0,0,0.1);
+      --bg:#f8f9fa;
+      --panel:#fff;
+      --panel-2:#e9ecef;
+      --text:#212529;
+      --muted:#6c757d;
+      --accent:#96bfea;
+      --accent-2:#b9d9f9;
+      --gold:#ffc107;
+      --shadow:0 10px 30px rgba(0,0,0,.1);
       --radius:16px;
       --radius-sm:12px;
       --radius-lg:22px;
       --gap:14px;
       --gap-lg:22px;
-      --dark-header: #12171d;
-      --footer-bg: #1e252e;
+      --dark-header:#12171d;
+      --footer-bg:#1e252e;
     }
-
-    *{box-sizing:border-box}
+    *,:after,:before{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0;
       background:var(--bg);
       color:var(--text);
-      font-family:"Noto Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      font-family:"Noto Sans",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
-      display: flex;
-      flex-direction: column;
+      display:flex;
+      flex-direction:column;
     }
-
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      font-size: 24px;
-      display: flex;
+    .material-symbols-outlined{
+      font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+      font-size:24px;
+      display:flex;
     }
-    
-    /* Redesigned Header */
     .title-section{
-      height: 50vh;
-      background: var(--dark-header);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      z-index: 1;
+      height:50vh;
+      background:var(--dark-header);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 10px 30px rgba(0,0,0,.1);
+      z-index:1;
     }
-    .title-logo {
-        width: 75vw;
-        height: auto;
-        max-width: 600px;
+    .title-logo{
+      width:75vw;
+      height:auto;
+      max-width:600px;
     }
-    .logo-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-bottom: 20px;
+    .logo-container{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      margin-bottom:20px;
     }
-    .logo-container p {
-        color: rgba(255,255,255,0.8);
-        font-size: 14px;
-        margin-top: 10px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+    .logo-container p{
+      color:rgba(255,255,255,.8);
+      font-size:14px;
+      margin-top:10px;
+      display:flex;
+      align-items:center;
+      gap:6px;
     }
-    .logo-container p img {
-        height: 23.4px;
-        width: auto;
+    .logo-container p img{
+      height:23.4px;
+      width:auto;
     }
-    .line {
-      width: 33vw;
-      height: 2px;
-      background: rgba(255,255,255,0.8);
-      margin: 20px auto;
+    .line{
+      width:33vw;
+      height:2px;
+      background:rgba(255,255,255,.8);
+      margin:20px auto;
     }
-    @media (max-width: 860px){
-      .title-logo { width: 90vw; }
+    @media (max-width:860px){
+      .title-logo{width:90vw}
     }
-
-    /* Controls */
     .controls{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:var(--gap); flex-wrap:wrap;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:var(--gap);
+      flex-wrap:wrap;
       background:var(--panel);
-      border-bottom-left-radius: 40px;
-      border-bottom-right-radius: 40px;
+      border-bottom-left-radius:40px;
+      border-bottom-right-radius:40px;
       padding:10px 18px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.08);
-      position: relative;
-      z-index: 2;
+      box-shadow:0 4px 12px rgba(0,0,0,.08);
+      position:relative;
+      z-index:2;
     }
-
-    .left, .right{display:flex; align-items:center; gap:8px}
+    .left,.right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
     .chip{
       background:var(--panel-2);
-      padding:8px 10px; border-radius:999px; color:var(--text);
-      display:flex; align-items:center; gap:8px; border:1px solid rgba(0,0,0,0.06);
+      padding:8px 10px;
+      border-radius:999px;
+      color:var(--text);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid rgba(0,0,0,.06);
       cursor:pointer;
     }
     .chip:hover{
-      background: rgba(125,211,252,0.1);
+      background:rgba(125,211,252,.1);
     }
     .chip select{
-      background:transparent; color:var(--text); border:none; outline:none;
-      font:inherit; appearance:none; padding-right:18px; cursor:pointer;
+      background:transparent;
+      color:var(--text);
+      border:none;
+      outline:0;
+      font:inherit;
+      appearance:none;
+      padding-right:18px;
+      cursor:pointer;
     }
     .chip .dot{
-      width:8px; height:8px; border-radius:50%; background:var(--accent);
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--accent);
       box-shadow:0 0 12px var(--accent);
     }
-
-    /* Expanding search -- MODIFIED WIDTH */
     .search{
-      display:flex; align-items:center; gap:8px;
-      background:var(--panel-2); border-radius:999px;
-      padding:8px 12px; border:1px solid rgba(0,0,0,0.06);
-      transition: box-shadow .2s ease;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:var(--panel-2);
+      border-radius:999px;
+      padding:8px 12px;
+      border:1px solid rgba(0,0,0,.06);
+      transition:box-shadow .2s ease;
     }
-    .search:hover{ box-shadow:0 0 0 2px rgba(125,211,252,0.25) inset; }
-    .search svg{width:18px; height:18px; opacity:0.9}
+    .search:hover{
+      box-shadow:0 0 0 2px rgba(125,211,252,.25) inset;
+    }
+    .search svg{
+      width:18px;
+      height:18px;
+      opacity:.9;
+    }
     .search input{
-      width:140px; background:transparent; border:none; outline:none; color:var(--text);
-      transition: width .25s ease; font:inherit;
+      width:140px;
+      background:transparent;
+      border:none;
+      outline:0;
+      color:var(--text);
+      transition:width .25s ease;
+      font:inherit;
     }
-    .search input::placeholder{ color:var(--muted) }
-    .search:focus-within input{ width:280px }
-
-    /* Toggle buttons */
+    .search input::placeholder{
+      color:var(--muted);
+    }
+    .search:focus-within input{
+      width:280px;
+    }
     .toggle{
-      display:flex; gap:8px; background:var(--panel-2); padding:6px;
-      border-radius:999px; border:1px solid rgba(0,0,0,0.06);
+      display:flex;
+      gap:8px;
+      background:var(--panel-2);
+      padding:6px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.06);
     }
     .btn{
-      background:transparent; color:var(--text); border:none; border-radius:999px;
-      padding:8px 12px; display:flex; align-items:center; gap:8px;
-      cursor:pointer; transition: background .2s, transform .1s, box-shadow .2s;
+      background:transparent;
+      color:var(--text);
+      border:none;
+      border-radius:999px;
+      padding:8px 12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+      transition:background .2s,transform .1s,box-shadow .2s;
     }
-    .btn:hover{ background:rgba(0,0,0,0.06) }
-    .btn:active{ transform: translateY(1px) }
-    .btn svg{width:18px; height:18px}
+    .btn:hover{
+      background:rgba(0,0,0,.06);
+    }
+    .btn:active{
+      transform:translateY(1px);
+    }
+    .btn svg{
+      width:18px;
+      height:18px;
+    }
     .btn.active{
-      background:linear-gradient(90deg, rgba(125,211,252,0.18), rgba(167,243,208,0.15));
-      box-shadow:0 0 0 2px rgba(125,211,252,0.18) inset;
+      background:linear-gradient(90deg,rgba(125,211,252,.18),rgba(167,243,208,.15));
+      box-shadow:0 0 0 2px rgba(125,211,252,.18) inset;
     }
-    /* Style for the active AI toggle button */
     .btn.active-ai{
-      background: #fffbeb;
-      color: #b38600;
-      box-shadow: 0 0 0 2px var(--gold) inset;
+      background:#fffbeb;
+      color:#b38600;
+      box-shadow:0 0 0 2px var(--gold) inset;
     }
-
-    /* Main content */
-    .wrap{ padding:18px; z-index: 0; position:relative; margin-top: 36px; margin-bottom: 36px; flex: 1; }
+    .wrap{
+      padding:18px;
+      z-index:0;
+      position:relative;
+      margin-top:36px;
+      margin-bottom:36px;
+      flex:1;
+    }
     .grid{
-      display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
-      gap:18px; align-items:stretch;
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+      gap:18px;
+      align-items:stretch;
     }
-    .list{ display:flex; flex-direction:column; gap:12px }
-
-    /* Card / Item */
-    .card {
-      position: relative;
-      transition: transform .2s ease, box-shadow .2s ease;
-      z-index: 0;
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .card{
+      position:relative;
+      transition:transform .2s ease,box-shadow .2s ease;
+      z-index:0;
       background:var(--panel);
       border-radius:var(--radius);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      overflow: hidden;
-      cursor: pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,.08);
+      overflow:hidden;
+      cursor:pointer;
     }
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      z-index: 10;
+    .card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 8px 24px rgba(0,0,0,.15);
+      z-index:10;
     }
-
     .thumb{
       background:var(--panel-2);
-      height:180px; display:flex; align-items:center; justify-content:center;
-      overflow:hidden; position:relative;
+      height:180px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      position:relative;
     }
-    /* NOTE: Removed docx-wrapper style */
-    .thumb canvas, .thumb img, .thumb iframe, .thumb embed{
-      width:100%; height:100%; object-fit:cover; border-radius:12px;
+    .thumb canvas,.thumb embed,.thumb iframe,.thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      border-radius:12px;
     }
     .fmt-badge{
-      position:absolute; bottom:10px; left:10px; padding:6px 10px;
-      font-size:12px; font-weight:600; border-radius:999px;
-      background:rgba(255,255,255,0.55); color:var(--text); border:1px solid rgba(0,0,0,0.1);
-      backdrop-filter: blur(4px);
+      position:absolute;
+      bottom:10px;
+      left:10px;
+      padding:6px 10px;
+      font-size:12px;
+      font-weight:600;
+      border-radius:999px;
+      background:rgba(255,255,255,.55);
+      color:var(--text);
+      border:1px solid rgba(0,0,0,.1);
+      backdrop-filter:blur(4px);
     }
-    .fmt-pdf{ box-shadow:0 0 0 2px rgba(125,211,252,0.35) inset }
-    .fmt-docx{ box-shadow:0 0 0 2px rgba(167,243,208,0.35) inset }
-
-    .body{ padding:12px 14px 14px }
+    .fmt-pdf{
+      box-shadow:0 0 0 2px rgba(125,211,252,.35) inset;
+    }
+    .fmt-docx{
+      box-shadow:0 0 0 2px rgba(167,243,208,.35) inset;
+    }
+    .body{
+      padding:12px 14px 14px;
+    }
     .title-line{
-      font-weight:600; font-size:16px; margin:6px 0 6px; line-height:1.2;
-      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      font-weight:600;
+      font-size:16px;
+      margin:6px 0 6px;
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .meta{
-      display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:var(--muted);
+      font-size:12px;
     }
-    .meta .dot{ width:4px; height:4px; border-radius:50%; background:var(--muted) }
-    
-    /* Golden AI Tag Style */
-    .ai-tag {
-      background: #fffbeb;
-      color: #b38600;
-      font-size: 10px;
-      font-weight: 600;
-      padding: 3px 6px;
-      border-radius: 6px;
-      margin-left: 6px;
-      vertical-align: middle;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      border: 1px solid var(--gold);
+    .meta .dot{
+      width:4px;
+      height:4px;
+      border-radius:50%;
+      background:var(--muted);
     }
-    .ai-tag .material-symbols-outlined {
-      font-size: 12px;
-      color: var(--gold);
-      font-variation-settings: 'FILL' 1, 'wght' 700;
+    .ai-tag{
+      background:#fffbeb;
+      color:#b38600;
+      font-size:10px;
+      font-weight:600;
+      padding:3px 6px;
+      border-radius:6px;
+      margin-left:6px;
+      vertical-align:middle;
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      border:1px solid var(--gold);
     }
-
+    .ai-tag .material-symbols-outlined{
+      font-size:12px;
+      color:var(--gold);
+      font-variation-settings:'FILL' 1,'wght' 700;
+    }
     .stats{
-      margin-top:10px; display:flex; align-items:center; gap:12px; color:var(--muted); font-size:12px;
+      margin-top:10px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color:var(--muted);
+      font-size:12px;
     }
-    .stat{ display:inline-flex; align-items:center; gap:6px }
-    .stat svg{ width:16px; height:16px; opacity:0.85 }
-
-    /* Download button cursor fix */
-    .download-btn {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 6px;
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      cursor: pointer;
+    .stat{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
     }
-    .download-btn svg {
-      width: 18px;
-      height: 18px;
-      fill: #fff;
+    .stat svg{
+      width:16px;
+      height:16px;
+      opacity:.85;
     }
-
-    /* List view item */
+    .download-btn{
+      background:var(--accent);
+      color:#fff;
+      border:none;
+      padding:6px;
+      border-radius:50%;
+      width:36px;
+      height:36px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+      cursor:pointer;
+    }
+    .download-btn svg{
+      width:18px;
+      height:18px;
+      fill:#fff;
+    }
     .row{
-      display:grid; grid-template-columns:86px 1fr auto; gap:14px;
-      align-items:center; background:var(--panel); border:1px solid rgba(0,0,0,0.06);
-      border-radius:var(--radius); padding:10px; box-shadow:0 4px 12px rgba(0,0,0,0.05);
-      transition: transform .2s, box-shadow .2s;
-      cursor: pointer;
+      display:grid;
+      grid-template-columns:86px 1fr auto;
+      gap:14px;
+      align-items:center;
+      background:var(--panel);
+      border:1px solid rgba(0,0,0,.06);
+      border-radius:var(--radius);
+      padding:10px;
+      box-shadow:0 4px 12px rgba(0,0,0,.05);
+      transition:transform .2s,box-shadow .2s;
+      cursor:pointer;
     }
-    .row:hover{ transform: translateY(-1px) }
-    .row .thumb{ height:66px; border-radius:12px }
+    .row:hover{
+      transform:translateY(-1px);
+    }
+    .row .thumb{
+      height:66px;
+      border-radius:12px;
+    }
     .row .main{
-      display:grid; grid-template-columns: minmax(200px, 2fr) repeat(4, minmax(90px, 1fr));
-      gap:10px; align-items:center;
+      display:grid;
+      grid-template-columns:minmax(200px,2fr) repeat(4,minmax(90px,1fr));
+      gap:10px;
+      align-items:center;
     }
-    .row .main .cell{ display:flex; align-items:center; gap:6px; min-width:0 }
-    .row .title-line{ margin:0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
-    .row .right-end{ display:flex; align-items:center; gap:8px }
-
-    /* Overlay viewer */
+    .row .main .cell{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-width:0;
+    }
+    .row .title-line{
+      margin:0;
+      font-size:15px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .row .right-end{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
     .overlay{
-      position:fixed; inset:0; background:rgba(255,255,255,0.72); backdrop-filter: blur(8px);
-      display:none; z-index:1000; padding:20px;
-      opacity:0; transition: opacity .2s ease;
+      position:fixed;
+      inset:0;
+      background:rgba(255,255,255,.72);
+      backdrop-filter:blur(8px);
+      display:none;
+      z-index:1000;
+      padding:20px;
+      opacity:0;
+      transition:opacity .2s ease;
     }
     .overlay.open{
       display:block;
       opacity:1;
     }
     .viewer{
-      background:rgba(255,255,255,0.85);
-      border:1px solid rgba(0,0,0,0.08);
+      background:rgba(255,255,255,.85);
+      border:1px solid rgba(0,0,0,.08);
       box-shadow:var(--shadow);
       border-radius:var(--radius-lg);
-      height:100%; display:grid;
-      grid-template-columns: 1fr minmax(280px, 360px);
+      height:100%;
+      display:grid;
+      grid-template-columns:1fr minmax(280px,360px);
       overflow:hidden;
-      backdrop-filter: blur(16px);
+      backdrop-filter:blur(16px);
     }
     .viewer .left{
-      padding:12px; background:var(--panel-2); border-right:1px solid rgba(0,0,0,0.06);
+      padding:12px;
+      background:var(--panel-2);
+      border-right:1px solid rgba(0,0,0,.06);
     }
     .docframe{
-      width:100%; height:100%; border:none; border-radius:12px; background:var(--panel-2);
+      width:100%;
+      height:100%;
+      border:none;
+      border-radius:12px;
+      background:var(--panel-2);
     }
     .viewer .right{
-      padding:16px; display:flex; flex-direction:column; gap:10px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     }
-    .viewer .right .title{ justify-content:flex-start; padding:0; font-size:22px }
-    .kv{ color:var(--muted); font-size:13px; display:flex; gap:8px; align-items:center }
-    .kv strong{ color:var(--text); font-weight:600 }
-    
-    /* Bigger Back Button */
+    .viewer .right .title{
+      justify-content:flex-start;
+      padding:0;
+      font-size:22px;
+    }
+    .kv{
+      color:var(--muted);
+      font-size:13px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .kv strong{
+      color:var(--text);
+      font-weight:600;
+    }
     .back{
-      position:absolute; bottom:26px; left:26px; z-index:1001;
-      background:rgba(255,255,255,0.4); color:var(--text); border:1px solid rgba(0,0,0,0.18);
+      position:absolute;
+      bottom:26px;
+      left:26px;
+      z-index:1001;
+      background:rgba(255,255,255,.4);
+      color:var(--text);
+      border:1px solid rgba(0,0,0,.18);
       padding:12px 18px;
-      font-size: 16px;
-      border-radius:999px; display:flex; align-items:center; gap:8px;
-      cursor:pointer; backdrop-filter: blur(4px);
-      transition: transform .1s, background .2s, box-shadow .2s;
+      font-size:16px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+      backdrop-filter:blur(4px);
+      transition:transform .1s,background .2s,box-shadow .2s;
     }
-    .back svg { width: 22px; height: 22px; }
-    .back:hover{ background:rgba(255,255,255,0.5) }
-    .back:active{ transform: translateY(1px) }
-
-    .overlay-content {
-        padding: 2rem;
-        text-align: left;
-        color: #333;
-        line-height: 1.6;
-        font-family: "Noto Sans", sans-serif;
-        background: #fff;
-        border-radius: 12px;
-        height: 100%;
-        overflow-y: auto;
+    .back svg{
+      width:22px;
+      height:22px;
     }
-    .overlay-content h1, .overlay-content h2 {
-        color: var(--text);
+    .back:hover{
+      background:rgba(255,255,255,.5);
     }
-    .overlay-content a {
-        color: var(--accent);
-        text-decoration: none;
+    .back:active{
+      transform:translateY(1px);
     }
-    .overlay-content a:hover {
-        text-decoration: underline;
+    .overlay-content{
+      padding:2rem;
+      text-align:left;
+      color:#333;
+      line-height:1.6;
+      font-family:"Noto Sans",sans-serif;
+      background:#fff;
+      border-radius:12px;
+      height:100%;
+      overflow-y:auto;
     }
-
-    .styled-btn {
-      background: var(--panel-2);
-      color: var(--text);
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 999px;
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background .2s, transform .1s, box-shadow .2s;
-      text-decoration: none; /* remove underline for links */
-      font-size: 1rem;
+    .overlay-content a{
+      color:var(--accent);
+      text-decoration:none;
     }
-    .styled-btn:hover {
-      background: rgba(0,0,0,0.06);
+    .overlay-content a:hover{
+      text-decoration:underline;
     }
-    .styled-btn:active {
-      transform: translateY(1px);
+    .styled-btn{
+      background:var(--panel-2);
+      color:var(--text);
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:999px;
+      padding:8px 12px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:500;
+      cursor:pointer;
+      transition:background .2s,transform .1s,box-shadow .2s;
+      text-decoration:none;
+      font-size:1rem;
     }
-    .styled-btn svg {
-      width: 18px;
-      height: 18px;
+    .styled-btn:hover{
+      background:rgba(0,0,0,.06);
     }
-
-    .styled-btn.download-accent {
-      background: var(--accent);
-      color: white;
-      border-color: rgba(255,255,255,0.1);
+    .styled-btn:active{
+      transform:translateY(1px);
     }
-    .styled-btn.download-accent svg {
-      fill: white;
+    .styled-btn svg{
+      width:18px;
+      height:18px;
     }
-
-
-    /* Helpers */
+    .styled-btn.download-accent{
+      background:var(--accent);
+      color:#fff;
+      border-color:rgba(255,255,255,.1);
+    }
+    .styled-btn.download-accent svg{
+      fill:#fff;
+    }
     .pill{
-      color:#001; background:var(--accent); border-radius:999px; padding:4px 8px; font-weight:700; font-size:12px;
+      color:#001;
+      background:var(--accent);
+      border-radius:999px;
+      padding:4px 8px;
+      font-weight:700;
+      font-size:12px;
     }
-    .pill.docx{ background:var(--accent-2) }
-
-    a.clean{ color:inherit; text-decoration:none; cursor: pointer; }
-    .muted{ color:var(--muted) }
-    .hide{ display:none }
-
-    .icon-only {
-      padding: 8px;
+    .pill.docx{
+      background:var(--accent-2);
     }
-
-    .sort-wrapper {
-      position: relative;
+    a.clean{
+      color:inherit;
+      text-decoration:none;
+      cursor:pointer;
     }
-
-    .custom-dropdown {
-      position: absolute;
-      top: 110%;
-      left: 0;
-      background: var(--panel);
-      border: 1px solid rgba(0,0,0,0.1);
-      border-radius: 8px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-      z-index: 20;
-      display: flex;
-      flex-direction: column;
-      min-width: 180px;
-      opacity: 0;
-      pointer-events: none;
-      transform: translateY(10px);
-      transition: opacity 0.15s ease, transform 0.15s ease;
+    .muted{
+      color:var(--muted);
     }
-
-    .custom-dropdown.open {
-      opacity: 1;
-      pointer-events: auto;
-      transform: translateY(0);
+    .hide{
+      display:none;
     }
-    
-    .custom-dropdown .option {
-        padding: 8px 12px;
-        cursor: pointer;
-        transition: background 0.15s;
+    .icon-only{
+      padding:8px;
     }
-
-    .custom-dropdown .option:hover {
-        background: rgba(125,211,252,0.1);
+    .sort-wrapper{
+      position:relative;
     }
-    .custom-dropdown .option.active {
-      background: var(--accent);
-      color: white;
+    .custom-dropdown{
+      position:absolute;
+      top:110%;
+      left:0;
+      background:var(--panel);
+      border:1px solid rgba(0,0,0,.1);
+      border-radius:8px;
+      box-shadow:0 6px 20px rgba(0,0,0,.15);
+      z-index:20;
+      display:flex;
+      flex-direction:column;
+      min-width:180px;
+      opacity:0;
+      pointer-events:none;
+      transform:translateY(10px);
+      transition:opacity .15s ease,transform .15s ease;
     }
-
-    /* Footer */
-    footer {
-      background: var(--footer-bg);
-      color: rgba(255,255,255,0.6);
-      padding: 18px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: auto;
-      font-size: 14px;
+    .custom-dropdown.open{
+      opacity:1;
+      pointer-events:auto;
+      transform:translateY(0);
     }
-    footer .left {
-      display: flex;
-      gap: 16px;
-      align-items: center;
+    .custom-dropdown .option{
+      padding:8px 12px;
+      cursor:pointer;
+      transition:background .15s;
     }
-    footer .left a {
-      color: inherit;
-      text-decoration: none;
-      transition: color .2s;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .custom-dropdown .option:hover{
+      background:rgba(125,211,252,.1);
     }
-    footer .left a:hover {
-      color: rgba(255,255,255,0.9);
+    .custom-dropdown .option.active{
+      background:var(--accent);
+      color:#fff;
     }
-    footer .left a .icon {
-      width: 18px;
-      height: 18px;
-      fill: rgba(255,255,255,0.6);
+    footer{
+      background:var(--footer-bg);
+      color:rgba(255,255,255,.6);
+      padding:18px 24px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:auto;
+      font-size:14px;
     }
-    footer .left a:hover .icon {
-      fill: rgba(255,255,255,0.9);
+    footer .left{
+      display:flex;
+      gap:16px;
+      align-items:center;
     }
-    .total-views {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    footer .left a{
+      color:inherit;
+      text-decoration:none;
+      transition:color .2s;
+      font-weight:500;
+      display:flex;
+      align-items:center;
+      gap:6px;
     }
-    .total-views .material-symbols-outlined {
-      font-size: 20px;
-      color: rgba(255,255,255,0.6);
+    footer .left a:hover{
+      color:rgba(255,255,255,.9);
     }
-    .total-views span {
-      font-weight: 600;
-      color: rgba(255,255,255,0.9);
+    footer .left a .icon{
+      width:18px;
+      height:18px;
+      fill:rgba(255,255,255,.6);
     }
-
-
-    /* Small screens */
-    @media (max-width: 860px){
-      .viewer{ grid-template-columns: 1fr; }
-      .viewer .right{ border-top:1px solid rgba(0,0,0,0.06) }
+    footer .left a:hover .icon{
+      fill:rgba(255,255,255,.9);
+    }
+    .total-views{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .total-views .material-symbols-outlined{
+      font-size:20px;
+      color:rgba(255,255,255,.6);
+    }
+    .total-views span{
+      font-weight:600;
+      color:rgba(255,255,255,.9);
+    }
+    @media (max-width:860px){
+      .viewer{grid-template-columns:1fr}
+      .viewer .right{border-top:1px solid rgba(0,0,0,.06)}
     }
   </style>
 </head>
@@ -632,643 +787,245 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
   <script>
-    // --- Configuration (set these to your repo) ---
-    const REPO_OWNER = "Tebby2008";
-    const REPO_NAME  = "OpenNotes";
-    const BRANCH     = "main";
-    const NOTES_PATH = "Notes";
-    const API_URL = "https://open-notes.tebby2008-li.workers.dev";
-
-    (function tryAutoDetect(){
+    const REPO_OWNER = "Tebby2008",REPO_NAME="OpenNotes",BRANCH="main",NOTES_PATH="Notes",API_URL="https://open-notes.tebby2008-li.workers.dev";
+    (function(){
       try{
-        const host = location.hostname;
-        const path = location.pathname.replace(/^\/+/,'').split('/');
-        const isPages = host.endsWith(".github.io");
+        const host=location.hostname,path=location.pathname.replace(/^\/+/,"").split("/"),isPages=host.endsWith(".github.io");
         if(isPages){
-          const owner = host.split(".github.io")[0];
-          const repo = path[0] || REPO_NAME;
-          if(REPO_OWNER.startsWith("<")) window['__owner']=owner;
-          if(REPO_NAME.startsWith("<")) window['__repo']=repo;
+          const owner=host.split(".github.io")[0],repo=path[0]||REPO_NAME;
+          if(REPO_OWNER.startsWith("<"))window.owner=owner;
+          if(REPO_NAME.startsWith("<"))window.repo=repo
         }
       }catch(e){}
     })();
-
-    const owner = window.__owner || REPO_OWNER;
-    const repo  = window.__repo  || REPO_NAME;
-
-    // --- State ---
-    let allItems = [];
-    let viewMode = "grid";
-    let showAI = true; // State for the AI toggle
-
-    // --- Elements ---
-    const container = document.getElementById("itemsContainer");
-    const sortSelect = document.getElementById("sortSelect");
-    const formatSelect = document.getElementById("formatSelect");
-    const searchInput = document.getElementById("searchInput");
-    const gridBtn = document.getElementById("gridBtn");
-    const listBtn = document.getElementById("listBtn");
-    const aiToggleBtn = document.getElementById("aiToggleBtn");
-
-    const overlay = document.getElementById("overlay");
-    const backBtn = document.getElementById("backBtn");
-    const docFrame = document.getElementById("docFrame");
-    const ovTitle = document.getElementById("ovTitle");
-    const ovFormat = document.getElementById("ovFormat");
-    const ovDate = document.getElementById("ovDate");
-    const ovAuthor = document.getElementById("ovAuthor");
-    const ovViews = document.getElementById("ovViews");
-    const ovDownloads = document.getElementById("ovDownloads");
-    const ovOpenRaw = document.getElementById("ovOpenRaw");
-    const ovDownload = document.getElementById("ovDownload");
-
-    const infoOverlay = document.getElementById("infoOverlay");
-    const infoBackBtn = document.getElementById("infoBackBtn");
-    const infoContent = document.getElementById("infoContent");
-    const uploadBtn = document.getElementById("uploadBtn");
-    const infoLinks = document.querySelectorAll('.info-link');
-    const websiteViewsEl = document.getElementById('websiteViews');
-
-
-    // --- Utils ---
-    const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
-    const fmtDate = (iso)=> {
-      if(!iso) return "—";
-      const d = new Date(iso);
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      const yyyy = d.getFullYear();
-      return `${dd}-${mm}-${yyyy}`;
-    };
-    const stripExt = (name)=> name.replace(/\.[^/.]+$/, "");
-    const extOf = (name)=> (name.split('.').pop() || "").toLowerCase();
-
-    // --- API Calls & Local State Updates ---
-    async function incView(item) {
-      try {
-        const res = await fetch(`${API_URL}?type=note&noteId=${item.path}&counter=views`, { method: 'POST' });
-        const data = await res.json();
-        if (data && data.views !== undefined) {
-          item.views = data.views;
-          item.downloads = data.downloads;
-          return { views: item.views, downloads: item.downloads };
+    const owner=window.owner||REPO_OWNER,repo=window.repo||REPO_NAME;
+    let allItems=[],viewMode="grid",showAI=!0;
+    const container=document.getElementById("itemsContainer"),sortSelect=document.getElementById("sortSelect"),formatSelect=document.getElementById("formatSelect"),searchInput=document.getElementById("searchInput"),gridBtn=document.getElementById("gridBtn"),listBtn=document.getElementById("listBtn"),aiToggleBtn=document.getElementById("aiToggleBtn"),overlay=document.getElementById("overlay"),backBtn=document.getElementById("backBtn"),docFrame=document.getElementById("docFrame"),ovTitle=document.getElementById("ovTitle"),ovFormat=document.getElementById("ovFormat"),ovDate=document.getElementById("ovDate"),ovAuthor=document.getElementById("ovAuthor"),ovViews=document.getElementById("ovViews"),ovDownloads=document.getElementById("ovDownloads"),ovOpenRaw=document.getElementById("ovOpenRaw"),ovDownload=document.getElementById("ovDownload"),infoOverlay=document.getElementById("infoOverlay"),infoBackBtn=document.getElementById("infoBackBtn"),infoContent=document.getElementById("infoContent"),uploadBtn=document.getElementById("uploadBtn"),infoLinks=document.querySelectorAll(".info-link"),websiteViewsEl=document.getElementById("websiteViews"),sleep=ms=>new Promise(r=>setTimeout(r,ms)),fmtDate=iso=>{if(!iso)return"—";const d=new Date(iso),dd=String(d.getDate()).padStart(2,"0"),mm=String(d.getMonth()+1).padStart(2,"0"),yyyy=d.getFullYear();return`${dd}-${mm}-${yyyy}`},stripExt=name=>name.replace(/\.[^/.]+$/,""),extOf=name=>(name.split(".").pop()||"").toLowerCase();
+    async function incView(item){
+      try{
+        const res=await fetch(`${API_URL}?type=note&noteId=${item.path}&counter=views`,{method:"POST"}),data=await res.json();
+        if(data&&void 0!==data.views){
+          item.views=data.views,item.downloads=data.downloads;
+          return{views:item.views,downloads:item.downloads}
         }
-      } catch (e) {
-        console.error('Failed to increment view count:', e);
+      }catch(e){
+        console.error("Failed to increment view count:",e)
       }
-      return null;
+      return null
     }
-
-    async function incDownload(item) {
-      try {
-        const res = await fetch(`${API_URL}?type=note&noteId=${item.path}&counter=downloads`, { method: 'POST' });
-        const data = await res.json();
-        if (data && data.downloads !== undefined) {
-          item.views = data.views;
-          item.downloads = data.downloads;
-          return { views: item.views, downloads: item.downloads };
+    async function incDownload(item){
+      try{
+        const res=await fetch(`${API_URL}?type=note&noteId=${item.path}&counter=downloads`,{method:"POST"}),data=await res.json();
+        if(data&&void 0!==data.downloads){
+          item.views=data.views,item.downloads=data.downloads;
+          return{views:item.views,downloads:item.downloads}
         }
-      } catch (e) {
-        console.error('Failed to increment download count:', e);
+      }catch(e){
+        console.error("Failed to increment download count:",e)
       }
-      return null;
+      return null
     }
-
     async function incWebsiteView(){
-      try {
-        const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.views !== undefined) {
-            return data.views;
-          }
+      try{
+        const res=await fetch(`${API_URL}?type=website`,{method:"POST"});
+        if(res.ok){
+          const data=await res.json();
+          if(void 0!==data.views)return data.views
         }
-      } catch (e) {
-        console.error('Failed to increment website view count:', e);
+      }catch(e){
+        console.error("Failed to increment website view count:",e)
       }
-      return null;
+      return null
     }
-
     async function getApiKeys(){
-      const res = await fetch(`${API_URL}?list=true`, { method: 'GET' });
-      if(!res.ok) return [];
-      return await res.json();
+      const res=await fetch(`${API_URL}?list=true`,{method:"GET"});
+      return res.ok?await res.json():[]
     }
-
-    // --- Data fetch ---
     async function fetchNotes(){
-      const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/notes_metadata.json`;
-      const res = await fetch(url);
-      if(!res.ok){
-        throw new Error("Failed to fetch notes_metadata.json. Check that the file exists and the repository is public.");
+      const url=`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/notes_metadata.json`,res=await fetch(url);
+      if(!res.ok)throw new Error("Failed to fetch notes_metadata.json. Check that the file exists and the repository is public.");
+      const metadata=await res.json();
+      return metadata.map(meta=>{
+        const format=extOf(meta.name);
+        if("pdf"!==format&&"docx"!==format)return null;
+        return{
+          name:meta.name,
+          title:stripExt(meta.name),
+          path:meta.path,
+          download_url:meta.download_url,
+          html_url:`https://github.com/${owner}/${repo}/blob/${BRANCH}/${encodeURIComponent(meta.path)}`,
+          format:format,
+          updatedAt:meta.last_updated,
+          author:meta.author,
+          is_ai_generated:meta.is_ai_generated,
+          views:0,
+          downloads:0
+        }
+      }).filter(Boolean)
+    }
+    async function fetchMarkdownFile(path){
+      try{
+        const url=`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${path}`,response=await fetch(url);
+        return response.ok?await response.text():`Failed to fetch markdown file from: ${url}`
+      }catch(e){
+        return`Error fetching markdown file: ${e.message}`
       }
-      const metadata = await res.json();
-      
-      return metadata.map(meta => {
-        const format = extOf(meta.name);
-        if (format !== "pdf" && format !== "docx") {
-          return null;
-        }
-        return {
-          name: meta.name,
-          title: stripExt(meta.name),
-          path: meta.path,
-          download_url: meta.download_url,
-          html_url: `https://github.com/${owner}/${repo}/blob/${BRANCH}/${encodeURIComponent(meta.path)}`,
-          format: format,
-          updatedAt: meta.last_updated,
-          author: meta.author,
-          is_ai_generated: meta.is_ai_generated,
-          views: 0,
-          downloads: 0,
-        };
-      }).filter(Boolean);
     }
-
-    async function fetchMarkdownFile(path) {
-        try {
-            const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${path}`;
-            const response = await fetch(url);
-            if (!response.ok) {
-                return `Failed to fetch markdown file from: ${url}`;
-            }
-            return await response.text();
-        } catch (e) {
-            return `Error fetching markdown file: ${e.message}`;
-        }
-    }
-
-
-    // --- Rendering ---
     function render(){
-      const query = searchInput.value.trim().toLowerCase();
-      const fmt = formatSelect.value;
-
-      let list = [...allItems];
-
-      // Filter by AI content
-      if (!showAI) {
-        list = list.filter(x => !x.is_ai_generated);
-      }
-      // Filter by format
-      if(fmt !== "all"){
-        list = list.filter(x=> x.format === fmt);
-      }
-      // Text search (title)
-      if(query){
-        list = list.filter(x=> x.title.toLowerCase().includes(query));
-      }
-
-      // Sort
-      const sort = sortSelect.value;
+      const query=searchInput.value.trim().toLowerCase(),fmt=formatSelect.value;
+      let list=[...allItems];
+      !showAI&&(list=list.filter(x=>!x.is_ai_generated)),"all"!==fmt&&(list=list.filter(x=>x.format===fmt)),query&&(list=list.filter(x=>x.title.toLowerCase().includes(query)));
+      const sort=sortSelect.value;
       list.sort((a,b)=>{
         switch(sort){
-          case "title-asc": return a.title.localeCompare(b.title);
-          case "title-desc": return b.title.localeCompare(a.title);
-          case "format-asc": return a.format.localeCompare(b.format) || a.title.localeCompare(b.title);
-          case "updated-asc": return (new Date(a.updatedAt||0)) - (new Date(b.updatedAt||0));
-          case "updated-desc":
-          default: return (new Date(b.updatedAt||0)) - (new Date(a.updatedAt||0));
+          case"title-asc":return a.title.localeCompare(b.title);
+          case"title-desc":return b.title.localeCompare(a.title);
+          case"format-asc":return a.format.localeCompare(b.format)||a.title.localeCompare(b.title);
+          case"updated-asc":return new Date(a.updatedAt||0)-new Date(b.updatedAt||0);
+          case"updated-desc":
+          default:return new Date(b.updatedAt||0)-new Date(a.updatedAt||0)
         }
-      });
-
-      // Clear container
-      container.innerHTML = "";
-      container.className = viewMode === "grid" ? "grid" : "list";
-
-      // Render each item
-      for(const it of list){
-        if(viewMode === "grid"){
-          container.appendChild(renderCard(it));
-        }else{
-          container.appendChild(renderRow(it));
-        }
-      }
+      }),container.innerHTML="",container.className="grid"===viewMode?"grid":"list";
+      for(const it of list)container.appendChild("grid"===viewMode?renderCard(it):renderRow(it))
     }
-
     function renderFormatBadge(fmt){
-      const span = document.createElement("span");
-      span.className = `fmt-badge fmt-${fmt}`;
-      span.textContent = fmt.toUpperCase();
-      return span;
+      const span=document.createElement("span");
+      return span.className=`fmt-badge fmt-${fmt}`,span.textContent=fmt.toUpperCase(),span
     }
-
-    function makeThumb(fmt, url){
-      const holder = document.createElement("div");
-      holder.className = "thumb";
-      holder.style.borderRadius = "12px";
-
-      if(fmt === "pdf" && window['pdfjsLib']){
-        const canvas = document.createElement("canvas");
-        holder.appendChild(canvas);
-        renderPdfFirstPage(url, canvas).catch(()=>{
-          holder.innerHTML = fileIcon("pdf");
-        });
-      } else { // Fallback for DOCX and other formats
-        holder.innerHTML = fileIcon(fmt);
-      }
-      return holder;
+    function makeThumb(fmt,url){
+      const holder=document.createElement("div");
+      return holder.className="thumb",holder.style.borderRadius="12px",fmt==="pdf"&&window.pdfjsLib? (holder.innerHTML=`<canvas></canvas>`,renderPdfFirstPage(url,holder.querySelector("canvas")).catch(()=>holder.innerHTML=fileIcon("pdf"))):holder.innerHTML=fileIcon(fmt),holder
     }
-
     function fileIcon(fmt){
-      const label = fmt.toUpperCase();
-      const color = fmt === "pdf" ? "rgba(125,211,252,0.18)" : "rgba(167,243,208,0.18)";
-      return `
+      const label=fmt.toUpperCase(),color="pdf"===fmt?"rgba(125,211,252,.18)":"rgba(167,243,208,.18)";
+      return`
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:${color}">
           <svg viewBox="0 0 24 24" fill="currentColor" width="42" height="42" aria-hidden="true">
             <path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 4h7v5h5v11H6V4z"/>
           </svg>
-          <div class="pill ${fmt==='docx'?'docx':''}" style="margin-top:8px;">${label}</div>
+          <div class="pill ${"docx"===fmt?"docx":""}" style="margin-top:8px;">${label}</div>
         </div>
-      `;
+      `
     }
-
-    async function renderPdfFirstPage(url, canvas){
-      const pdf = await pdfjsLib.getDocument({url}).promise;
-      const page = await pdf.getPage(1);
-      const viewport = page.getViewport({scale: 0.5});
-      const scale = Math.min(1.2, Math.max(0.6, canvas.parentElement.clientWidth / (viewport.width*1.2)));
-      const vp = page.getViewport({scale});
-      const ctx = canvas.getContext('2d');
-      canvas.width = vp.width; canvas.height = vp.height;
-      await page.render({canvasContext: ctx, viewport: vp}).promise;
+    async function renderPdfFirstPage(url,canvas){
+      const pdf=await pdfjsLib.getDocument({url}).promise,page=await pdf.getPage(1),viewport=page.getViewport({scale:.5}),scale=Math.min(1.2,Math.max(.6,canvas.parentElement.clientWidth/(1.2*viewport.width))),vp=page.getViewport({scale}),ctx=canvas.getContext("2d");
+      canvas.width=vp.width,canvas.height=vp.height,await page.render({canvasContext:ctx,viewport:vp}).promise
     }
-
     function renderCard(it){
-      const card = document.createElement("article");
-      card.className = "card";
-      card.tabIndex = 0;
-      card.setAttribute("role", "button");
-      card.setAttribute("aria-label", `${it.title}`);
-
-      const thumb = makeThumb(it.format, it.download_url);
+      const card=document.createElement("article");
+      card.className="card",card.tabIndex=0,card.setAttribute("role","button"),card.setAttribute("aria-label",`${it.title}`);
+      const thumb=makeThumb(it.format,it.download_url);
       thumb.appendChild(renderFormatBadge(it.format));
-
-      const body = document.createElement("div");
-      body.className = "body";
-      const title = document.createElement("div");
-      title.className = "title-line";
-      title.textContent = it.title;
-
-      const authorName = (it.author || "").toLowerCase();
-      const displayAuthor = (authorName === "tebby2008" || authorName === "tebby") ? "Chenyu Li" : it.author;
-
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      
-      const aiTagHtml = it.is_ai_generated ? `<span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>` : '';
-      meta.innerHTML = `
-        <span>${displayAuthor || 'Unknown'} ${aiTagHtml}</span>
-        <span class="dot"></span>
-        <span>${fmtDate(it.updatedAt)}</span>
-      `;
-
-      const stats = document.createElement("div");
-      stats.className = "stats";
-      stats.innerHTML = `
-        <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views || 0}</span></span>
-        <span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads || 0}</span></span>
-      `;
-
-      const dlBtn = document.createElement("button");
-      dlBtn.className = "download-btn";
-      dlBtn.title = "Download";
-      dlBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`;
-      dlBtn.addEventListener("click", async (e)=> {
-          e.stopPropagation();
-          const data = await incDownload(it);
-          if (data) {
-              stats.querySelector('[data-view]').textContent = data.views;
-              stats.querySelector('[data-dl]').textContent = data.downloads;
-          }
-          const a = document.createElement("a");
-          a.href = it.download_url;
-          a.download = it.name;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-      });
-      stats.appendChild(dlBtn);
-
-      card.appendChild(thumb);
-      body.appendChild(title);
-      body.appendChild(meta);
-      body.appendChild(stats);
-      card.appendChild(body);
-
-      card.addEventListener("click", ()=> openOverlay(it));
-      card.addEventListener("keydown", (e)=> { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openOverlay(it);} });
-
-      return card;
-    }
-
-    // SORT dropdown logic
-    const sortBtn = document.getElementById("sortBtn");
-    const sortDropdown = document.getElementById("sortDropdown");
-    sortBtn.addEventListener("click", () => {
-      sortDropdown.classList.toggle("open");
-    });
-    sortDropdown.querySelectorAll(".option").forEach(opt => {
-      opt.addEventListener("click", () => {
-        sortDropdown.querySelectorAll(".option").forEach(o => o.classList.remove("active"));
-        opt.classList.add("active");
-        sortSelect.value = opt.dataset.sort;
-        render();
-        sortDropdown.classList.remove("open");
-        if (opt.dataset.sort !== "updated-desc") {
-          sortBtn.classList.add("active");
-        } else {
-          sortBtn.classList.remove("active");
-        }
-      });
-    });
-    document.addEventListener("click", e => {
-      if (!sortBtn.contains(e.target) && !sortDropdown.contains(e.target)) {
-        sortDropdown.classList.remove("open");
-      }
-    });
-
-    // FILE TYPE toggle logic
-    const typeBtn = document.getElementById("typeBtn");
-    const types = ["ALL", "PDF", "DOCX"];
-    let idx = 0;
-    typeBtn.addEventListener("click", () => {
-      idx = (idx + 1) % types.length;
-      typeBtn.textContent = types[idx];
-      formatSelect.value = types[idx] === "ALL" ? "all" : types[idx].toLowerCase();
-      render();
-      if (types[idx] !== "ALL") {
-        typeBtn.classList.add("active");
-      } else {
-        typeBtn.classList.remove("active");
-      }
-    });
-
-    function renderRow(it){
-      const row = document.createElement("article");
-      row.className = "row";
-      row.tabIndex = 0;
-      row.setAttribute("role", "button");
-      row.setAttribute("aria-label", `${it.title}`);
-
-      const thumb = makeThumb(it.format, it.download_url);
-      thumb.style.height = "66px";
-      const fmtBadge = thumb.querySelector('.fmt-badge');
-      if (fmtBadge) {
-        fmtBadge.style.display = 'none';
-      }
-      row.appendChild(thumb);
-
-      const main = document.createElement("div");
-      main.className = "main";
-
-      const cellTitle = document.createElement("div");
-      cellTitle.className = "cell";
-      cellTitle.innerHTML = `<div class="title-line">${it.title}</div>`;
-
-      const authorName = (it.author || "").toLowerCase();
-      const displayAuthor = (authorName === "tebby2008" || authorName === "tebby") ? "Chenyu Li" : it.author;
-
-      const cellAuthor = document.createElement("div");
-      cellAuthor.className = "cell muted";
-      cellAuthor.textContent = displayAuthor || "Unknown";
-      
-      if(it.is_ai_generated){
-          const aiTag = document.createElement("span");
-          aiTag.className = "ai-tag";
-          aiTag.innerHTML = `<span class="material-symbols-outlined">auto_awesome</span>AI`;
-          cellAuthor.appendChild(aiTag);
-      }
-
-      const cellDate = document.createElement("div");
-      cellDate.className = "cell muted";
-      cellDate.textContent = fmtDate(it.updatedAt);
-
-      const cellFmt = document.createElement("div");
-      cellFmt.className = "cell";
-      const pill = document.createElement("span");
-      pill.className = `pill ${it.format==='docx'?'docx':''}`;
-      pill.textContent = it.format.toUpperCase();
-      cellFmt.appendChild(pill);
-
-      const cellStats = document.createElement("div");
-      cellStats.className = "cell muted";
-      cellStats.innerHTML = `
-        <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views || 0}</span></span>
-        <span class="stat" style="margin-left:10px;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads || 0}</span></span>
-      `;
-
-      main.appendChild(cellTitle);
-      main.appendChild(cellAuthor);
-      main.appendChild(cellDate);
-      main.appendChild(cellFmt);
-      main.appendChild(cellStats);
-      row.appendChild(main);
-
-      const rightEnd = document.createElement("div");
-      rightEnd.className = "right-end";
-      const dlCircle = document.createElement("button");
-      dlCircle.className = "btn";
-      dlCircle.title = "Download";
-      dlCircle.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`;
-      dlCircle.addEventListener("click", async (e)=> {
+      const body=document.createElement("div");
+      body.className="body";
+      const title=document.createElement("div");
+      title.className="title-line",title.textContent=it.title;
+      const authorName=(it.author||"").toLowerCase(),displayAuthor="tebby2008"===authorName||"tebby"===authorName?"Chenyu Li":it.author,meta=document.createElement("div");
+      meta.className="meta";
+      const aiTagHtml=it.is_ai_generated?`<span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>`:"";
+      meta.innerHTML=`<span>${displayAuthor||"Unknown"} ${aiTagHtml}</span><span class="dot"></span><span>${fmtDate(it.updatedAt)}</span>`;
+      const stats=document.createElement("div");
+      stats.className="stats",stats.innerHTML=`<span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views||0}</span></span><span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads||0}</span></span>`;
+      const dlBtn=document.createElement("button");
+      return dlBtn.className="download-btn",dlBtn.title="Download",dlBtn.innerHTML=`<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`,dlBtn.addEventListener("click",async e=>{
         e.stopPropagation();
-        const data = await incDownload(it);
-        if (data) {
-          cellStats.querySelector('[data-view]').textContent = data.views;
-          cellStats.querySelector('[data-dl]').textContent = data.downloads;
-        }
-        const a = document.createElement("a");
-        a.href = it.download_url; a.download = it.name; document.body.appendChild(a); a.click(); a.remove();
-      });
-      rightEnd.appendChild(dlCircle);
-      row.appendChild(rightEnd);
-
-      row.addEventListener("click", ()=> openOverlay(it));
-      row.addEventListener("keydown", (e)=> { if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openOverlay(it);} });
-
-      return row;
+        const data=await incDownload(it);
+        data&&(stats.querySelector("[data-view]").textContent=data.views,stats.querySelector("[data-dl]").textContent=data.downloads);
+        const a=document.createElement("a");
+        a.href=it.download_url,a.download=it.name,document.body.appendChild(a),a.click(),a.remove()
+      }),card.appendChild(thumb),body.appendChild(title),body.appendChild(meta),body.appendChild(stats),card.appendChild(body),card.addEventListener("click",()=>openOverlay(it)),card.addEventListener("keydown",e=>{("Enter"===e.key||" "===e.key)&&(e.preventDefault(),openOverlay(it))}),card
     }
-
+    const sortBtn=document.getElementById("sortBtn"),sortDropdown=document.getElementById("sortDropdown");
+    sortBtn.addEventListener("click",()=>sortDropdown.classList.toggle("open")),sortDropdown.querySelectorAll(".option").forEach(opt=>{opt.addEventListener("click",()=>{sortDropdown.querySelectorAll(".option").forEach(o=>o.classList.remove("active")),opt.classList.add("active"),sortSelect.value=opt.dataset.sort,render(),sortDropdown.classList.remove("open"),"updated-desc"!==opt.dataset.sort?sortBtn.classList.add("active"):sortBtn.classList.remove("active")})}),document.addEventListener("click",e=>{sortBtn.contains(e.target)||sortDropdown.contains(e.target)||sortDropdown.classList.remove("open")});
+    const typeBtn=document.getElementById("typeBtn"),types=["ALL","PDF","DOCX"];
+    let idx=0;
+    function renderRow(it){
+      const row=document.createElement("article");
+      row.className="row",row.tabIndex=0,row.setAttribute("role","button"),row.setAttribute("aria-label",`${it.title}`);
+      const thumb=makeThumb(it.format,it.download_url);
+      thumb.style.height="66px";
+      const fmtBadge=thumb.querySelector(".fmt-badge");
+      fmtBadge&&(fmtBadge.style.display="none"),row.appendChild(thumb);
+      const main=document.createElement("div");
+      main.className="main";
+      const cellTitle=document.createElement("div");
+      cellTitle.className="cell",cellTitle.innerHTML=`<div class="title-line">${it.title}</div>`;
+      const authorName=(it.author||"").toLowerCase(),displayAuthor="tebby2008"===authorName||"tebby"===authorName?"Chenyu Li":it.author,cellAuthor=document.createElement("div");
+      if(cellAuthor.className="cell muted",cellAuthor.textContent=displayAuthor||"Unknown",it.is_ai_generated){
+        const aiTag=document.createElement("span");
+        aiTag.className="ai-tag",aiTag.innerHTML=`<span class="material-symbols-outlined">auto_awesome</span>AI`,cellAuthor.appendChild(aiTag)
+      }
+      const cellDate=document.createElement("div");
+      cellDate.className="cell muted",cellDate.textContent=fmtDate(it.updatedAt);
+      const cellFmt=document.createElement("div");
+      cellFmt.className="cell";
+      const pill=document.createElement("span");
+      pill.className=`pill ${"docx"===it.format?"docx":""}`,pill.textContent=it.format.toUpperCase(),cellFmt.appendChild(pill);
+      const cellStats=document.createElement("div");
+      cellStats.className="cell muted",cellStats.innerHTML=`<span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views||0}</span></span><span class="stat" style="margin-left:10px;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads||0}</span></span>`;
+      main.appendChild(cellTitle),main.appendChild(cellAuthor),main.appendChild(cellDate),main.appendChild(cellFmt),main.appendChild(cellStats),row.appendChild(main);
+      const rightEnd=document.createElement("div");
+      return rightEnd.className="right-end",rightEnd.innerHTML=`<button class="btn" title="Download"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg></button>`,rightEnd.querySelector("button").addEventListener("click",async e=>{
+        e.stopPropagation();
+        const data=await incDownload(it);
+        data&&(cellStats.querySelector("[data-view]").textContent=data.views,cellStats.querySelector("[data-dl]").textContent=data.downloads);
+        const a=document.createElement("a");
+        a.href=it.download_url,a.download=it.name,document.body.appendChild(a),a.click(),a.remove()
+      }),row.appendChild(rightEnd),row.addEventListener("click",()=>openOverlay(it)),row.addEventListener("keydown",e=>{("Enter"===e.key||" "===e.key)&&(e.preventDefault(),openOverlay(it))}),row
+    }
     function openOverlay(item){
-      document.body.style.overflow = 'hidden'; // Lock background scroll
-      overlay.style.display = 'block';
-      overlay.setAttribute("aria-hidden", "false");
-
-      requestAnimationFrame(() => {
-        overlay.classList.add("open");
-      });
-
-      ovTitle.textContent = item.title;
-      ovFormat.textContent = item.format.toUpperCase();
-      ovFormat.className = `pill ${item.format==='docx' ? 'docx' : ''}`;
-      ovDate.textContent = fmtDate(item.updatedAt);
-      
-      const authorName = (item.author || "").toLowerCase();
-      const displayAuthor = (authorName === "tebby2008" || authorName === "tebby") ? "Chenyu Li" : item.author;
-      const aiTagHtml = item.is_ai_generated ? ` <span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>` : '';
-      ovAuthor.innerHTML = `${displayAuthor}${aiTagHtml}`;
-
-      ovOpenRaw.href = `view.html?file=${encodeURIComponent(item.download_url)}`;
-      ovOpenRaw.target = "_blank";
-
-      docFrame.src = `view.html?file=${encodeURIComponent(item.download_url)}`;
-
-      ovViews.textContent = item.views || 0;
-      ovDownloads.textContent = item.downloads || 0;
-
-      incView(item).then(data => {
-        if(data) {
-          ovViews.textContent = data.views;
-          ovDownloads.textContent = data.downloads;
-          render();
-        }
-      }).catch(e => {
-        console.error('Failed to increment view count:', e);
-      });
-
-      ovDownload.onclick = async ()=>{
-        const data = await incDownload(item);
-        if (data) {
-          ovViews.textContent = data.views;
-          ovDownloads.textContent = data.downloads;
-          render();
-        }
-        const a = document.createElement("a");
-        a.href = item.download_url; a.download = item.name;
-        document.body.appendChild(a); a.click(); a.remove();
-      };
+      document.body.style.overflow="hidden",overlay.style.display="block",overlay.setAttribute("aria-hidden","false"),requestAnimationFrame(()=>{overlay.classList.add("open")}),ovTitle.textContent=item.title,ovFormat.textContent=item.format.toUpperCase(),ovFormat.className=`pill ${"docx"===item.format?"docx":""}`,ovDate.textContent=fmtDate(item.updatedAt);
+      const authorName=(item.author||"").toLowerCase(),displayAuthor="tebby2008"===authorName||"tebby"===authorName?"Chenyu Li":item.author,aiTagHtml=item.is_ai_generated?` <span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>`:"";
+      ovAuthor.innerHTML=`${displayAuthor}${aiTagHtml}`,ovOpenRaw.href=`view.html?file=${encodeURIComponent(item.download_url)}`,ovOpenRaw.target="_blank",docFrame.src=`view.html?file=${encodeURIComponent(item.download_url)}`,ovViews.textContent=item.views||0,ovDownloads.textContent=item.downloads||0,incView(item).then(data=>{data&&(ovViews.textContent=data.views,ovDownloads.textContent=data.downloads,render())}).catch(e=>console.error("Failed to increment view count:",e)),ovDownload.onclick=async()=>{
+        const data=await incDownload(item);
+        data&&(ovViews.textContent=data.views,ovDownloads.textContent=data.downloads,render());
+        const a=document.createElement("a");
+        a.href=item.download_url,a.download=item.name,document.body.appendChild(a),a.click(),a.remove()
+      }
     }
-
     function closeOverlay(){
-      overlay.classList.remove("open");
-      overlay.addEventListener("transitionend", function handler() {
-        if (!overlay.classList.contains("open")) {
-            overlay.style.display = 'none';
-            overlay.setAttribute("aria-hidden", "true");
-            docFrame.src = "about:blank";
-            document.body.style.overflow = ''; // Restore background scroll
-            overlay.removeEventListener("transitionend", handler);
-        }
-      });
+      overlay.classList.remove("open"),overlay.addEventListener("transitionend",function handler(){overlay.classList.contains("open")||(overlay.style.display="none",overlay.setAttribute("aria-hidden","true"),docFrame.src="about:blank",document.body.style.overflow="",overlay.removeEventListener("transitionend",handler))})
     }
-
-    function openInfoOverlay(mdFile) {
-        document.body.style.overflow = 'hidden'; // Lock background scroll
-        infoOverlay.style.display = 'block';
-        infoOverlay.setAttribute("aria-hidden", "false");
-        requestAnimationFrame(() => { infoOverlay.classList.add("open"); });
-        infoContent.innerHTML = "Loading...";
-
-        fetchMarkdownFile(mdFile).then(mdContent => {
-          infoContent.innerHTML = marked.parse(mdContent);
-        }).catch(e => {
-          infoContent.innerHTML = `Failed to load content: ${e}`;
-        });
+    function openInfoOverlay(mdFile){
+      document.body.style.overflow="hidden",infoOverlay.style.display="block",infoOverlay.setAttribute("aria-hidden","false"),requestAnimationFrame(()=>{infoOverlay.classList.add("open")}),infoContent.innerHTML="Loading...",fetchMarkdownFile(mdFile).then(mdContent=>infoContent.innerHTML=marked.parse(mdContent)).catch(e=>infoContent.innerHTML=`Failed to load content: ${e}`)
     }
-
-    function closeInfoOverlay() {
-      infoOverlay.classList.remove("open");
-      infoOverlay.addEventListener("transitionend", function handler() {
-        if (!infoOverlay.classList.contains("open")) {
-            infoOverlay.style.display = 'none';
-            infoOverlay.setAttribute("aria-hidden", "true");
-            document.body.style.overflow = ''; // Restore background scroll
-            infoOverlay.removeEventListener("transitionend", handler);
-        }
-      }, {once: true});
+    function closeInfoOverlay(){
+      infoOverlay.classList.remove("open"),infoOverlay.addEventListener("transitionend",function handler(){infoOverlay.classList.contains("open")||(infoOverlay.style.display="none",infoOverlay.setAttribute("aria-hidden","true"),document.body.style.overflow="",infoOverlay.removeEventListener("transitionend",handler))},{once:!0})
     }
-
-    // --- Events ---
-    sortSelect.addEventListener("change", render);
-    formatSelect.addEventListener("change", render);
-    searchInput.addEventListener("input", render);
-    gridBtn.addEventListener("click", ()=>{
-      viewMode = "grid";
-      gridBtn.classList.add("active"); gridBtn.setAttribute("aria-pressed","true");
-      listBtn.classList.remove("active"); listBtn.setAttribute("aria-pressed","false");
-      render();
-    });
-    listBtn.addEventListener("click", ()=>{
-      viewMode = "list";
-      listBtn.classList.add("active"); listBtn.setAttribute("aria-pressed","true");
-      gridBtn.classList.remove("active"); gridBtn.setAttribute("aria-pressed","false");
-      render();
-    });
-
-    aiToggleBtn.addEventListener("click", () => {
-        showAI = !showAI; // Toggle the state
-        aiToggleBtn.classList.toggle("active-ai");
-        aiToggleBtn.textContent = showAI ? "Show AI" : "Hide AI";
-        render();
-    });
-
-    backBtn.addEventListener("click", closeOverlay);
-    overlay.addEventListener("click", (e)=> { if(e.target === overlay) closeOverlay(); });
-    document.addEventListener("keydown", (e)=> { if(e.key === "Escape" && overlay.classList.contains("open")) closeOverlay(); });
-
-    uploadBtn.addEventListener("click", () => openInfoOverlay("resources/upload.md"));
-    infoBackBtn.addEventListener("click", closeInfoOverlay);
-    infoOverlay.addEventListener("click", (e)=> { if(e.target === infoOverlay) closeInfoOverlay(); });
-
-    infoLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            openInfoOverlay(link.dataset.md);
-        });
-    });
-
-    // --- Init ---
-    (async function init(){
+    gridBtn.addEventListener("click",()=>{
+      viewMode="grid",gridBtn.classList.add("active"),gridBtn.setAttribute("aria-pressed","true"),listBtn.classList.remove("active"),listBtn.setAttribute("aria-pressed","false"),render()
+    }),listBtn.addEventListener("click",()=>{
+      viewMode="list",listBtn.classList.add("active"),listBtn.setAttribute("aria-pressed","true"),gridBtn.classList.remove("active"),gridBtn.setAttribute("aria-pressed","false"),render()
+    }),aiToggleBtn.addEventListener("click",()=>{
+      showAI=!showAI,aiToggleBtn.classList.toggle("active-ai"),aiToggleBtn.textContent=showAI?"Show AI":"Hide AI",render()
+    }),backBtn.addEventListener("click",closeOverlay),overlay.addEventListener("click",e=>{e.target===overlay&&closeOverlay()}),document.addEventListener("keydown",e=>{"Escape"===e.key&&overlay.classList.contains("open")&&closeOverlay()}),uploadBtn.addEventListener("click",()=>openInfoOverlay("resources/upload.md")),infoBackBtn.addEventListener("click",closeInfoOverlay),infoOverlay.addEventListener("click",e=>{e.target===infoOverlay&&closeInfoOverlay()}),infoLinks.forEach(link=>{link.addEventListener("click",e=>{e.preventDefault(),openInfoOverlay(link.dataset.md)})}),async function init(){
       try{
-        allItems = await fetchNotes();
-        const githubPaths = new Set(allItems.map(item => item.path));
-
-        const dbKeys = await getApiKeys();
-
-        const noteKeysToDelete = dbKeys.filter(key => key !== 'total-website-visits' && !githubPaths.has(key));
-
-        for (const key of noteKeysToDelete) {
-          console.log(`Deleting counter for removed note: ${key}`);
-          await fetch(`${API_URL}?noteId=${key}`, { method: 'DELETE' });
-        }
-
-        const notePromises = allItems.map(async (note) => {
-          try {
-            const res = await fetch(`${API_URL}?noteId=${note.path}`, { method: 'GET' });
-            if (res.ok) {
-              const data = await res.json();
-              note.views = data.views || 0;
-              note.downloads = data.downloads || 0;
-            } else {
-              note.views = 0;
-              note.downloads = 0;
-            }
-          } catch (e) {
-            console.error('Failed to fetch count for note:', note.path, e);
-            note.views = 0;
-            note.downloads = 0;
+        allItems=await fetchNotes();
+        const githubPaths=new Set(allItems.map(item=>item.path)),dbKeys=await getApiKeys(),noteKeysToDelete=dbKeys.filter(key=>"total-website-visits"!==key&&!githubPaths.has(key));
+        for(const key of noteKeysToDelete)console.log(`Deleting counter for removed note: ${key}`),await fetch(`${API_URL}?noteId=${key}`,{method:"DELETE"});
+        const notePromises=allItems.map(async note=>{
+          try{
+            const res=await fetch(`${API_URL}?noteId=${note.path}`,{method:"GET"});
+            if(res.ok){
+              const data=await res.json();
+              note.views=data.views||0,note.downloads=data.downloads||0
+            }else note.views=0,note.downloads=0
+          }catch(e){
+            console.error("Failed to fetch count for note:",note.path,e),note.views=0,note.downloads=0
           }
         });
         await Promise.all(notePromises);
-
-        const newViews = await incWebsiteView();
-        if (newViews !== null) {
-          websiteViewsEl.textContent = newViews;
-        }
-
-        render();
-
+        const newViews=await incWebsiteView();
+        null!==newViews&&(websiteViewsEl.textContent=newViews),render()
       }catch(e){
-        console.error(e);
-        container.innerHTML = `
+        console.error(e),container.innerHTML=`
           <div style="background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;">
             <div style="font-weight:700;margin-bottom:6px;">Couldn’t load Notes/</div>
             <div class="muted">Check that the repository, branch, and Notes folder exist and are public.</div>
           </div>
-        `;
+        `
       }
-    })();
+    }()
   </script>
 </body>
 </html>
