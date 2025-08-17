@@ -47,7 +47,7 @@
       font-size: 24px;
       display: flex;
     }
-    
+
     /* Redesigned Header */
     .title-section{
       height: 50vh;
@@ -199,6 +199,21 @@
     }
     .fmt-pdf{ box-shadow:0 0 0 2px rgba(125,211,252,0.35) inset }
     .fmt-docx{ box-shadow:0 0 0 2px rgba(167,243,208,0.35) inset }
+    .fmt-ai {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.35) inset;
+    }
+
 
     .body{ padding:12px 14px 14px }
     .title-line{
@@ -246,12 +261,19 @@
     .row:hover{ transform: translateY(-1px) }
     .row .thumb{ height:66px; border-radius:12px }
     .row .main{
-      display:grid; grid-template-columns: minmax(200px, 2fr) repeat(4, minmax(90px, 1fr));
+      display:grid; grid-template-columns: minmax(200px, 2fr) repeat(2, minmax(90px, 1fr));
       gap:10px; align-items:center;
     }
     .row .main .cell{ display:flex; align-items:center; gap:6px; min-width:0 }
     .row .title-line{ margin:0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
     .row .right-end{ display:flex; align-items:center; gap:8px }
+    .row .pill {
+        display: none;
+    }
+    .row .ai-badge {
+        display: none;
+    }
+
 
     /* Overlay viewer */
     .overlay{
@@ -475,7 +497,7 @@
         <img src="resources/logo.svg" alt="OpenNotes Logo" class="title-logo" />
         <div class="line"></div>
         <p>
-          the open platform for notes by 
+          the open platform for notes by
           <a href="https://ingenium.rf.gd" target="_blank" rel="noopener">
             <img src="resources/ingenium.png" alt="Ingenium Logo" />
           </a>
@@ -603,23 +625,6 @@
     const NOTES_PATH = "Notes";
     const API_URL = "https://open-notes.tebby2008-li.workers.dev";
 
-    (function tryAutoDetect(){
-      try{
-        const host = location.hostname;
-        const path = location.pathname.replace(/^\/+/,'').split('/');
-        const isPages = host.endsWith(".github.io");
-        if(isPages){
-          const owner = host.split(".github.io")[0];
-          const repo = path[0] || REPO_NAME;
-          if(REPO_OWNER.startsWith("<")) window['__owner']=owner;
-          if(REPO_NAME.startsWith("<")) window['__repo']=repo;
-        }
-      }catch(e){}
-    })();
-
-    const owner = window.__owner || REPO_OWNER;
-    const repo  = window.__repo  || REPO_NAME;
-
     // --- State ---
     let allItems = [];
     let viewMode = "grid";
@@ -719,51 +724,12 @@
 
     // --- Data fetch ---
     async function fetchNotes(){
-      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(NOTES_PATH)}?ref=${encodeURIComponent(BRANCH)}`;
-      const res = await fetch(url, {headers:{'Accept':'application/vnd.github+json'}});
+      const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/notes_metadata.json`;
+      const res = await fetch(url);
       if(!res.ok){
-        throw new Error("Failed to fetch repo contents. Check repo, owner, branch, and that Notes/ exists.");
+        throw new Error("Failed to fetch notes_metadata.json. Ensure the file exists in the root of your main branch.");
       }
-      const data = await res.json();
-      const files = data.filter(x=>{
-        if(x.type !== "file") return false;
-        const ext = extOf(x.name);
-        return ext === "pdf" || ext === "docx";
-      });
-
-      const items = [];
-      for(const f of files){
-        const item = {
-          name: f.name,
-          title: stripExt(f.name),
-          path: f.path,
-          download_url: f.download_url,
-          html_url: f.html_url,
-          format: extOf(f.name),
-          updatedAt: null,
-          author: null,
-          views: 0,
-          downloads: 0,
-        };
-        items.push(item);
-      }
-
-      await Promise.all(items.map(async (it)=>{
-        try{
-          const commitsUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURIComponent(it.path)}&per_page=1&sha=${encodeURIComponent(BRANCH)}`;
-          const r = await fetch(commitsUrl, {headers:{'Accept':'application/vnd.github+json'}});
-          if(r.ok){
-            const arr = await r.json();
-            if(Array.isArray(arr) && arr.length){
-              const c = arr[0];
-              it.updatedAt = c.commit && c.commit.author ? c.commit.author.date : null;
-              it.author = c.author && c.author.login ? c.author.login : (c.commit && c.commit.author ? c.commit.author.name : "Unknown");
-            }
-          }
-        }catch(e){}
-      }));
-
-      return items;
+      return await res.json();
     }
 
     async function fetchMarkdownFile(path) {
@@ -803,9 +769,9 @@
           case "title-asc": return a.title.localeCompare(b.title);
           case "title-desc": return b.title.localeCompare(a.title);
           case "format-asc": return a.format.localeCompare(b.format) || a.title.localeCompare(b.title);
-          case "updated-asc": return (new Date(a.updatedAt||0)) - (new Date(b.updatedAt||0));
+          case "updated-asc": return (new Date(a.last_updated||0)) - (new Date(b.last_updated||0));
           case "updated-desc":
-          default: return (new Date(b.updatedAt||0)) - (new Date(a.updatedAt||0));
+          default: return (new Date(b.last_updated||0)) - (new Date(a.last_updated||0));
         }
       });
 
@@ -823,14 +789,21 @@
       }
     }
 
-    function renderFormatBadge(fmt){
+    function renderFormatBadge(fmt, isAiGenerated){
       const span = document.createElement("span");
       span.className = `fmt-badge fmt-${fmt}`;
       span.textContent = fmt.toUpperCase();
-      return span;
+      if (isAiGenerated) {
+        const aiSpan = document.createElement("span");
+        aiSpan.className = "fmt-ai";
+        aiSpan.textContent = "AI";
+        span.style.right = '70px'; // Adjust position to make room for AI badge
+        return [span, aiSpan];
+      }
+      return [span];
     }
 
-    function makeThumb(fmt, url){
+    function makeThumb(fmt, url, isAiGenerated){
       const holder = document.createElement("div");
       holder.className = "thumb";
       holder.style.borderRadius = "12px";
@@ -844,6 +817,7 @@
       }else{
         holder.innerHTML = fileIcon(fmt);
       }
+      renderFormatBadge(fmt, isAiGenerated).forEach(badge => holder.appendChild(badge));
       return holder;
     }
 
@@ -878,8 +852,7 @@
       card.setAttribute("role", "button");
       card.setAttribute("aria-label", `${it.title}`);
 
-      const thumb = makeThumb(it.format, it.download_url);
-      thumb.appendChild(renderFormatBadge(it.format));
+      const thumb = makeThumb(it.format, it.download_url, it.is_ai_generated);
 
       const body = document.createElement("div");
       body.className = "body";
@@ -893,7 +866,7 @@
       meta.innerHTML = `
         <span>${displayAuthor || 'Unknown'}</span>
         <span class="dot"></span>
-        <span>${fmtDate(it.updatedAt)}</span>
+        <span>${fmtDate(it.last_updated)}</span>
       `;
 
       const stats = document.createElement("div");
@@ -988,7 +961,7 @@
       row.setAttribute("role", "button");
       row.setAttribute("aria-label", `${it.title}`);
 
-      const thumb = makeThumb(it.format, it.download_url);
+      const thumb = makeThumb(it.format, it.download_url, it.is_ai_generated);
       thumb.style.height = "66px";
       const fmtBadge = thumb.querySelector('.fmt-badge');
       if (fmtBadge) {
@@ -1010,7 +983,7 @@
 
       const cellDate = document.createElement("div");
       cellDate.className = "cell muted";
-      cellDate.textContent = fmtDate(it.updatedAt);
+      cellDate.textContent = fmtDate(it.last_updated);
 
       const cellFmt = document.createElement("div");
       cellFmt.className = "cell";
@@ -1069,7 +1042,7 @@
       ovTitle.textContent = item.title;
       ovFormat.textContent = item.format.toUpperCase();
       ovFormat.className = `pill ${item.format==='docx' ? 'docx' : ''}`;
-      ovDate.textContent = fmtDate(item.updatedAt);
+      ovDate.textContent = fmtDate(item.last_updated);
       ovAuthor.textContent = item.author === "Tebby2008" ? "Chenyu Li" : item.author;
       ovOpenRaw.href = `view.html?file=${encodeURIComponent(item.download_url)}`;
       ovOpenRaw.target = "_blank";
@@ -1171,12 +1144,18 @@
     // --- Init ---
     (async function init(){
       try{
-        allItems = await fetchNotes();
-        const githubPaths = new Set(allItems.map(item => item.path));
+        const notesMetadata = await fetchNotes();
+        allItems = notesMetadata.map(note => ({
+            ...note,
+            title: stripExt(note.name),
+            format: extOf(note.name),
+        }));
+        
+        const filePathsFromMetadata = new Set(allItems.map(item => item.path));
 
         const dbKeys = await getApiKeys();
 
-        const noteKeysToDelete = dbKeys.filter(key => key !== 'total-website-visits' && !githubPaths.has(key));
+        const noteKeysToDelete = dbKeys.filter(key => key !== 'total-website-visits' && !filePathsFromMetadata.has(key));
 
         for (const key of noteKeysToDelete) {
           console.log(`Deleting counter for removed note: ${key}`);
@@ -1214,7 +1193,7 @@
         container.innerHTML = `
           <div style="background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;">
             <div style="font-weight:700;margin-bottom:6px;">Couldn’t load Notes/</div>
-            <div class="muted">Check that the repository, branch, and Notes folder exist and are public.</div>
+            <div class="muted">Check that the file notes_metadata.json exists and is in the root of your main branch.</div>
           </div>
         `;
       }
