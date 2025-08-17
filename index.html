@@ -615,7 +615,6 @@
     const REPO_OWNER = "Tebby2008";
     const REPO_NAME = "OpenNotes";
     const BRANCH = "main";
-    const NOTES_PATH = "Notes";
     const API_URL = "https://open-notes.tebby2008-li.workers.dev";
 
     (function tryAutoDetect(){
@@ -729,7 +728,7 @@
     // --- Core Logic ---
     async function fetchNotes() {
       try {
-        const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${NOTES_PATH}/notes_metadata.json`;
+        const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/notes_metadata.json`;
         const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch notes metadata");
         const data = await res.json();
