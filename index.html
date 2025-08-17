@@ -16,7 +16,7 @@
       --panel-2: #e9ecef;
       --text: #212529;
       --muted: #6c757d;
-      --accent: #339af0;
+      --accent: #96bfea;
       --accent-2: #51cf66;
       --shadow:0 10px 30px rgba(0,0,0,0.1);
       --radius:16px;
@@ -24,7 +24,7 @@
       --radius-lg:22px;
       --gap:14px;
       --gap-lg:22px;
-      --dark-header: #15202B;
+      --dark-header: #12171d;
     }
 
     *{box-sizing:border-box}
@@ -49,9 +49,9 @@
       z-index: 1;
     }
     .title-logo {
-        width: 15vw;
+        width: 45vw;
         height: auto;
-        max-width: 250px;
+        max-width: 750px;
     }
     @media (max-width: 860px){
       .title-logo { width: 40vw; }
@@ -939,11 +939,13 @@
     function closeOverlay(){
       overlay.classList.remove("open");
       overlay.addEventListener("transitionend", function handler() {
-        overlay.style.display = 'none';
-        overlay.setAttribute("aria-hidden", "true");
-        docFrame.src = "about:blank";
-        overlay.removeEventListener("transitionend", handler);
-      }, {once: true});
+        if (!overlay.classList.contains("open")) {
+            overlay.style.display = 'none';
+            overlay.setAttribute("aria-hidden", "true");
+            docFrame.src = "about:blank";
+            overlay.removeEventListener("transitionend", handler);
+        }
+      });
     }
 
     function openHelpOverlay() {
