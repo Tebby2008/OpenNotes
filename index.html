@@ -18,9 +18,9 @@
       --muted: #6c757d;
       --accent: #96bfea;
       --accent-2: #b9d9f9;
-      --pdf-color: #f8e6ed; /* Lighter tone for thumbnail background with better contrast */
+      --pdf-color: #f9dde8; /* Lighter tone for thumbnail background with better contrast */
       --pdf-color-2: #e91e63; /* Darker accent for pills */
-      --docx-color: #e8f0f8; /* Lighter tone for thumbnail background with better contrast */
+      --docx-color: #e2effc; /* Lighter tone for thumbnail background with better contrast */
       --docx-color-2: var(--accent); /* Darker accent for pills */
       --gold: #ffc107;
       --shadow:0 10px 30px rgba(0,0,0,0.1);
@@ -353,7 +353,7 @@
     .list .thumb .fmt-text {
         display: none;
     }
-    .fmt-badge { display: none; }
+    .list .fmt-badge { display: none; }
     .row .main{
       display:grid; grid-template-columns: minmax(200px, 2fr) repeat(4, minmax(90px, 1fr));
       gap:10px; align-items:center;
@@ -726,8 +726,10 @@
       <a href="#" class="info-link" data-md="resources/terms-privacy.md">Terms & Privacy</a>
       <a href="#" class="info-link" data-md="resources/contact.md">Contact Us</a>
       <a href="#" class="info-link" data-md="resources/about.md">About</a>
-      <a href="https://github.com/Tebby2008/OpenNotes" target="_blank" rel="noopener">
-        <svg xmlns="http://www.w3.org/2000/svg" width="98" height="96"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="currentColor"/></svg>
+      <a href="[https://github.com/Tebby2008/OpenNotes](https://github.com/Tebby2008/OpenNotes)" target="_blank" rel="noopener">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.89 8.207 11.415.6.11.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.043-1.61-4.043-1.61C4.425 18.043 3.6 17.062 3.6 17.062c-1.087-.744.084-.73.084-.73 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.493.996.108-.775.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.046.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.645 1.653.24 2.873.105 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.801 5.626-5.476 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.95 24 18.363 24 13.297c0-6.627-5.373-12-12-12"/>
+        </svg>
         Github
       </a>
     </div>
@@ -736,6 +738,7 @@
       <span id="websiteViews">0</span>
     </div>
   </footer>
+  
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
   <script>
@@ -978,7 +981,7 @@
       function makeThumb(fmt, url){
         const holder = document.createElement("div");
         holder.className = `thumb fmt-${fmt}`;
-        holder.style.borderRadius = "12px";
+        holder.style.borderRadius = "16px";
   
         if(fmt === "pdf" && window['pdfjsLib']){
           const canvas = document.createElement("canvas");
@@ -991,15 +994,17 @@
         }
         return holder;
       }
-  
-      function fileIcon(fmt){
-        const iconName = "docs";
-        const color = 'white'; // White icon for inverted thumbnail
-        const text = fmt.toUpperCase();
         
+      function fileIcon(fmt) {
+        const iconName = "docs";
+        const rootStyles = getComputedStyle(document.documentElement);
+
+        const color = fmt === "pdf" ? rootStyles.getPropertyValue('--pdf-color-2') : rootStyles.getPropertyValue('--docx-color-2');
+        const text = fmt.toUpperCase();
+
         return `
           <span class="material-symbols-outlined" style="font-size: 42px; color: ${color};">
-              ${iconName}
+            ${iconName}
           </span>
           <span class="fmt-text" style="color: ${color};">${text}</span>
         `;
@@ -1130,7 +1135,7 @@
         } else if (currentType === "DOCX") {
             typeBtn.classList.add("active-docx");
         } else {
-            typeBtn.classList.add("active");
+            typeBtn.classList.add("btn");
         }
 
         render();
@@ -1188,7 +1193,7 @@
         const cellFmt = document.createElement("div");
         cellFmt.className = "cell";
         const pill = document.createElement("span");
-        pill.className = `pill ${it.format==='docx'?'docx':''}`;
+        pill.className = `pill ${it.format==='docx'?'docx':'pdf'}`;
         pill.textContent = it.format.toUpperCase();
         cellFmt.appendChild(pill);
   
