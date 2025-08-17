@@ -29,16 +29,20 @@ async function generateNotesData() {
 
                 const lastCommit = commitsData[0];
                 
-                // New logic to check for AI flag
                 const isAiGenerated = file.name.includes('(AI)');
+
+                // Get author info with a single check
+                const authorData = lastCommit.author || {};
+                const commitAuthor = lastCommit.commit.author || {};
 
                 notesMetadata.push({
                     name: file.name,
                     path: file.path,
                     download_url: file.download_url,
-                    author: lastCommit.commit.author.name,
-                    last_updated: lastCommit.commit.author.date,
+                    author: commitAuthor.name,
+                    last_updated: commitAuthor.date,
                     is_ai_generated: isAiGenerated,
+                    author_username: authorData.login || null,
                 });
             }
         }
