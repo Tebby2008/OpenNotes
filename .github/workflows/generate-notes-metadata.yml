@@ -31,7 +31,7 @@ jobs:
           # Stage the changes to the JSON file
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git add notes_data.json
+          git add notes_metadata.json
           git commit -m "feat(ci): Auto-generate notes metadata"
           
           # Push the changes to the repository
