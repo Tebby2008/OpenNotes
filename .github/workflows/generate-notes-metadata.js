@@ -30,28 +30,32 @@ async function generateNotesData() {
                 const lastCommit = commitsData[0];
                 
                 const isAiGenerated = file.name.includes('(AI)');
-
-                // Get author info with a single check
-                const authorData = lastCommit.author || {};
                 const commitAuthor = lastCommit.commit.author || {};
+                const authorData = lastCommit.author || {};
+
+                // Construct the thumbnail URL
+                const fileNameWithoutExt = path.basename(file.name);
+                const thumbnailName = fileNameWithoutExt.replace(/\./g, '_');
+                const thumbnailUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/resources/thumbnails/${encodeURIComponent(thumbnailName)}.jpg`;
 
                 notesMetadata.push({
                     name: file.name,
                     path: file.path,
                     download_url: file.download_url,
+                    thumbnail_url: thumbnailUrl,
                     author: commitAuthor.name,
+                    author_username: authorData.login || null,
                     last_updated: commitAuthor.date,
                     is_ai_generated: isAiGenerated,
-                    author_username: authorData.login || null,
                 });
             }
         }
 
         fs.writeFileSync(
-            path.join(__dirname, '../../notes_metadata.json'),
+            path.join(__dirname, '../../resources/notes_metadata.json'),
             JSON.stringify(notesMetadata, null, 2)
         );
-        console.log('Successfully generated notes_metadata.json!');
+        console.log('Successfully generated resources/notes_metadata.json!');
     } catch (error) {
         console.error('Failed to generate notes data:', error);
         process.exit(1);
