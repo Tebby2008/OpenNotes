@@ -27,7 +27,6 @@
       --gap-lg:22px;
       --dark-header: #12171d;
       --footer-bg: #1e252e;
-      --ai-pill: #ffc107;
     }
 
     *{box-sizing:border-box}
@@ -200,20 +199,6 @@
     }
     .fmt-pdf{ box-shadow:0 0 0 2px rgba(125,211,252,0.35) inset }
     .fmt-docx{ box-shadow:0 0 0 2px rgba(167,243,208,0.35) inset }
-    .ai-badge {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        padding: 4px 8px;
-        font-size: 11px;
-        font-weight: 700;
-        border-radius: 999px;
-        background: var(--ai-pill);
-        color: #000;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        border: 1px solid rgba(0,0,0,0.1);
-    }
-
 
     .body{ padding:12px 14px 14px }
     .title-line{
@@ -373,7 +358,6 @@
       color:#001; background:var(--accent); border-radius:999px; padding:4px 8px; font-weight:700; font-size:12px;
     }
     .pill.docx{ background:var(--accent-2) }
-    .pill.ai{ background:var(--ai-pill) }
 
     a.clean{ color:inherit; text-decoration:none; cursor: pointer; }
     .muted{ color:var(--muted) }
@@ -526,7 +510,11 @@
             <div data-sort="format-asc" class="option">Format A→Z</div>
           </div>
         </div>
-        <button id="typeBtn" class="btn">ALL</button>
+        <div class="toggle" role="tablist" aria-label="Type selector">
+          <button id="allBtn" class="btn active" data-type="all">ALL</button>
+          <button id="pdfBtn" class="btn" data-type="pdf">PDF</button>
+          <button id="docxBtn" class="btn" data-type="docx">DOCX</button>
+        </div>
         <div class="search" role="search">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23C15.99 6.01 12.98 3 9.5 3S3.01 6.01 3.01 9.5 6.02 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
           <input id="searchInput" type="text" placeholder="Search notes..." aria-label="Search notes" />
@@ -599,9 +587,8 @@
       <a href="#" class="info-link" data-md="resources/about.md">About</a>
       <a href="https://github.com/Tebby2008/OpenNotes" target="_blank" rel="noopener">
         <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.89 8.207 11.415.6.11.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.043-1.61-4.043-1.61C4.425 18.043 3.6 17.062 3.6 17.062c-1.087-.744.084-.73.084-.73 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.493.996.108-.775.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.046.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.645 1.653.24 2.873.105 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.801 5.626-5.476 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.95 24 18.363 24 13.297c0-6.627-5.373-12-12-12"/>
-        </svg>
-        Github
+          <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.89 8.207 11.415.6.11.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.33...
+        </svg> Github 
       </a>
     </div>
     <div class="right total-views">
@@ -611,455 +598,552 @@
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
   <script>
-    // --- Configuration (set these to your repo) ---
-    const REPO_OWNER = "Tebby2008";
-    const REPO_NAME = "OpenNotes";
-    const BRANCH = "main";
-    const API_URL = "https://open-notes.tebby2008-li.workers.dev";
+    // --- Configuration (set these to your repo) --- 
+    const REPO_OWNER = "Tebby2008"; 
+    const REPO_NAME = "OpenNotes"; 
+    const BRANCH = "main"; 
+    const NOTES_PATH = "Notes"; 
+    const API_URL = "https://open-notes.tebby2008-li.workers.dev"; 
 
-    (function tryAutoDetect(){
-      try{
-        const host = location.hostname;
-        const path = location.pathname.replace(/^\/+/,'').split('/');
-        const isPages = host.endsWith(".github.io");
-        if(isPages){
-          const owner = host.split(".github.io")[0];
-          const repo = path[0] || REPO_NAME;
-          if(REPO_OWNER.startsWith("<")) window['__owner']=owner;
-          if(REPO_NAME.startsWith("<")) window['__repo']=repo;
-        }
-      }catch(e){}
-    })();
-
-    const owner = window.__owner || REPO_OWNER;
-    const repo = window.__repo || REPO_NAME;
-
-    // --- State ---
-    let allItems = [];
-    let viewMode = "grid";
-    let sortKey = "updated-desc";
-    let filterFormat = "all";
+    (function tryAutoDetect(){ 
+      try{ 
+        const host = location.hostname; 
+        const path = location.pathname.replace(/^\/+/,'').split('/'); 
+        const isPages = host.endsWith(".github.io"); 
+        if(isPages){ 
+          const owner = host.split(".github.io")[0]; 
+          const repo = path[0] || REPO_NAME; 
+          if(REPO_OWNER.startsWith("<")) window['__owner']=owner; 
+          if(REPO_NAME.startsWith("<")) window['__repo']=repo; 
+        } 
+      }catch(e){} 
+    })(); 
+    const owner = window.__owner || REPO_OWNER; 
+    const repo = window.__repo || REPO_NAME; 
+    
+    // --- State --- 
+    let allItems = []; 
+    let viewMode = "grid"; 
     let filterType = "all";
-    let searchQuery = "";
 
-    // --- Elements ---
-    const container = document.getElementById("itemsContainer");
-    const sortSelect = document.getElementById("sortSelect");
-    const formatSelect = document.getElementById("formatSelect");
-    const searchInput = document.getElementById("searchInput");
-    const gridBtn = document.getElementById("gridBtn");
-    const listBtn = document.getElementById("listBtn");
-    const overlay = document.getElementById("overlay");
-    const backBtn = document.getElementById("backBtn");
-    const docFrame = document.getElementById("docFrame");
-    const ovTitle = document.getElementById("ovTitle");
-    const ovFormat = document.getElementById("ovFormat");
-    const ovDate = document.getElementById("ovDate");
-    const ovAuthor = document.getElementById("ovAuthor");
-    const ovViews = document.getElementById("ovViews");
-    const ovDownloads = document.getElementById("ovDownloads");
-    const ovOpenRaw = document.getElementById("ovOpenRaw");
-    const ovDownload = document.getElementById("ovDownload");
-    const infoOverlay = document.getElementById("infoOverlay");
-    const infoBackBtn = document.getElementById("infoBackBtn");
-    const infoContent = document.getElementById("infoContent");
-    const uploadBtn = document.getElementById("uploadBtn");
-    const infoLinks = document.querySelectorAll('.info-link');
-    const websiteViewsEl = document.getElementById('websiteViews');
-    const sortBtn = document.getElementById("sortBtn");
-    const sortDropdown = document.getElementById("sortDropdown");
-    const typeBtn = document.getElementById("typeBtn");
+    // --- Elements --- 
+    const container = document.getElementById("itemsContainer"); 
+    const sortSelect = document.getElementById("sortSelect"); 
+    const formatSelect = document.getElementById("formatSelect"); 
+    const searchInput = document.getElementById("searchInput"); 
+    const gridBtn = document.getElementById("gridBtn"); 
+    const listBtn = document.getElementById("listBtn"); 
+    const overlay = document.getElementById("overlay"); 
+    const backBtn = document.getElementById("backBtn"); 
+    const docFrame = document.getElementById("docFrame"); 
+    const ovTitle = document.getElementById("ovTitle"); 
+    const ovFormat = document.getElementById("ovFormat"); 
+    const ovDate = document.getElementById("ovDate"); 
+    const ovAuthor = document.getElementById("ovAuthor"); 
+    const ovViews = document.getElementById("ovViews"); 
+    const ovDownloads = document.getElementById("ovDownloads"); 
+    const ovOpenRaw = document.getElementById("ovOpenRaw"); 
+    const ovDownload = document.getElementById("ovDownload"); 
+    const infoOverlay = document.getElementById("infoOverlay"); 
+    const infoBackBtn = document.getElementById("infoBackBtn"); 
+    const infoContent = document.getElementById("infoContent"); 
+    const uploadBtn = document.getElementById("uploadBtn"); 
+    const infoLinks = document.querySelectorAll('.info-link'); 
+    const websiteViewsEl = document.getElementById('websiteViews'); 
+    
+    // New elements for the type selector
+    const allBtn = document.getElementById('allBtn');
+    const pdfBtn = document.getElementById('pdfBtn');
+    const docxBtn = document.getElementById('docxBtn');
 
-    // --- Utils ---
-    const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
-    const fmtDate = (iso)=> {
-      if(!iso) return "—";
-      const d = new Date(iso);
-      const dd = String(d.getDate()).padStart(2,'0');
-      const mm = String(d.getMonth()+1).padStart(2,'0');
-      const yyyy = d.getFullYear();
-      return `${dd}-${mm}-${yyyy}`;
-    };
-    const stripExt = (name)=> name.replace(/\.[^/.]+$/, "");
-    const extOf = (name)=> (name.split('.').pop() || "").toLowerCase();
+    // --- Utils --- 
+    const sleep = (ms)=> new Promise(r=>setTimeout(r,ms)); 
+    const fmtDate = (iso)=> { 
+      if(!iso) return "—"; 
+      const d = new Date(iso); 
+      const dd = String(d.getDate()).padStart(2,'0'); 
+      const mm = String(d.getMonth()+1).padStart(2,'0'); 
+      const yyyy = d.getFullYear(); 
+      return `${dd}-${mm}-${yyyy}`; 
+    }; 
+    const stripExt = (name)=> name.replace(/\.[^/.]+$/, ""); 
+    const extOf = (name)=> (name.split('.').pop() || "").toLowerCase(); 
 
-    // --- API Calls & Local State Updates ---
-    async function incView(item) {
-      try {
-        const res = await fetch(`${API_URL}?type=note&noteId=${item.path}&counter=views`, { method: 'POST' });
-        const data = await res.json();
-        if (data && data.views !== undefined) {
-          item.views = data.views;
-          item.downloads = data.downloads;
-          return { views: item.views, downloads: item.downloads };
-        }
-      } catch (e) {
-        console.error('Failed to increment view count:', e);
-      }
-      return null;
-    }
-    async function incDownload(item) {
-      try {
-        const res = await fetch(`${API_URL}?type=note&noteId=${item.path}&counter=downloads`, { method: 'POST' });
-        const data = await res.json();
-        if (data && data.downloads !== undefined) {
-          item.views = data.views;
-          item.downloads = data.downloads;
-          return { views: item.views, downloads: item.downloads };
-        }
-      } catch (e) {
-        console.error('Failed to increment download count:', e);
-      }
-      return null;
-    }
-    async function incWebsiteView() {
-      try {
-        const res = await fetch(`${API_URL}?type=website&counter=views`, { method: 'POST' });
-        const data = await res.json();
-        if (data && data.views !== undefined) {
-          return data.views;
-        }
-      } catch (e) {
-        console.error('Failed to increment website view count:', e);
-      }
-      return null;
-    }
+    // --- API Calls & Local State Updates --- 
+    async function incView(item) { 
+      try { 
+        const res = await fetch(`${API_URL}?type=note&noteId=${item.path}&counter=views`, { method: 'POST' }); 
+        const data = await res.json(); 
+        if (data && data.views !== undefined) { 
+          item.views = data.views; 
+          item.downloads = data.downloads; 
+          return { views: item.views, downloads: item.downloads }; 
+        } 
+      } catch (e) { 
+        console.error('Failed to increment view count:', e); 
+      } 
+      return null; 
+    } 
+    async function incDownload(item) { 
+      try { 
+        const res = await fetch(`${API_URL}?type=note&noteId=${item.path}&counter=downloads`, { method: 'POST' }); 
+        const data = await res.json(); 
+        if (data && data.downloads !== undefined) { 
+          item.views = data.views; 
+          item.downloads = data.downloads; 
+          return { views: item.views, downloads: item.downloads }; 
+        } 
+      } catch (e) { 
+        console.error('Failed to increment download count:', e); 
+      } 
+      return null; 
+    } 
+    async function incWebsiteView(){ 
+      try { 
+        const res = await fetch(`${API_URL}?type=website`, { method: 'POST' }); 
+        if (res.ok) { 
+          const data = await res.json(); 
+          if (data.views !== undefined) { 
+            return data.views; 
+          } 
+        } 
+      } catch (e) { 
+        console.error('Failed to increment website view count:', e); 
+      } 
+      return null; 
+    } 
+    async function getApiKeys(){ 
+      const res = await fetch(`${API_URL}?list=true`, { method: 'GET' }); 
+      if(!res.ok) return []; 
+      return await res.json(); 
+    } 
 
-    // --- Core Logic ---
-    async function fetchNotes() {
-      try {
-        const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/notes_metadata.json`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Failed to fetch notes metadata");
-        const data = await res.json();
-        
-        allItems = data.map(note => ({
-          name: stripExt(note.name),
-          path: note.path,
-          url: note.download_url,
-          format: extOf(note.name),
-          author: note.author,
-          updatedAt: note.last_updated,
-          is_ai_generated: note.is_ai_generated || false,
-          views: 0, // Placeholder
-          downloads: 0 // Placeholder
-        }));
-
-        // Fetch view/download counts from the API for each note
-        const notePromises = allItems.map(async (note) => {
+    // --- Data fetch --- 
+    async function fetchNotes(){ 
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(NOTES_PATH)}?ref=${BRANCH}`; 
+      try { 
+        const response = await fetch(url); 
+        const data = await response.json(); 
+        return data; 
+      } catch (e) { 
+        console.error("Error fetching notes from Github API:", e); 
+        return []; 
+      } 
+    } 
+    async function getFileMetadata(item){ 
+      const url = `https://api.github.com/repos/${owner}/${repo}/commits?path=${encodeURI(item.path)}&per_page=1`; 
+      try{ 
+        const response = await fetch(url); 
+        const data = await response.json(); 
+        if(data && data.length > 0){ 
+          item.last_updated = data[0].commit.committer.date; 
+          item.author = data[0].commit.author.name; 
+        } 
+      }catch(e){ 
+        console.error("Error fetching file metadata:", e); 
+      } 
+    } 
+    async function getFileContent(filePath){ 
+      const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURI(filePath)}?ref=${BRANCH}`; 
+      try { 
+        const response = await fetch(url); 
+        const data = await response.json(); 
+        if(data && data.content){ 
+          const decodedContent = atob(data.content); 
+          return decodedContent; 
+        } 
+      }catch(e){ 
+        console.error("Error fetching file content:", e); 
+      } 
+      return null; 
+    } 
+    
+    // --- Rendering functions --- 
+    const renderThumbnail = async (item, canvas, size = 180) => {
+        const ext = extOf(item.name);
+        if (ext === "pdf") {
             try {
-                const res = await fetch(`${API_URL}?noteId=${note.path}`, { method: 'GET' });
-                if (res.ok) {
-                    const data = await res.json();
-                    note.views = data.views || 0;
-                    note.downloads = data.downloads || 0;
-                } else {
-                    note.views = 0;
-                    note.downloads = 0;
-                }
+                const pdfjsLib = window['pdfjs-dist/build/pdf'];
+                pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js`;
+
+                const loadingTask = pdfjsLib.getDocument(item.download_url);
+                const pdf = await loadingTask.promise;
+                const page = await pdf.getPage(1);
+                const scale = size / (page.getViewport({ scale: 1 }).width);
+                const viewport = page.getViewport({ scale: scale });
+
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
             } catch (e) {
-                console.error('Failed to fetch count for note:', note.path, e);
-                note.views = 0;
-                note.downloads = 0;
+                console.error("Error rendering PDF thumbnail:", e);
+                // Fallback to default icon
+                canvas.parentElement.innerHTML = '<span class="material-symbols-outlined" style="font-size: 80px; color: var(--muted);">description</span>';
             }
-        });
-        await Promise.all(notePromises);
+        } else if (ext === "docx") {
+            // Cannot programmatically render DOCX preview, fallback to icon
+            canvas.parentElement.innerHTML = '<span class="material-symbols-outlined" style="font-size: 80px; color: var(--muted);">description</span>';
+        } else {
+            // Generic file icon for other types
+            canvas.parentElement.innerHTML = '<span class="material-symbols-outlined" style="font-size: 80px; color: var(--muted);">description</span>';
+        }
+    };
 
-        render();
+    function createCard(item){
+      const card = document.createElement("a");
+      card.href = "#";
+      card.className = "card clean";
+      card.onclick = (e) => {
+        e.preventDefault();
+        openViewer(item);
+      };
 
-      } catch (e) {
-        console.error(e);
-        container.innerHTML = `
-          <div style="background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;">
-            <div style="font-weight:600;font-size:18px;">Error Loading Notes</div>
-            <p style="color:var(--muted)">We couldn't fetch the notes metadata. Please check the console for more details.</p>
-          </div>
-        `;
-      }
-    }
+      const thumbContainer = document.createElement("div");
+      thumbContainer.className = "thumb";
+      const canvas = document.createElement("canvas");
+      thumbContainer.appendChild(canvas);
+      renderThumbnail(item, canvas, 240); // Render thumbnail for card view
 
-    function sortAndFilter() {
-      const items = [...allItems];
-      let filteredItems = items;
+      const badge = document.createElement("div");
+      badge.className = `fmt-badge fmt-${extOf(item.name)}`;
+      badge.textContent = extOf(item.name).toUpperCase();
+      thumbContainer.appendChild(badge);
 
-      // Filter by format
-      if (filterFormat !== "all") {
-        filteredItems = filteredItems.filter(item => item.format === filterFormat);
-      }
-
-      // Filter by AI-generated status
-      if (filterType === "ai") {
-        filteredItems = filteredItems.filter(item => item.is_ai_generated);
-      } else if (filterType === "human") {
-        filteredItems = filteredItems.filter(item => !item.is_ai_generated);
-      }
-
-      // Filter by search query
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        filteredItems = filteredItems.filter(item =>
-          item.name.toLowerCase().includes(query) ||
-          item.author.toLowerCase().includes(query)
-        );
-      }
-
-      // Sort
-      if (sortKey === "updated-asc") {
-        filteredItems.sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt));
-      } else if (sortKey === "updated-desc") {
-        filteredItems.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-      } else if (sortKey === "title-asc") {
-        filteredItems.sort((a, b) => a.name.localeCompare(b.name));
-      } else if (sortKey === "title-desc") {
-        filteredItems.sort((a, b) => b.name.localeCompare(a.name));
-      } else if (sortKey === "format-asc") {
-        filteredItems.sort((a, b) => a.format.localeCompare(b.format));
-      }
-
-      return filteredItems;
-    }
-
-    function render() {
-      const items = sortAndFilter();
-      container.innerHTML = items.length === 0 ? `
-          <div style="background:var(--panel);border:1px solid rgba(0,0,0,0.06);border-radius:16px;padding:18px;">
-            <div style="font-weight:600;font-size:18px;">No Notes Found</div>
-            <p style="color:var(--muted)">Your search or filter criteria didn't match any notes. Try adjusting them.</p>
-          </div>
-        ` : "";
-
-      items.forEach(item => {
-        const el = viewMode === "grid" ? createItemCard(item) : createItemRow(item);
-        container.appendChild(el);
-      });
-
-      container.className = viewMode;
-    }
-
-    function createItemCard(item) {
-      const card = document.createElement("div");
-      card.className = "card";
-      card.setAttribute("data-path", item.path);
-      card.innerHTML = `
-        <div class="thumb">
-          <span class="material-symbols-outlined" style="font-size:80px;color:var(--muted)">description</span>
-          <span class="fmt-badge fmt-${item.format}">${item.format.toUpperCase()}</span>
-          ${item.is_ai_generated ? `<span class="ai-badge">AI</span>` : ''}
+      const body = document.createElement("div");
+      body.className = "body";
+      body.innerHTML = `
+        <h3 class="title-line">${stripExt(item.name)}</h3>
+        <div class="meta">
+          <span>${fmtDate(item.last_updated)}</span>
+          <span class="dot"></span>
+          <a class="clean" href="https://github.com/${owner}/${repo}/commits/${BRANCH}/${item.path}" target="_blank" rel="noopener">${item.author}</a>
         </div>
-        <div class="body">
-          <h3 class="title-line">${item.name}</h3>
-          <div class="meta">
-            <span>By ${item.author}</span>
-            <span class="dot"></span>
-            <span>${fmtDate(item.updatedAt)}</span>
-          </div>
-          <div class="stats">
-            <div class="stat">
-              <span class="material-symbols-outlined" style="font-size:16px;opacity:0.85">visibility</span>
-              <span>${item.views}</span>
-            </div>
-            <div class="stat">
-              <span class="material-symbols-outlined" style="font-size:16px;opacity:0.85">download</span>
-              <span>${item.downloads}</span>
-            </div>
-          </div>
+        <div class="stats">
+          <span class="stat">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zM12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            <span class="views-count">${item.views || 0}</span>
+          </span>
+          <span class="stat">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+            <span class="downloads-count">${item.downloads || 0}</span>
+          </span>
         </div>
       `;
-      card.addEventListener('click', () => openNoteOverlay(item));
+
+      card.appendChild(thumbContainer);
+      card.appendChild(body);
       return card;
     }
 
-    function createItemRow(item) {
+    function createRow(item){
       const row = document.createElement("a");
-      row.className = "row";
-      row.setAttribute("data-path", item.path);
-      row.innerHTML = `
-        <div class="thumb">
-          <span class="material-symbols-outlined" style="font-size:48px;color:var(--muted)">description</span>
-          <span class="fmt-badge fmt-${item.format}">${item.format.toUpperCase()}</span>
-          ${item.is_ai_generated ? `<span class="ai-badge">AI</span>` : ''}
+      row.href = "#";
+      row.className = "row clean";
+      row.onclick = (e) => {
+        e.preventDefault();
+        openViewer(item);
+      };
+
+      const thumbContainer = document.createElement("div");
+      thumbContainer.className = "thumb";
+      const canvas = document.createElement("canvas");
+      thumbContainer.appendChild(canvas);
+      renderThumbnail(item, canvas, 86); // Render thumbnail for list view
+
+      const main = document.createElement("div");
+      main.className = "main";
+      main.innerHTML = `
+        <div class="cell">
+          <h3 class="title-line">${stripExt(item.name)}</h3>
+          <div class="pill ${extOf(item.name)}">${extOf(item.name).toUpperCase()}</div>
         </div>
-        <div class="main">
-          <div>
-            <div class="title-line">${item.name}</div>
-          </div>
-          <div class="cell">
-            <span class="material-symbols-outlined muted" style="font-size:16px">person</span>
-            <div class="muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.author}</div>
-          </div>
-          <div class="cell">
-            <span class="material-symbols-outlined muted" style="font-size:16px">calendar_month</span>
-            <div class="muted">${fmtDate(item.updatedAt)}</div>
-          </div>
-          <div class="cell">
-            <span class="material-symbols-outlined muted" style="font-size:16px">visibility</span>
-            <div class="muted">${item.views}</div>
-          </div>
-          <div class="cell">
-            <span class="material-symbols-outlined muted" style="font-size:16px">download</span>
-            <div class="muted">${item.downloads}</div>
-          </div>
-        </div>
-        <div class="right-end">
-            <div class="download-btn">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>
-            </div>
+        <div class="cell muted">${fmtDate(item.last_updated)}</div>
+        <div class="cell muted">${item.author}</div>
+        <div class="cell muted"><span class="material-symbols-outlined" style="font-size: 16px;">visibility</span> <span class="views-count">${item.views || 0}</span></div>
+        <div class="cell muted"><span class="material-symbols-outlined" style="font-size: 16px;">download</span> <span class="downloads-count">${item.downloads || 0}</span></div>
+      `;
+
+      const rightEnd = document.createElement("div");
+      rightEnd.className = "right-end";
+      rightEnd.innerHTML = `
+        <div class="download-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4c-3.72 0-6.75 2.7-7.23 6.22C2.79 10.74 1 13.06 1 16c0 3.31 2.69 6 6 6h12c3.31 0 6-2.69 6-6 0-2.94-1.79-5.26-4.65-5.96zM17 18H7v-2h10v2zm-4-4v-4h-2v4h-3l4 4 4-4h-3z"/></svg>
         </div>
       `;
-      row.addEventListener('click', (e) => {
-        if (!e.target.closest('.download-btn')) {
-          openNoteOverlay(item);
-        }
-      });
-      row.querySelector('.download-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        window.open(item.url, '_blank');
-        incDownload(item).then(res => res && render());
-      });
+
+      row.appendChild(thumbContainer);
+      row.appendChild(main);
+      row.appendChild(rightEnd);
       return row;
     }
     
-    function openNoteOverlay(item) {
-        ovTitle.textContent = item.name;
-        ovFormat.textContent = item.format.toUpperCase();
-        ovFormat.className = `pill fmt-${item.format}`;
-        if (item.is_ai_generated) {
-            ovFormat.classList.add("ai");
+    function render(notes = allItems){
+      container.innerHTML = "";
+      container.className = viewMode;
+
+      const filteredNotes = notes.filter(item => {
+        const itemExt = extOf(item.name);
+        return filterType === 'all' || itemExt === filterType;
+      });
+
+      if(filteredNotes.length === 0){
+        container.innerHTML = `
+          <div style="background:var(--panel);border:1px solid rgba(0,0,0,0.06);border-radius:var(--radius);padding:18px;">
+            <p style="margin:0; text-align:center; color:var(--muted)">No notes found matching your criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Sort logic
+      const sortValue = sortSelect.value;
+      filteredNotes.sort((a,b)=>{
+        if(sortValue === "updated-desc") return new Date(b.last_updated) - new Date(a.last_updated);
+        if(sortValue === "updated-asc") return new Date(a.last_updated) - new Date(b.last_updated);
+        if(sortValue === "title-asc") return stripExt(a.name).localeCompare(stripExt(b.name));
+        if(sortValue === "title-desc") return stripExt(b.name).localeCompare(stripExt(a.name));
+        if(sortValue === "format-asc") return extOf(a.name).localeCompare(extOf(b.name));
+        return 0;
+      });
+
+      filteredNotes.forEach(item=>{
+        if(viewMode === "grid"){
+          container.appendChild(createCard(item));
+        } else {
+          container.appendChild(createRow(item));
         }
-        ovDate.textContent = fmtDate(item.updatedAt);
-        ovAuthor.textContent = item.author;
-        ovViews.textContent = item.views;
-        ovDownloads.textContent = item.downloads;
-        ovOpenRaw.href = item.url;
-        ovDownload.onclick = () => {
-            window.open(item.url, '_blank');
-            incDownload(item).then(res => res && render());
-        };
-
-        const gviewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(item.url)}&embedded=true`;
-        docFrame.src = gviewerUrl;
-
-        overlay.classList.add('open');
-        overlay.setAttribute('aria-hidden', 'false');
-
-        // Increment view count
-        incView(item).then(res => {
-            if (res) {
-                ovViews.textContent = res.views;
-                ovDownloads.textContent = res.downloads;
-                render();
-            }
-        });
-    }
-
-    function closeNoteOverlay() {
-      overlay.classList.remove('open');
-      overlay.setAttribute('aria-hidden', 'true');
-      docFrame.src = ""; // Clear iframe to stop playback/memory leak
-    }
-
-    function openInfoOverlay(mdFile) {
-      infoOverlay.classList.add('open');
-      infoOverlay.setAttribute('aria-hidden', 'false');
-      fetch(mdFile).then(res => res.text()).then(text => {
-        infoContent.innerHTML = marked.parse(text);
-      }).catch(e => {
-        infoContent.innerHTML = `<p style="color:var(--muted)">Failed to load content. Please try again later.</p>`;
       });
     }
 
-    function closeInfoOverlay() {
-      infoOverlay.classList.remove('open');
-      infoOverlay.setAttribute('aria-hidden', 'true');
-      infoContent.innerHTML = "";
+    // --- Overlay & Viewer logic ---
+    function openViewer(item){
+      const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${item.path}`;
+      const viewerUrl = `https://tebby2008.github.io/OpenNotes/view.html?file=${encodeURIComponent(rawUrl)}`;
+
+      docFrame.src = viewerUrl;
+      ovTitle.textContent = stripExt(item.name);
+      ovFormat.textContent = extOf(item.name).toUpperCase();
+      ovDate.textContent = fmtDate(item.last_updated);
+      ovAuthor.textContent = item.author;
+      ovViews.textContent = item.views || 0;
+      ovDownloads.textContent = item.downloads || 0;
+      ovOpenRaw.href = viewerUrl;
+      ovDownload.onclick = () => incDownload(item).then(render);
+      ovDownload.onclick = () => {
+        incDownload(item).then(updated => {
+          if (updated) {
+            ovViews.textContent = updated.views;
+            ovDownloads.textContent = updated.downloads;
+          }
+        });
+        window.open(item.download_url, '_blank');
+      };
+
+      incView(item).then(updated => {
+        if (updated) {
+          ovViews.textContent = updated.views;
+          ovDownloads.textContent = updated.downloads;
+          render(); // Re-render the main grid/list to update counts
+        }
+      });
+      overlay.classList.add("open");
+    }
+
+    function closeOverlay(event, overlayEl) {
+      if (event.target === overlayEl) {
+        overlayEl.classList.remove("open");
+        setTimeout(() => {
+          overlayEl.style.display = "none";
+        }, 200); // Wait for the transition to finish
+      }
     }
 
     // --- Event Listeners ---
-    searchInput.addEventListener("input", (e) => {
-      searchQuery = e.target.value.trim();
-      render();
-    });
-
-    gridBtn.addEventListener("click", () => {
+    gridBtn.addEventListener("click", ()=>{
       viewMode = "grid";
       gridBtn.classList.add("active");
       listBtn.classList.remove("active");
       render();
     });
 
-    listBtn.addEventListener("click", () => {
+    listBtn.addEventListener("click", ()=>{
       viewMode = "list";
       listBtn.classList.add("active");
       gridBtn.classList.remove("active");
       render();
     });
 
-    backBtn.addEventListener('click', closeNoteOverlay);
-    infoBackBtn.addEventListener('click', closeInfoOverlay);
-
-    infoLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const mdFile = link.getAttribute('data-md');
-        if (mdFile) {
-          openInfoOverlay(mdFile);
-        }
-      });
+    backBtn.addEventListener("click", ()=>{
+      overlay.classList.remove("open");
+      setTimeout(() => {
+        overlay.style.display = "none";
+      }, 200);
     });
 
-    uploadBtn.addEventListener('click', () => {
-      openInfoOverlay('resources/how-to-upload.md');
-    });
-    
-    // Custom dropdown logic
-    sortBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        sortDropdown.classList.toggle('open');
-    });
-
-    sortDropdown.querySelectorAll('.option').forEach(option => {
-        option.addEventListener('click', (e) => {
-            sortKey = e.target.dataset.sort;
-            sortDropdown.classList.remove('open');
-            // Update the active state and button text (optional, but good UX)
-            sortDropdown.querySelectorAll('.option').forEach(opt => opt.classList.remove('active'));
-            e.target.classList.add('active');
-            sortBtn.title = `Sort (${e.target.textContent.trim()})`;
-            render();
-        });
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!sortDropdown.contains(e.target) && !sortBtn.contains(e.target)) {
-            sortDropdown.classList.remove('open');
-        }
-    });
-
-    typeBtn.addEventListener('click', () => {
-        const types = ["all", "human", "ai"];
-        const currentIndex = types.indexOf(filterType);
-        const nextIndex = (currentIndex + 1) % types.length;
-        filterType = types[nextIndex];
-
-        let buttonText = "ALL";
-        if (filterType === "human") {
-            buttonText = "HUMAN";
-        } else if (filterType === "ai") {
-            buttonText = "AI";
-        }
-        typeBtn.textContent = buttonText;
+    document.getElementById('typeBtn').addEventListener('click', (e) => {
+        const type = e.target.dataset.type;
+        filterType = type;
+        document.querySelectorAll('.controls .toggle .btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
         render();
     });
 
-    // --- Initialization ---
-    document.addEventListener('DOMContentLoaded', () => {
-        fetchNotes();
-        incWebsiteView().then(newViews => {
-            if (newViews !== null) {
-                websiteViewsEl.textContent = newViews;
-            }
+    allBtn.addEventListener('click', () => {
+        filterType = 'all';
+        allBtn.classList.add('active');
+        pdfBtn.classList.remove('active');
+        docxBtn.classList.remove('active');
+        render();
+    });
+
+    pdfBtn.addEventListener('click', () => {
+        filterType = 'pdf';
+        allBtn.classList.remove('active');
+        pdfBtn.classList.add('active');
+        docxBtn.classList.remove('active');
+        render();
+    });
+
+    docxBtn.addEventListener('click', () => {
+        filterType = 'docx';
+        allBtn.classList.remove('active');
+        pdfBtn.classList.remove('active');
+        docxBtn.classList.add('active');
+        render();
+    });
+
+    searchInput.addEventListener("input", (e)=>{
+      const query = e.target.value.toLowerCase();
+      const filtered = allItems.filter(item => stripExt(item.name).toLowerCase().includes(query));
+      render(filtered);
+    });
+
+    const sortBtn = document.getElementById('sortBtn');
+    const sortDropdown = document.getElementById('sortDropdown');
+
+    sortBtn.addEventListener('click', () => {
+        sortDropdown.classList.toggle('open');
+    });
+
+    sortDropdown.addEventListener('click', (e) => {
+        const newSort = e.target.dataset.sort;
+        if (newSort) {
+            sortSelect.value = newSort;
+            document.querySelectorAll('#sortDropdown .option').forEach(opt => opt.classList.remove('active'));
+            e.target.classList.add('active');
+            sortDropdown.classList.remove('open');
+            render();
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!sortBtn.contains(e.target) && !sortDropdown.contains(e.target)) {
+            sortDropdown.classList.remove('open');
+        }
+    });
+
+    overlay.addEventListener("click", (event) => closeOverlay(event, overlay));
+    infoOverlay.addEventListener("click", (event) => closeOverlay(event, infoOverlay));
+    infoBackBtn.addEventListener("click", () => {
+      infoOverlay.classList.remove("open");
+      setTimeout(() => {
+        infoOverlay.style.display = "none";
+      }, 200);
+    });
+
+    uploadBtn.addEventListener('click', () => {
+        fetchMarkdownFile('resources/upload.md');
+    });
+
+    infoLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const mdFile = e.target.dataset.md;
+            fetchMarkdownFile(mdFile);
         });
     });
+
+    async function fetchMarkdownFile(filePath) {
+        try {
+            const content = await getFileContent(filePath);
+            if (content) {
+                infoContent.innerHTML = marked.parse(content);
+                infoOverlay.style.display = 'block';
+                setTimeout(() => infoOverlay.classList.add('open'), 10);
+            } else {
+                infoContent.innerHTML = '<h1>Error</h1><p>Could not load the file.</p>';
+                infoOverlay.style.display = 'block';
+                setTimeout(() => infoOverlay.classList.add('open'), 10);
+            }
+        } catch (e) {
+            console.error("Error fetching markdown:", e);
+        }
+    }
+
+    // --- Init ---
+    async function init(){
+      try{
+        const notes = await fetchNotes();
+        if(notes && notes.length > 0){
+          allItems = notes.filter(item=> extOf(item.name) === 'pdf' || extOf(item.name) === 'docx');
+          await Promise.all(allItems.map(getFileMetadata));
+
+          const allNoteKeys = allItems.map(n => n.path);
+          const apiKeys = await getApiKeys();
+          const noteKeysToDelete = apiKeys.filter(k => !allNoteKeys.includes(k));
+          for (const key of noteKeysToDelete) {
+            console.log(`Deleting counter for removed note: ${key}`);
+            await fetch(`${API_URL}?noteId=${key}`, { method: 'DELETE' });
+          }
+
+          const notePromises = allItems.map(async (note) => {
+            try {
+              const res = await fetch(`${API_URL}?noteId=${note.path}`, { method: 'GET' });
+              if (res.ok) {
+                const data = await res.json();
+                note.views = data.views || 0;
+                note.downloads = data.downloads || 0;
+              } else {
+                note.views = 0;
+                note.downloads = 0;
+              }
+            } catch (e) {
+              console.error('Failed to fetch count for note:', note.path, e);
+              note.views = 0;
+              note.downloads = 0;
+            }
+          });
+          await Promise.all(notePromises);
+
+          const newViews = await incWebsiteView();
+          if (newViews !== null) {
+            websiteViewsEl.textContent = newViews;
+          }
+
+          render();
+
+        }else{
+          container.innerHTML = `
+            <div style="background:var(--panel);border:1px solid rgba(0,0,0,0.06);border-radius:16px;padding:18px;">
+              <div style="font-weight:600; font-size:18px;">Notes not found.</div>
+              <p style="color:var(--muted); font-size:14px; margin-top:6px;">Please check the configuration variables in the script: REPO_OWNER, REPO_NAME, BRANCH, NOTES_PATH. Make sure your notes are located at the specified path in your GitHub repository.</p>
+            </div>
+          `;
+        }
+      }catch(e){
+        console.error(e);
+        container.innerHTML = `
+          <div style="background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;">
+            <div style="font-weight:600; font-size:18px; color:var(--text);">Error loading notes.</div>
+            <p style="color:var(--muted); font-size:14px; margin-top:6px;">An error occurred while trying to fetch the notes. This could be due to a network issue or an incorrect configuration.</p>
+          </div>
+        `;
+      }
+    }
+    
+    init();
 
   </script>
 </body>
