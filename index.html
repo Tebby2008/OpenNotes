@@ -163,6 +163,11 @@
       color: #b38600;
       box-shadow: 0 0 0 2px var(--gold) inset;
     }
+    /* AI button and tag styles combined for a consistent look */
+    .ai-tag, .btn.active-ai .material-symbols-outlined {
+      font-variation-settings: 'FILL' 1, 'wght' 700 !important;
+    }
+
 
     /* Main content */
     .wrap{ padding:18px; z-index: 0; position:relative; margin-top: 36px; margin-bottom: 36px; flex: 1; }
@@ -495,6 +500,18 @@
     .total-views span {
       font-weight: 600;
       color: rgba(255,255,255,0.9);
+    }
+    .loading-spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: #96bfea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
 
@@ -843,21 +860,64 @@
       container.innerHTML = "";
       container.className = viewMode === "grid" ? "grid" : "list";
 
-      // Render each item
+      // Render each item without thumbnail first
       for(const it of list){
+        let element;
         if(viewMode === "grid"){
-          const card = renderCard(it);
-          const thumb = await makeThumb(it.format, it.download_url);
-          card.prepend(thumb);
-          container.appendChild(card);
-        }else{
-          const row = renderRow(it);
-          const thumb = await makeThumb(it.format, it.download_url);
-          row.prepend(thumb);
-          container.appendChild(row);
+          element = renderCard(it);
+        } else {
+          element = renderRow(it);
         }
+        container.appendChild(element);
+        
+        // Asynchronously load and append the thumbnail
+        loadThumb(element, it);
       }
     }
+    
+    // Updated makeThumb function with caching
+    function loadThumb(element, item) {
+      const thumbHolder = element.querySelector(".thumb-holder");
+      if (!thumbHolder) return;
+
+      const { format, download_url } = item;
+      const cachedCanvas = pdfCache[download_url];
+
+      if (format === "pdf" && window['pdfjsLib']) {
+          if (cachedCanvas) {
+              const clone = cachedCanvas.cloneNode(true);
+              thumbHolder.replaceChildren(clone);
+              if (format === "pdf" || format === "docx") {
+                  thumbHolder.appendChild(renderFormatBadge(format));
+              }
+          } else {
+              // Show spinner while loading
+              thumbHolder.innerHTML = `<div class="loading-spinner"></div>`;
+              renderPdfFirstPage(download_url).then(canvas => {
+                  if (canvas) {
+                      pdfCache[download_url] = canvas;
+                      thumbHolder.replaceChildren(canvas);
+                      if (format === "pdf" || format === "docx") {
+                          thumbHolder.appendChild(renderFormatBadge(format));
+                      }
+                  } else {
+                      // Fallback to icon on error
+                      thumbHolder.innerHTML = fileIcon(format);
+                      if (format === "pdf" || format === "docx") {
+                          thumbHolder.appendChild(renderFormatBadge(format));
+                      }
+                  }
+              });
+          }
+      } else {
+          // For other formats, use the simple icon
+          thumbHolder.innerHTML = fileIcon(format);
+          if (format === "pdf" || format === "docx") {
+              thumbHolder.appendChild(renderFormatBadge(format));
+          }
+      }
+    }
+
 
     function renderFormatBadge(fmt){
       const span = document.createElement("span");
@@ -866,34 +926,24 @@
       return span;
     }
     
-    // Updated makeThumb function with caching
-    async function makeThumb(fmt, url) {
-      const holder = document.createElement("div");
-      holder.className = "thumb";
-      holder.style.borderRadius = "12px";
-      
-      if (fmt === "pdf" && window['pdfjsLib']) {
-          if (pdfCache[url]) {
-              holder.appendChild(pdfCache[url].cloneNode(true));
-          } else {
-              const canvas = document.createElement("canvas");
-              holder.appendChild(canvas);
-              try {
-                  await renderPdfFirstPage(url, canvas);
-                  pdfCache[url] = canvas.cloneNode(true); // Cache the canvas
-              } catch (e) {
-                  holder.innerHTML = fileIcon("pdf");
-              }
-          }
-      } else {
-          holder.innerHTML = fileIcon(fmt);
+    // This function now returns a canvas or null
+    async function renderPdfFirstPage(url){
+      try {
+          const pdf = await pdfjsLib.getDocument({url}).promise;
+          const page = await pdf.getPage(1);
+          const viewport = page.getViewport({scale: 0.5});
+          const scale = Math.min(1.2, Math.max(0.6, 240 / (viewport.width*1.2))); // Using a fixed width for calculation
+          const vp = page.getViewport({scale});
+          
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext('2d');
+          canvas.width = vp.width; canvas.height = vp.height;
+          await page.render({canvasContext: ctx, viewport: vp}).promise;
+          return canvas;
+      } catch (e) {
+          console.error("Failed to render PDF page:", e);
+          return null;
       }
-      
-      if (fmt === "pdf" || fmt === "docx") {
-        holder.appendChild(renderFormatBadge(fmt));
-      }
-
-      return holder;
     }
 
     function fileIcon(fmt){
@@ -909,17 +959,6 @@
       `;
     }
 
-    async function renderPdfFirstPage(url, canvas){
-      const pdf = await pdfjsLib.getDocument({url}).promise;
-      const page = await pdf.getPage(1);
-      const viewport = page.getViewport({scale: 0.5});
-      const scale = Math.min(1.2, Math.max(0.6, canvas.parentElement.clientWidth / (viewport.width*1.2)));
-      const vp = page.getViewport({scale});
-      const ctx = canvas.getContext('2d');
-      canvas.width = vp.width; canvas.height = vp.height;
-      await page.render({canvasContext: ctx, viewport: vp}).promise;
-    }
-
     function renderCard(it){
       const card = document.createElement("article");
       card.className = "card";
@@ -927,6 +966,10 @@
       card.setAttribute("role", "button");
       card.setAttribute("aria-label", `${it.title}`);
       
+      const thumbHolder = document.createElement("div");
+      thumbHolder.className = "thumb thumb-holder";
+      card.appendChild(thumbHolder);
+
       const body = document.createElement("div");
       body.className = "body";
       const title = document.createElement("div");
@@ -1032,6 +1075,10 @@
       row.tabIndex = 0;
       row.setAttribute("role", "button");
       row.setAttribute("aria-label", `${it.title}`);
+
+      const thumbHolder = document.createElement("div");
+      thumbHolder.className = "thumb thumb-holder";
+      row.appendChild(thumbHolder);
 
       const main = document.createElement("div");
       main.className = "main";
