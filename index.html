@@ -26,6 +26,7 @@
       --gap:14px;
       --gap-lg:22px;
       --dark-header: #12171d;
+      --footer-bg: #1e252e;
     }
 
     *{box-sizing:border-box}
@@ -37,6 +38,8 @@
       font-family:"Noto Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
       -webkit-font-smoothing:antialiased;
       -moz-osx-font-smoothing:grayscale;
+      display: flex;
+      flex-direction: column;
     }
 
     .material-symbols-outlined {
@@ -57,9 +60,9 @@
       z-index: 1;
     }
     .title-logo {
-        width: 45vw;
-        height: auto;
-        max-width: 750px;
+        height: 30vh;
+        width: auto;
+        max-height: 250px;
     }
     .logo-container {
         display: flex;
@@ -80,13 +83,13 @@
         width: auto;
     }
     .line {
-      width: 50px;
+      width: 33vw;
       height: 2px;
-      background: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.8);
       margin: 20px auto;
     }
     @media (max-width: 860px){
-      .title-logo { width: 40vw; }
+      .title-logo { height: 25vh; }
     }
 
     /* Controls */
@@ -156,7 +159,7 @@
     }
 
     /* Main content */
-    .wrap{ padding:18px; z-index: 0; position:relative; margin-top: 36px; }
+    .wrap{ padding:18px; z-index: 0; position:relative; margin-top: 36px; flex: 1; }
     .grid{
       display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));
       gap:18px; align-items:stretch;
@@ -292,7 +295,7 @@
     .back:hover{ background:rgba(255,255,255,0.5) }
     .back:active{ transform: translateY(1px) }
 
-    .help-overlay-content {
+    .overlay-content {
         padding: 2rem;
         text-align: left;
         color: #333;
@@ -303,14 +306,14 @@
         height: 100%;
         overflow-y: auto;
     }
-    .help-overlay-content h1, .help-overlay-content h2 {
+    .overlay-content h1, .overlay-content h2 {
         color: var(--text);
     }
-    .help-overlay-content a {
+    .overlay-content a {
         color: var(--accent);
         text-decoration: none;
     }
-    .help-overlay-content a:hover {
+    .overlay-content a:hover {
         text-decoration: underline;
     }
 
@@ -326,6 +329,8 @@
       font-weight: 500;
       cursor: pointer;
       transition: background .2s, transform .1s, box-shadow .2s;
+      text-decoration: none; /* remove underline for links */
+      font-size: 1rem;
     }
     .styled-btn:hover {
       background: rgba(0,0,0,0.06);
@@ -402,6 +407,56 @@
     .custom-dropdown .option.active {
       background: var(--accent);
       color: white;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--footer-bg);
+      color: rgba(255,255,255,0.6);
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      font-size: 14px;
+    }
+    footer .left {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    footer .left a {
+      color: inherit;
+      text-decoration: none;
+      transition: color .2s;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    footer .left a:hover {
+      color: rgba(255,255,255,0.9);
+    }
+    footer .left a .icon {
+      width: 18px;
+      height: 18px;
+      fill: rgba(255,255,255,0.6);
+    }
+    footer .left a:hover .icon {
+      fill: rgba(255,255,255,0.9);
+    }
+    .total-views {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .total-views .material-symbols-outlined {
+      font-size: 20px;
+      color: rgba(255,255,255,0.6);
+    }
+    .total-views span {
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
     }
 
 
@@ -511,15 +566,33 @@
     </div>
   </div>
 
-  <div id="helpOverlay" class="overlay" aria-hidden="true">
-    <button id="helpBackBtn" class="back" aria-label="Back">
+  <div id="infoOverlay" class="overlay" aria-hidden="true">
+    <button id="infoBackBtn" class="back" aria-label="Back">
       <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
       Back
     </button>
     <div class="viewer" style="grid-template-columns: 1fr;">
-      <div class="help-overlay-content" id="helpContent"></div>
+      <div class="overlay-content" id="infoContent"></div>
     </div>
   </div>
+
+  <footer>
+    <div class="left">
+      <a href="#" class="info-link" data-md="resources/terms-privacy.md">Terms & Privacy</a>
+      <a href="#" class="info-link" data-md="resources/contact.md">Contact Us</a>
+      <a href="#" class="info-link" data-md="resources/about.md">About</a>
+      <a href="https://github.com/Tebby2008/OpenNotes" target="_blank" rel="noopener">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.89 8.207 11.415.6.11.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.043-1.61-4.043-1.61C4.425 18.043 3.6 17.062 3.6 17.062c-1.087-.744.084-.73.084-.73 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.493.996.108-.775.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.046.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.645 1.653.24 2.873.105 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.801 5.626-5.476 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.95 24 18.363 24 13.297c0-6.627-5.373-12-12-12"/>
+        </svg>
+        Github
+      </a>
+    </div>
+    <div class="right total-views">
+      <span class="material-symbols-outlined">visibility</span>
+      <span id="websiteViews">0</span>
+    </div>
+  </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
   <script>
@@ -571,10 +644,13 @@
     const ovOpenRaw = document.getElementById("ovOpenRaw");
     const ovDownload = document.getElementById("ovDownload");
 
+    const infoOverlay = document.getElementById("infoOverlay");
+    const infoBackBtn = document.getElementById("infoBackBtn");
+    const infoContent = document.getElementById("infoContent");
     const uploadBtn = document.getElementById("uploadBtn");
-    const helpOverlay = document.getElementById("helpOverlay");
-    const helpBackBtn = document.getElementById("helpBackBtn");
-    const helpContent = document.getElementById("helpContent");
+    const infoLinks = document.querySelectorAll('.info-link');
+    const websiteViewsEl = document.getElementById('websiteViews');
+
 
     // --- Utils ---
     const sleep = (ms)=> new Promise(r=>setTimeout(r,ms));
@@ -622,6 +698,20 @@
 
     async function incWebsiteView(){
       await fetch(`${API_URL}?type=website`, { method: 'POST' });
+    }
+
+    async function fetchWebsiteViews(){
+        try {
+            const res = await fetch(`${API_URL}?type=website`, { method: 'GET' });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.views !== undefined) {
+                    websiteViewsEl.textContent = data.views;
+                }
+            }
+        } catch (e) {
+            console.error('Failed to fetch website views:', e);
+        }
     }
 
     async function getApiKeys(){
@@ -1027,26 +1117,25 @@
       });
     }
 
-    function openHelpOverlay() {
-      helpOverlay.style.display = 'block';
-      helpOverlay.setAttribute("aria-hidden", "false");
-      requestAnimationFrame(() => { helpOverlay.classList.add("open"); });
+    function openInfoOverlay(mdFile) {
+        infoOverlay.style.display = 'block';
+        infoOverlay.setAttribute("aria-hidden", "false");
+        requestAnimationFrame(() => { infoOverlay.classList.add("open"); });
+        infoContent.innerHTML = "Loading...";
 
-      helpContent.innerHTML = "Loading...";
-
-      fetchMarkdownFile("resources/upload.md").then(mdContent => {
-        helpContent.innerHTML = marked.parse(mdContent);
-      }).catch(e => {
-        helpContent.innerHTML = `Failed to load help content: ${e}`;
-      });
+        fetchMarkdownFile(mdFile).then(mdContent => {
+          infoContent.innerHTML = marked.parse(mdContent);
+        }).catch(e => {
+          infoContent.innerHTML = `Failed to load content: ${e}`;
+        });
     }
 
-    function closeHelpOverlay() {
-      helpOverlay.classList.remove("open");
-      helpOverlay.addEventListener("transitionend", function handler() {
-        helpOverlay.style.display = 'none';
-        helpOverlay.setAttribute("aria-hidden", "true");
-        helpOverlay.removeEventListener("transitionend", handler);
+    function closeInfoOverlay() {
+      infoOverlay.classList.remove("open");
+      infoOverlay.addEventListener("transitionend", function handler() {
+        infoOverlay.style.display = 'none';
+        infoOverlay.setAttribute("aria-hidden", "true");
+        infoOverlay.removeEventListener("transitionend", handler);
       }, {once: true});
     }
 
@@ -1071,9 +1160,16 @@
     overlay.addEventListener("click", (e)=> { if(e.target === overlay) closeOverlay(); });
     document.addEventListener("keydown", (e)=> { if(e.key === "Escape" && overlay.classList.contains("open")) closeOverlay(); });
 
-    uploadBtn.addEventListener("click", openHelpOverlay);
-    helpBackBtn.addEventListener("click", closeHelpOverlay);
-    helpOverlay.addEventListener("click", (e)=> { if(e.target === helpOverlay) closeHelpOverlay(); });
+    uploadBtn.addEventListener("click", () => openInfoOverlay("resources/upload.md"));
+    infoBackBtn.addEventListener("click", closeInfoOverlay);
+    infoOverlay.addEventListener("click", (e)=> { if(e.target === infoOverlay) closeInfoOverlay(); });
+
+    infoLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            openInfoOverlay(link.dataset.md);
+        });
+    });
 
     // --- Init ---
     (async function init(){
@@ -1110,7 +1206,7 @@
         await Promise.all(notePromises);
 
         render();
-
+        fetchWebsiteViews();
         incWebsiteView();
 
       }catch(e){
