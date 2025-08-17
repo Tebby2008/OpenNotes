@@ -5,7 +5,8 @@
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/AP%20Calculus%20AB%20Notes.pdf",
     "author": "tebby",
     "last_updated": "2025-08-17T02:06:16Z",
-    "is_ai_generated": false
+    "is_ai_generated": false,
+    "author_username": "Tebby2008"
   },
   {
     "name": "AP Calculus AB Review Sheet.pdf",
@@ -13,7 +14,8 @@
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/AP%20Calculus%20AB%20Review%20Sheet.pdf",
     "author": "Tebby2008",
     "last_updated": "2025-08-17T01:29:18Z",
-    "is_ai_generated": false
+    "is_ai_generated": false,
+    "author_username": "Tebby2008"
   },
   {
     "name": "AP Calculus BC Exclusive.pdf",
@@ -21,7 +23,8 @@
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/AP%20Calculus%20BC%20Exclusive.pdf",
     "author": "Tebby2008",
     "last_updated": "2025-08-17T01:29:18Z",
-    "is_ai_generated": false
+    "is_ai_generated": false,
+    "author_username": "Tebby2008"
   },
   {
     "name": "AP Macroeconomics Notes.pdf",
@@ -29,7 +32,8 @@
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/AP%20Macroeconomics%20Notes.pdf",
     "author": "tebby",
     "last_updated": "2025-08-17T01:35:00Z",
-    "is_ai_generated": false
+    "is_ai_generated": false,
+    "author_username": "Tebby2008"
   },
   {
     "name": "IB Chemistry Yr 1 Study Guide (AI).docx",
@@ -37,7 +41,8 @@
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Chemistry%20Yr%201%20Study%20Guide%20(AI).docx",
     "author": "tebby",
     "last_updated": "2025-08-17T01:57:26Z",
-    "is_ai_generated": true
+    "is_ai_generated": true,
+    "author_username": "Tebby2008"
   },
   {
     "name": "IB Economics Real World Examples.pdf",
@@ -45,7 +50,8 @@
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Economics%20Real%20World%20Examples.pdf",
     "author": "Tebby2008",
     "last_updated": "2025-08-17T01:29:18Z",
-    "is_ai_generated": false
+    "is_ai_generated": false,
+    "author_username": "Tebby2008"
   },
   {
     "name": "IB Economics Yr 1 Study Guide (AI).docx",
@@ -53,7 +59,8 @@
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Economics%20Yr%201%20Study%20Guide%20(AI).docx",
     "author": "tebby",
     "last_updated": "2025-08-17T01:57:26Z",
-    "is_ai_generated": true
+    "is_ai_generated": true,
+    "author_username": "Tebby2008"
   },
   {
     "name": "Python Guide (AI).docx",
@@ -61,7 +68,8 @@
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/Python%20Guide%20(AI).docx",
     "author": "tebby",
     "last_updated": "2025-08-17T02:42:25Z",
-    "is_ai_generated": true
+    "is_ai_generated": true,
+    "author_username": "Tebby2008"
   },
   {
     "name": "SAT Reading and Writing Notes.pdf",
@@ -69,6 +77,16 @@
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/SAT%20Reading%20and%20Writing%20Notes.pdf",
     "author": "tebby",
     "last_updated": "2025-08-17T15:42:30Z",
-    "is_ai_generated": false
+    "is_ai_generated": false,
+    "author_username": "Tebby2008"
+  },
+  {
+    "name": "THIS IS JUST A TEST DOC.docx",
+    "path": "Notes/THIS IS JUST A TEST DOC.docx",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/THIS%20IS%20JUST%20A%20TEST%20DOC.docx",
+    "author": "tebby",
+    "last_updated": "2025-08-17T16:01:45Z",
+    "is_ai_generated": false,
+    "author_username": "Tebby2008"
   }
 ]
