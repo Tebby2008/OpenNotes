@@ -915,6 +915,19 @@
           sortDropdown.classList.remove("open");
         }
       });
+      
+      async function incWebsiteView() {
+          try {
+              const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
+              if (res.ok) {
+                  const data = await res.json();
+                  return data.views;
+              }
+          } catch(e) {
+              console.error("Failed to increment website view count:", e);
+          }
+          return null;
+      }
   
       (async function init() {
         try {
@@ -929,8 +942,8 @@
                   }
               });
           }
-          const newViews = await updateCounter('total-website-visits', 'views');
-          if (newViews !== null) websiteViewsEl.textContent = newViews.views;
+          const newViews = await incWebsiteView();
+          if (newViews !== null) websiteViewsEl.textContent = newViews;
           render();
         } catch(e) {
           console.error(e);
