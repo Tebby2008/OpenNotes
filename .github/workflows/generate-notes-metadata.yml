@@ -30,7 +30,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Use your own script to generate the JSON file
-          node .github/workflows/generate-notes-data.js
+          node .github/workflows/generate-notes-metadata.js
           
           # Stage the changes to the JSON file
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
