@@ -18,9 +18,9 @@
       --muted: #6c757d;
       --accent: #96bfea;
       --accent-2: #b9d9f9;
-      --pdf-color: #fff5f8; /* Lighter tone for thumbnail background */
+      --pdf-color: #f8e6ed; /* Lighter tone for thumbnail background with better contrast */
       --pdf-color-2: #e91e63; /* Darker accent for pills */
-      --docx-color: #f5fafd; /* Lighter tone for thumbnail background */
+      --docx-color: #e8f0f8; /* Lighter tone for thumbnail background with better contrast */
       --docx-color-2: var(--accent); /* Darker accent for pills */
       --gold: #ffc107;
       --shadow:0 10px 30px rgba(0,0,0,0.1);
@@ -182,6 +182,9 @@
     }
     #aiToggleBtn.btn.active-ai .material-symbols-outlined {
         color: var(--gold);
+    }
+    .btn.active-ai b {
+      color: #b38600;
     }
     #aiToggleBtn .material-symbols-outlined{
       font-variation-settings: 'FILL' 1, 'wght' 700;
@@ -483,6 +486,15 @@
         background: var(--pdf-color-2);
         color: white;
     }
+    /* Active state for format toggle buttons */
+    .btn.active-pdf {
+      background: #fdf2f7;
+      box-shadow: 0 0 0 2px var(--pdf-color-2) inset;
+    }
+    .btn.active-docx {
+      background: #f2f8fd;
+      box-shadow: 0 0 0 2px var(--docx-color-2) inset;
+    }
 
     a.clean{ color:inherit; text-decoration:none; cursor: pointer; }
     .muted{ color:var(--muted) }
@@ -569,7 +581,8 @@
       fill: rgba(255,255,255,0.9);
     }
     footer .left a svg {
-        height: 1em; /* Make icon height match font height */
+        height: 14px; /* Set a fixed height for the GitHub icon */
+        width: 14px;  /* Set a fixed width to prevent distortion */
         vertical-align: middle;
         fill: currentColor;
     }
@@ -762,6 +775,7 @@
       const searchInput = document.getElementById("searchInput");
       const gridBtn = document.getElementById("gridBtn");
       const listBtn = document.getElementById("listBtn");
+      const typeBtn = document.getElementById("typeBtn");
       const aiToggleBtn = document.getElementById("aiToggleBtn");
   
       const overlay = document.getElementById("overlay");
@@ -1102,19 +1116,24 @@
       });
   
       // FILE TYPE toggle logic
-      const typeBtn = document.getElementById("typeBtn");
       const types = ["ALL", "PDF", "DOCX"];
       let idx = 0;
       typeBtn.addEventListener("click", () => {
         idx = (idx + 1) % types.length;
-        typeBtn.innerHTML = `<b>${types[idx]}</b>`;
-        formatSelect.value = types[idx] === "ALL" ? "all" : types[idx].toLowerCase();
-        render();
-        if (types[idx] !== "ALL") {
-          typeBtn.classList.add("active");
+        const currentType = types[idx];
+        typeBtn.innerHTML = `<b>${currentType}</b>`;
+        formatSelect.value = currentType.toLowerCase();
+        
+        typeBtn.classList.remove("active", "active-pdf", "active-docx");
+        if (currentType === "PDF") {
+            typeBtn.classList.add("active-pdf");
+        } else if (currentType === "DOCX") {
+            typeBtn.classList.add("active-docx");
         } else {
-          typeBtn.classList.remove("active");
+            typeBtn.classList.add("active");
         }
+
+        render();
       });
   
       function renderRow(it){
