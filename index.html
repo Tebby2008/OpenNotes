@@ -237,6 +237,9 @@
       color: var(--gold);
       font-variation-settings: 'FILL' 1, 'wght' 700;
     }
+    .btn.active-ai .material-symbols-outlined {
+      color: #b38600;
+    }
 
     .stats{
       margin-top:10px; display:flex; align-items:center; gap:12px; color:var(--muted); font-size:12px;
@@ -546,7 +549,10 @@
           </div>
         </div>
         <button id="typeBtn" class="btn">ALL</button>
-        <button id="aiToggleBtn" class="btn active-ai" title="Toggle AI Content">Show AI</button>
+        <button id="aiToggleBtn" class="btn active-ai" title="Toggle AI Content">
+          <span class="material-symbols-outlined">auto_awesome</span>
+          Show AI
+        </button>
         <div class="search" role="search">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23C15.99 6.01 12.98 3 9.5 3S3.01 6.01 3.01 9.5 6.02 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
           <input id="searchInput" type="text" placeholder="Search notes..." aria-label="Search notes" />
@@ -660,6 +666,7 @@
     let allItems = [];
     let viewMode = "grid";
     let showAI = true; // State for the AI toggle
+    const pdfCache = {};
 
     // --- Elements ---
     const container = document.getElementById("itemsContainer");
@@ -800,7 +807,7 @@
 
 
     // --- Rendering ---
-    function render(){
+    async function render(){
       const query = searchInput.value.trim().toLowerCase();
       const fmt = formatSelect.value;
 
@@ -839,9 +846,15 @@
       // Render each item
       for(const it of list){
         if(viewMode === "grid"){
-          container.appendChild(renderCard(it));
+          const card = renderCard(it);
+          const thumb = await makeThumb(it.format, it.download_url);
+          card.prepend(thumb);
+          container.appendChild(card);
         }else{
-          container.appendChild(renderRow(it));
+          const row = renderRow(it);
+          const thumb = await makeThumb(it.format, it.download_url);
+          row.prepend(thumb);
+          container.appendChild(row);
         }
       }
     }
@@ -852,21 +865,34 @@
       span.textContent = fmt.toUpperCase();
       return span;
     }
-
-    function makeThumb(fmt, url){
+    
+    // Updated makeThumb function with caching
+    async function makeThumb(fmt, url) {
       const holder = document.createElement("div");
       holder.className = "thumb";
       holder.style.borderRadius = "12px";
-
-      if(fmt === "pdf" && window['pdfjsLib']){
-        const canvas = document.createElement("canvas");
-        holder.appendChild(canvas);
-        renderPdfFirstPage(url, canvas).catch(()=>{
-          holder.innerHTML = fileIcon("pdf");
-        });
-      } else { // Fallback for DOCX and other formats
-        holder.innerHTML = fileIcon(fmt);
+      
+      if (fmt === "pdf" && window['pdfjsLib']) {
+          if (pdfCache[url]) {
+              holder.appendChild(pdfCache[url].cloneNode(true));
+          } else {
+              const canvas = document.createElement("canvas");
+              holder.appendChild(canvas);
+              try {
+                  await renderPdfFirstPage(url, canvas);
+                  pdfCache[url] = canvas.cloneNode(true); // Cache the canvas
+              } catch (e) {
+                  holder.innerHTML = fileIcon("pdf");
+              }
+          }
+      } else {
+          holder.innerHTML = fileIcon(fmt);
       }
+      
+      if (fmt === "pdf" || fmt === "docx") {
+        holder.appendChild(renderFormatBadge(fmt));
+      }
+
       return holder;
     }
 
@@ -900,10 +926,7 @@
       card.tabIndex = 0;
       card.setAttribute("role", "button");
       card.setAttribute("aria-label", `${it.title}`);
-
-      const thumb = makeThumb(it.format, it.download_url);
-      thumb.appendChild(renderFormatBadge(it.format));
-
+      
       const body = document.createElement("div");
       body.className = "body";
       const title = document.createElement("div");
@@ -950,7 +973,6 @@
       });
       stats.appendChild(dlBtn);
 
-      card.appendChild(thumb);
       body.appendChild(title);
       body.appendChild(meta);
       body.appendChild(stats);
@@ -1010,14 +1032,6 @@
       row.tabIndex = 0;
       row.setAttribute("role", "button");
       row.setAttribute("aria-label", `${it.title}`);
-
-      const thumb = makeThumb(it.format, it.download_url);
-      thumb.style.height = "66px";
-      const fmtBadge = thumb.querySelector('.fmt-badge');
-      if (fmtBadge) {
-        fmtBadge.style.display = 'none';
-      }
-      row.appendChild(thumb);
 
       const main = document.createElement("div");
       main.className = "main";
@@ -1199,7 +1213,7 @@
     aiToggleBtn.addEventListener("click", () => {
         showAI = !showAI; // Toggle the state
         aiToggleBtn.classList.toggle("active-ai");
-        aiToggleBtn.textContent = showAI ? "Show AI" : "Hide AI";
+        aiToggleBtn.innerHTML = showAI ? `<span class="material-symbols-outlined">auto_awesome</span> Show AI` : `<span class="material-symbols-outlined">auto_awesome</span> Hide AI`;
         render();
     });
 
