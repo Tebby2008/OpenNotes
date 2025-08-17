@@ -1003,7 +1003,7 @@
       cellTitle.className = "cell";
       cellTitle.innerHTML = `<div class="title-line">${it.title}</div>`;
 
-      const displayAuthor = it.author === "Tebby2008" ? "Tebby" : it.author;
+      const displayAuthor = it.author === "Tebby2008" ? "Chenyu Li" : it.author;
       const cellAuthor = document.createElement("div");
       cellAuthor.className = "cell muted";
       cellAuthor.textContent = displayAuthor || "Unknown";
@@ -1070,7 +1070,7 @@
       ovFormat.textContent = item.format.toUpperCase();
       ovFormat.className = `pill ${item.format==='docx' ? 'docx' : ''}`;
       ovDate.textContent = fmtDate(item.updatedAt);
-      ovAuthor.textContent = item.author === "Tebby2008" ? "Tebby" : item.author;
+      ovAuthor.textContent = item.author === "Tebby2008" ? "Chenyu Li" : item.author;
       ovOpenRaw.href = `view.html?file=${encodeURIComponent(item.download_url)}`;
       ovOpenRaw.target = "_blank";
 
