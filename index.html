@@ -745,19 +745,25 @@
           downloads: 0 // Placeholder
         }));
 
-        // Fetch view/download counts from the API
-        const existingNoteKeys = new Set(allItems.map(item => item.path));
-        const resCounts = await fetch(`${API_URL}?noteIds=${Array.from(existingNoteKeys).join(',')}`);
-        if(resCounts.ok){
-          const countsData = await resCounts.json();
-          allItems.forEach(item => {
-            const count = countsData[item.path];
-            if(count){
-              item.views = count.views || 0;
-              item.downloads = count.downloads || 0;
+        // Fetch view/download counts from the API for each note
+        const notePromises = allItems.map(async (note) => {
+            try {
+                const res = await fetch(`${API_URL}?noteId=${note.path}`, { method: 'GET' });
+                if (res.ok) {
+                    const data = await res.json();
+                    note.views = data.views || 0;
+                    note.downloads = data.downloads || 0;
+                } else {
+                    note.views = 0;
+                    note.downloads = 0;
+                }
+            } catch (e) {
+                console.error('Failed to fetch count for note:', note.path, e);
+                note.views = 0;
+                note.downloads = 0;
             }
-          });
-        }
+        });
+        await Promise.all(notePromises);
 
         render();
 
@@ -1048,11 +1054,11 @@
     // --- Initialization ---
     document.addEventListener('DOMContentLoaded', () => {
         fetchNotes();
-        // incWebsiteView().then(newViews => {
-        //     if (newViews !== null) {
-        //         websiteViewsEl.textContent = newViews;
-        //     }
-        // });
+        incWebsiteView().then(newViews => {
+            if (newViews !== null) {
+                websiteViewsEl.textContent = newViews;
+            }
+        });
     });
 
   </script>
