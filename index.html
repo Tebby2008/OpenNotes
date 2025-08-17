@@ -697,21 +697,18 @@
     }
 
     async function incWebsiteView(){
-      await fetch(`${API_URL}?type=website`, { method: 'POST' });
-    }
-
-    async function fetchWebsiteViews(){
-        try {
-            const res = await fetch(`${API_URL}?type=website`, { method: 'GET' });
-            if (res.ok) {
-                const data = await res.json();
-                if (data.views !== undefined) {
-                    websiteViewsEl.textContent = data.views;
-                }
-            }
-        } catch (e) {
-            console.error('Failed to fetch website views:', e);
+      try {
+        const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.views !== undefined) {
+            return data.views;
+          }
         }
+      } catch (e) {
+        console.error('Failed to increment website view count:', e);
+      }
+      return null;
     }
 
     async function getApiKeys(){
@@ -1205,9 +1202,12 @@
         });
         await Promise.all(notePromises);
 
+        const newViews = await incWebsiteView();
+        if (newViews !== null) {
+          websiteViewsEl.textContent = newViews;
+        }
+
         render();
-        fetchWebsiteViews();
-        incWebsiteView();
 
       }catch(e){
         console.error(e);
