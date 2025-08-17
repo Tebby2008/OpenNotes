@@ -33,7 +33,7 @@ jobs:
           
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
-          git add notes_metadata.json
+          git add resources/notes_metadata.json
           git commit -m "feat(ci): Auto-generate notes metadata"
           
           git push
@@ -61,7 +61,7 @@ jobs:
           mkdir -p resources/thumbnails
           
           for THUMBNAIL in resources/thumbnails/*.jpg; do
-            NOTE_NAME=$(basename "$THUMBNAIL" .jpg)
+            NOTE_NAME=$(basename "$THUMBNAIL" .jpg | sed 's/_/./g')
             if ! grep -q "Notes/${NOTE_NAME}.pdf" notes.txt && ! grep -q "Notes/${NOTE_NAME}.docx" notes.txt; then
               echo "Deleting orphaned thumbnail: $THUMBNAIL"
               rm "$THUMBNAIL"
@@ -69,10 +69,9 @@ jobs:
           done
 
           while read -r NOTE; do
-            NOTE_NAME=$(basename "$NOTE" | sed 's/\.[^.]*$//')
+            NOTE_NAME=$(basename "$NOTE" | sed 's/\./_/g')
             THUMBNAIL_PATH="resources/thumbnails/${NOTE_NAME}.jpg"
             
-            # The next line creates the thumbnail only if it doesn't already exist.
             if [[ ! -f "$THUMBNAIL_PATH" ]]; then
                 echo "Generating thumbnail for ${NOTE}"
                 if [[ "$NOTE" == *.pdf ]]; then
@@ -83,7 +82,6 @@ jobs:
                   rm temp.pdf
                 fi
 
-                # Heavily compress the resulting JPG file
                 if [[ -f "$THUMBNAIL_PATH" ]]; then
                   echo "Compressing thumbnail: $THUMBNAIL_PATH"
                   mogrify -quality 70 -path resources/thumbnails "$THUMBNAIL_PATH"
