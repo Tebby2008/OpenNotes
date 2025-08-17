@@ -79,6 +79,12 @@
         height: 23.4px;
         width: auto;
     }
+    .line {
+      width: 50px;
+      height: 2px;
+      background: rgba(255,255,255,0.2);
+      margin: 20px auto;
+    }
     @media (max-width: 860px){
       .title-logo { width: 40vw; }
     }
@@ -212,11 +218,13 @@
       color: #fff;
       border: none;
       padding: 6px;
-      border-radius: 8px;
-      cursor: pointer;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
     .download-btn svg {
       width: 18px;
@@ -306,6 +314,39 @@
         text-decoration: underline;
     }
 
+    .styled-btn {
+      background: var(--panel-2);
+      color: var(--text);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 999px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .2s, transform .1s, box-shadow .2s;
+    }
+    .styled-btn:hover {
+      background: rgba(0,0,0,0.06);
+    }
+    .styled-btn:active {
+      transform: translateY(1px);
+    }
+    .styled-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .styled-btn.download-accent {
+      background: var(--accent);
+      color: white;
+      border-color: rgba(255,255,255,0.1);
+    }
+    .styled-btn.download-accent svg {
+      fill: white;
+    }
+
 
     /* Helpers */
     .pill{
@@ -377,6 +418,7 @@
     <div class="title-section">
       <div class="logo-container">
         <img src="resources/logo.svg" alt="OpenNotes Logo" class="title-logo" />
+        <div class="line"></div>
         <p>
           the open platform for notes by 
           <a href="https://ingenium.rf.gd" target="_blank" rel="noopener">
@@ -455,12 +497,12 @@
         <div class="kv">Author: <strong id="ovAuthor">—</strong></div>
         <div class="kv">Views: <strong id="ovViews">0</strong></div>
         <div class="kv">Downloads: <strong id="ovDownloads">0</strong></div>
-        <div style="margin-top:8px; display:flex; gap:10px;">
-          <a id="ovOpenRaw" class="btn clean" target="_blank" rel="noopener">
+        <div style="margin-top:8px; display:flex; flex-direction:column; gap:10px;">
+          <a id="ovOpenRaw" class="styled-btn" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"/><path d="M5 5h5V3H3v7h2z"/></svg>
             Open raw
           </a>
-          <button id="ovDownload" class="download-btn">
+          <button id="ovDownload" class="styled-btn download-accent">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>
             Download
           </button>
@@ -776,6 +818,7 @@
 
       const dlBtn = document.createElement("button");
       dlBtn.className = "download-btn";
+      dlBtn.title = "Download";
       dlBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`;
       dlBtn.addEventListener("click", async (e)=> {
           e.stopPropagation();
