@@ -1,0 +1,103 @@
+name: Generate Notes & Assets
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Notes/**'
+
+permissions:
+  contents: write
+
+jobs:
+  generate-metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm install @octokit/rest fs path
+      
+      - name: Generate and commit metadata file
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node .github/workflows/generate-notes-metadata.js
+          
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add notes_metadata.json
+          git commit -m "feat(ci): Auto-generate notes metadata"
+          
+          git push
+
+  generate-thumbnails:
+    runs-on: ubuntu-latest
+    needs: generate-metadata
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils unoconv libreoffice-writer imagemagick
+
+      - name: Generate and manage thumbnails
+        id: manage-thumbnails
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) > notes.txt
+          
+          mkdir -p resources/thumbnails
+          
+          for THUMBNAIL in resources/thumbnails/*.jpg; do
+            NOTE_NAME=$(basename "$THUMBNAIL" .jpg)
+            if ! grep -q "Notes/${NOTE_NAME}.pdf" notes.txt && ! grep -q "Notes/${NOTE_NAME}.docx" notes.txt; then
+              echo "Deleting orphaned thumbnail: $THUMBNAIL"
+              rm "$THUMBNAIL"
+            fi
+          done
+
+          while read -r NOTE; do
+            NOTE_NAME=$(basename "$NOTE" | sed 's/\.[^.]*$//')
+            THUMBNAIL_PATH="resources/thumbnails/${NOTE_NAME}.jpg"
+            
+            # The next line creates the thumbnail only if it doesn't already exist.
+            if [[ ! -f "$THUMBNAIL_PATH" ]]; then
+                echo "Generating thumbnail for ${NOTE}"
+                if [[ "$NOTE" == *.pdf ]]; then
+                  pdftocairo -jpeg -singlefile -scale-to 600 "$NOTE" "$THUMBNAIL_PATH"
+                elif [[ "$NOTE" == *.docx ]]; then
+                  unoconv --stdout -f pdf "$NOTE" > temp.pdf
+                  pdftocairo -jpeg -singlefile -scale-to 600 temp.pdf "$THUMBNAIL_PATH"
+                  rm temp.pdf
+                fi
+
+                # Heavily compress the resulting JPG file
+                if [[ -f "$THUMBNAIL_PATH" ]]; then
+                  echo "Compressing thumbnail: $THUMBNAIL_PATH"
+                  mogrify -quality 70 -path resources/thumbnails "$THUMBNAIL_PATH"
+                fi
+            fi
+          done < notes.txt
+
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Committing thumbnail changes..."
+            git add resources/thumbnails/
+            git commit -m "feat(ci): auto-generate and compress thumbnails"
+            git push
+            echo "::set-output name=has_changes::true"
+          else
+            echo "No new thumbnails to generate or delete."
+            echo "::set-output name=has_changes::false"
+          fi
