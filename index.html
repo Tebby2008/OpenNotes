@@ -216,7 +216,7 @@
       display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px;
     }
     .meta .dot{ width:4px; height:4px; border-radius:50%; background:var(--muted) }
-    
+
     /* Golden AI Tag Style */
     .ai-tag {
       background: #fffbeb;
@@ -235,6 +235,24 @@
     .ai-tag .material-symbols-outlined {
       font-size: 12px;
       color: var(--gold);
+      font-variation-settings: 'FILL' 1, 'wght' 700;
+    }
+
+    .verified-tag {
+      color: #fff;
+      background: #007bff;
+      border-radius: 50%;
+      height: 18px;
+      width: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 4px;
+      vertical-align: middle;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    .verified-tag .material-symbols-outlined {
+      font-size: 14px;
       font-variation-settings: 'FILL' 1, 'wght' 700;
     }
 
@@ -791,6 +809,7 @@
             format: format,
             updatedAt: meta.last_updated,
             author: meta.author,
+            author_username: meta.author_username,
             is_ai_generated: meta.is_ai_generated,
             views: 0,
             downloads: 0,
@@ -923,15 +942,20 @@
         title.className = "title-line";
         title.textContent = it.title;
   
-        const authorName = (it.author || "").toLowerCase();
-        const displayAuthor = (authorName === "tebby2008" || authorName === "tebby") ? "Chenyu Li" : it.author;
-  
         const meta = document.createElement("div");
         meta.className = "meta";
         
+        let authorHtml;
+        const authorName = it.author || 'Unknown';
+        if (it.author_username && it.author_username.toLowerCase() === 'tebby2008') {
+          authorHtml = `Chenyu Li <span class="verified-tag"><span class="material-symbols-outlined">check_circle</span></span>`;
+        } else {
+          authorHtml = authorName;
+        }
+
         const aiTagHtml = it.is_ai_generated ? `<span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>` : '';
         meta.innerHTML = `
-          <span>${displayAuthor || 'Unknown'} ${aiTagHtml}</span>
+          <span>${authorHtml} ${aiTagHtml}</span>
           <span class="dot"></span>
           <span>${fmtDate(it.updatedAt)}</span>
         `;
@@ -1039,12 +1063,20 @@
         cellTitle.className = "cell";
         cellTitle.innerHTML = `<div class="title-line">${it.title}</div>`;
   
-        const authorName = (it.author || "").toLowerCase();
-        const displayAuthor = (authorName === "tebby2008" || authorName === "tebby") ? "Chenyu Li" : it.author;
-  
         const cellAuthor = document.createElement("div");
         cellAuthor.className = "cell muted";
-        cellAuthor.textContent = displayAuthor || "Unknown";
+
+        let authorName = it.author || 'Unknown';
+        if (it.author_username && it.author_username.toLowerCase() === 'tebby2008') {
+          authorName = "Chenyu Li";
+          const verifiedTag = document.createElement("span");
+          verifiedTag.className = "verified-tag";
+          verifiedTag.innerHTML = `<span class="material-symbols-outlined">check_circle</span>`;
+          cellAuthor.innerHTML = authorName;
+          cellAuthor.appendChild(verifiedTag);
+        } else {
+          cellAuthor.innerHTML = authorName;
+        }
         
         if(it.is_ai_generated){
             const aiTag = document.createElement("span");
@@ -1117,10 +1149,16 @@
         ovFormat.className = `pill ${item.format==='docx' ? 'docx' : ''}`;
         ovDate.textContent = fmtDate(item.updatedAt);
         
-        const authorName = (item.author || "").toLowerCase();
-        const displayAuthor = (authorName === "tebby2008" || authorName === "tebby") ? "Chenyu Li" : item.author;
+        let authorHtml;
+        const authorName = item.author || 'Unknown';
+        if (item.author_username && item.author_username.toLowerCase() === 'tebby2008') {
+          authorHtml = `Chenyu Li <span class="verified-tag"><span class="material-symbols-outlined">check_circle</span></span>`;
+        } else {
+          authorHtml = authorName;
+        }
+
         const aiTagHtml = item.is_ai_generated ? ` <span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>` : '';
-        ovAuthor.innerHTML = `${displayAuthor}${aiTagHtml}`;
+        ovAuthor.innerHTML = `${authorHtml}${aiTagHtml}`;
   
         ovOpenRaw.href = `view.html?file=${encodeURIComponent(item.download_url)}`;
         ovOpenRaw.target = "_blank";
