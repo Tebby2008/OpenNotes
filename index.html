@@ -42,10 +42,17 @@
       flex-direction: column;
     }
 
+    /* Common styles for all icons from Google Fonts */
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       font-size: 24px;
       display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .icon {
+      /* For icons that need to be smaller, like in the footer */
+      font-size: 18px;
     }
     
     /* Redesigned Header */
@@ -132,7 +139,7 @@
       transition: box-shadow .2s ease;
     }
     .search:hover{ box-shadow:0 0 0 2px rgba(125,211,252,0.25) inset; }
-    .search svg{width:18px; height:18px; opacity:0.9}
+    .search .material-symbols-outlined{ font-size: 18px; opacity:0.9 }
     .search input{
       width:140px; background:transparent; border:none; outline:none; color:var(--text);
       transition: width .25s ease; font:inherit;
@@ -152,7 +159,7 @@
     }
     .btn:hover{ background:rgba(0,0,0,0.06) }
     .btn:active{ transform: translateY(1px) }
-    .btn svg{width:18px; height:18px}
+    .btn .material-symbols-outlined{ font-size:18px }
     .btn.active{
       background:linear-gradient(90deg, rgba(125,211,252,0.18), rgba(167,243,208,0.15));
       box-shadow:0 0 0 2px rgba(125,211,252,0.18) inset;
@@ -194,8 +201,7 @@
       height:180px; display:flex; align-items:center; justify-content:center;
       overflow:hidden; position:relative;
     }
-    /* NOTE: Removed docx-wrapper style */
-    .thumb canvas, .thumb img, .thumb iframe, .thumb embed{
+    .thumb canvas{
       width:100%; height:100%; object-fit:cover; border-radius:12px;
     }
     .fmt-badge{
@@ -260,7 +266,7 @@
       margin-top:10px; display:flex; align-items:center; gap:12px; color:var(--muted); font-size:12px;
     }
     .stat{ display:inline-flex; align-items:center; gap:6px }
-    .stat svg{ width:16px; height:16px; opacity:0.85 }
+    .stat .material-symbols-outlined { font-size:16px; opacity:0.85 }
 
     /* Download button cursor fix */
     .download-btn {
@@ -277,10 +283,9 @@
       flex-shrink: 0;
       cursor: pointer;
     }
-    .download-btn svg {
-      width: 18px;
-      height: 18px;
-      fill: #fff;
+    .download-btn .material-symbols-outlined {
+      font-size: 18px;
+      color: #fff;
     }
 
     /* List view item */
@@ -290,6 +295,7 @@
       border-radius:var(--radius); padding:10px; box-shadow:0 4px 12px rgba(0,0,0,0.05);
       transition: transform .2s, box-shadow .2s;
       cursor: pointer;
+      overflow: hidden; /* Added to contain content */
     }
     .row:hover{ transform: translateY(-1px) }
     .row .thumb{ height:66px; border-radius:12px }
@@ -297,7 +303,16 @@
       display:grid; grid-template-columns: minmax(200px, 2fr) repeat(4, minmax(90px, 1fr));
       gap:10px; align-items:center;
     }
-    .row .main .cell{ display:flex; align-items:center; gap:6px; min-width:0 }
+    .row .main .cell{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-width:0;
+      /* These new styles handle text overflow and prevent it from going outside the container */
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
     .row .title-line{ margin:0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
     .row .right-end{ display:flex; align-items:center; gap:8px }
 
@@ -344,7 +359,7 @@
       cursor:pointer; backdrop-filter: blur(4px);
       transition: transform .1s, background .2s, box-shadow .2s;
     }
-    .back svg { width: 22px; height: 22px; }
+    .back .material-symbols-outlined { font-size: 22px; }
     .back:hover{ background:rgba(255,255,255,0.5) }
     .back:active{ transform: translateY(1px) }
 
@@ -391,9 +406,8 @@
     .styled-btn:active {
       transform: translateY(1px);
     }
-    .styled-btn svg {
-      width: 18px;
-      height: 18px;
+    .styled-btn .material-symbols-outlined {
+      font-size: 18px;
     }
 
     .styled-btn.download-accent {
@@ -401,8 +415,8 @@
       color: white;
       border-color: rgba(255,255,255,0.1);
     }
-    .styled-btn.download-accent svg {
-      fill: white;
+    .styled-btn.download-accent .material-symbols-outlined {
+      color: white;
     }
 
 
@@ -491,8 +505,6 @@
       color: rgba(255,255,255,0.9);
     }
     footer .left a .icon {
-      width: 18px;
-      height: 18px;
       fill: rgba(255,255,255,0.6);
     }
     footer .left a:hover .icon {
@@ -553,7 +565,7 @@
       <div class="left">
         <div class="sort-wrapper">
           <button id="sortBtn" class="btn icon-only" title="Sort (Last Updated)">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 4h18v2H3V4zm4 7h10v2H7v-2zm3 7h4v2h-4v-2z"/></svg>
+            <span class="material-symbols-outlined">sort</span>
           </button>
           <div id="sortDropdown" class="custom-dropdown hidden">
             <div data-sort="updated-desc" class="option active">Last updated ↓</div>
@@ -566,7 +578,7 @@
         <button id="typeBtn" class="btn">ALL</button>
         <button id="aiToggleBtn" class="btn active-ai" title="Toggle AI Content">Show AI</button>
         <div class="search" role="search">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27a6.471 6.471 0 0 0 1.57-4.23C15.99 6.01 12.98 3 9.5 3S3.01 6.01 3.01 9.5 6.02 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <span class="material-symbols-outlined">search</span>
           <input id="searchInput" type="text" placeholder="Search notes..." aria-label="Search notes" />
         </div>
       </div>
@@ -576,10 +588,10 @@
         </button>
         <div class="toggle" role="tablist" aria-label="View mode">
           <button id="gridBtn" class="btn active icon-only" aria-pressed="true" title="Box view">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
+            <span class="material-symbols-outlined">grid_view</span>
           </button>
           <button id="listBtn" class="btn icon-only" aria-pressed="false" title="List view">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"/></svg>
+            <span class="material-symbols-outlined">list</span>
           </button>
         </div>
       </div>
@@ -592,7 +604,7 @@
 
   <div id="overlay" class="overlay" aria-hidden="true">
     <button id="backBtn" class="back" aria-label="Back">
-      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      <span class="material-symbols-outlined">arrow_back</span>
       Back
     </button>
     <div class="viewer" role="dialog" aria-modal="true" aria-label="Document viewer">
@@ -608,11 +620,11 @@
         <div class="kv">Downloads: <strong id="ovDownloads">0</strong></div>
         <div style="margin-top:8px; display:flex; flex-direction:column; gap:10px;">
           <a id="ovOpenRaw" class="styled-btn" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3z"/><path d="M5 5h5V3H3v7h2z"/></svg>
+            <span class="material-symbols-outlined">open_in_new</span>
             View Raw
           </a>
           <button id="ovDownload" class="styled-btn download-accent">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>
+            <span class="material-symbols-outlined">download</span>
             Download
           </button>
         </div>
@@ -622,7 +634,7 @@
 
   <div id="infoOverlay" class="overlay" aria-hidden="true">
     <button id="infoBackBtn" class="back" aria-label="Back">
-      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      <span class="material-symbols-outlined">arrow_back</span>
       Back
     </button>
     <div class="viewer" style="grid-template-columns: 1fr;">
@@ -636,9 +648,7 @@
       <a href="#" class="info-link" data-md="resources/contact.md">Contact Us</a>
       <a href="#" class="info-link" data-md="resources/about.md">About</a>
       <a href="https://github.com/Tebby2008/OpenNotes" target="_blank" rel="noopener">
-        <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.89 8.207 11.415.6.11.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.043-1.61-4.043-1.61C4.425 18.043 3.6 17.062 3.6 17.062c-1.087-.744.084-.73.084-.73 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.493.996.108-.775.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.046.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.645 1.653.24 2.873.105 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.801 5.626-5.476 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.95 24 18.363 24 13.297c0-6.627-5.373-12-12-12"/>
-        </svg>
+        <span class="material-symbols-outlined icon">code</span>
         Github
       </a>
     </div>
@@ -903,14 +913,14 @@
       }
   
       function fileIcon(fmt){
-        const label = fmt.toUpperCase();
+        const iconName = fmt === "pdf" ? "description" : "article";
         const color = fmt === "pdf" ? "rgba(125,211,252,0.18)" : "rgba(167,243,208,0.18)";
         return `
           <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:${color}">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="42" height="42" aria-hidden="true">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 4h7v5h5v11H6V4z"/>
-            </svg>
-            <div class="pill ${fmt==='docx'?'docx':''}" style="margin-top:8px;">${label}</div>
+            <span class="material-symbols-outlined" style="font-size: 42px; color: ${fmt === "pdf" ? '#37b5f7' : '#58e0a3'};">
+                ${iconName}
+            </span>
+            <div class="pill ${fmt==='docx'?'docx':''}" style="margin-top:8px;">${fmt.toUpperCase()}</div>
           </div>
         `;
       }
@@ -963,14 +973,14 @@
         const stats = document.createElement("div");
         stats.className = "stats";
         stats.innerHTML = `
-          <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views || 0}</span></span>
-          <span class="stat"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads || 0}</span></span>
+          <span class="stat"><span class="material-symbols-outlined">visibility</span> <span data-view>${it.views || 0}</span></span>
+          <span class="stat"><span class="material-symbols-outlined">download</span> <span data-dl>${it.downloads || 0}</span></span>
         `;
   
         const dlBtn = document.createElement("button");
         dlBtn.className = "download-btn";
         dlBtn.title = "Download";
-        dlBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`;
+        dlBtn.innerHTML = `<span class="material-symbols-outlined">download</span>`;
         dlBtn.addEventListener("click", async (e)=> {
             e.stopPropagation();
             const data = await incDownload(it);
@@ -1099,8 +1109,8 @@
         const cellStats = document.createElement("div");
         cellStats.className = "cell muted";
         cellStats.innerHTML = `
-          <span class="stat"><svg viewBox="0 0 24 24"><path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7zm0 12c-2.8 0-5-2.24-5-5s2.2-5 5-5 5 2.24 5 5-2.2 5-5 5z"/><circle cx="12" cy="12" r="2.5"/></svg> <span data-view>${it.views || 0}</span></span>
-          <span class="stat" style="margin-left:10px;"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg> <span data-dl>${it.downloads || 0}</span></span>
+          <span class="stat"><span class="material-symbols-outlined">visibility</span> <span data-view>${it.views || 0}</span></span>
+          <span class="stat" style="margin-left:10px;"><span class="material-symbols-outlined">download</span> <span data-dl>${it.downloads || 0}</span></span>
         `;
   
         main.appendChild(cellTitle);
@@ -1115,7 +1125,7 @@
         const dlCircle = document.createElement("button");
         dlCircle.className = "btn";
         dlCircle.title = "Download";
-        dlCircle.innerHTML = `<svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zM12 2v12l4-4h-3V2h-2v8H8l4 4z"/></svg>`;
+        dlCircle.innerHTML = `<span class="material-symbols-outlined">download</span>`;
         dlCircle.addEventListener("click", async (e)=> {
           e.stopPropagation();
           const data = await incDownload(it);
