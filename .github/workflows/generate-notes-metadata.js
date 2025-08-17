@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
-const { Octokit } = require('@octokit/rest');
 
 async function generateNotesData() {
     try {
+        const { Octokit } = await import('@octokit/rest');
         const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
         const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
         const notesPath = 'Notes';
@@ -38,7 +38,7 @@ async function generateNotesData() {
                     download_url: file.download_url,
                     author: lastCommit.commit.author.name,
                     last_updated: lastCommit.commit.author.date,
-                    is_ai_generated: isAiGenerated, // Add the new flag to the metadata
+                    is_ai_generated: isAiGenerated,
                 });
             }
         }
