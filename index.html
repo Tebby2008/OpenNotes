@@ -209,6 +209,26 @@
       display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px;
     }
     .meta .dot{ width:4px; height:4px; border-radius:50%; background:var(--muted) }
+    
+    /* New AI Tag Style */
+    .ai-tag {
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      padding: 3px 6px;
+      border-radius: 6px;
+      margin-left: 6px;
+      vertical-align: middle;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .ai-tag .material-symbols-outlined {
+      font-size: 12px;
+      font-variation-settings: 'FILL' 1, 'wght' 500;
+    }
 
     .stats{
       margin-top:10px; display:flex; align-items:center; gap:12px; color:var(--muted); font-size:12px;
@@ -741,6 +761,7 @@
           format: format,
           updatedAt: meta.last_updated,
           author: meta.author,
+          is_ai_generated: meta.is_ai_generated, // Pass the AI flag
           views: 0, // Will be populated later from API
           downloads: 0, // Will be populated later from API
         };
@@ -868,11 +889,17 @@
       title.className = "title-line";
       title.textContent = it.title;
 
-      const displayAuthor = it.author === "Tebby2008" ? "Chenyu Li" : it.author;
+      // MODIFIED: Check for 'tebby' as well (case-insensitive)
+      const authorName = (it.author || "").toLowerCase();
+      const displayAuthor = (authorName === "tebby2008" || authorName === "tebby") ? "Chenyu Li" : it.author;
+
       const meta = document.createElement("div");
       meta.className = "meta";
+      
+      // MODIFIED: Add AI tag if applicable
+      const aiTagHtml = it.is_ai_generated ? `<span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>` : '';
       meta.innerHTML = `
-        <span>${displayAuthor || 'Unknown'}</span>
+        <span>${displayAuthor || 'Unknown'} ${aiTagHtml}</span>
         <span class="dot"></span>
         <span>${fmtDate(it.updatedAt)}</span>
       `;
@@ -984,10 +1011,21 @@
       cellTitle.className = "cell";
       cellTitle.innerHTML = `<div class="title-line">${it.title}</div>`;
 
-      const displayAuthor = it.author === "Tebby2008" ? "Chenyu Li" : it.author;
+      // MODIFIED: Check for 'tebby' as well (case-insensitive)
+      const authorName = (it.author || "").toLowerCase();
+      const displayAuthor = (authorName === "tebby2008" || authorName === "tebby") ? "Chenyu Li" : it.author;
+
       const cellAuthor = document.createElement("div");
       cellAuthor.className = "cell muted";
       cellAuthor.textContent = displayAuthor || "Unknown";
+      
+      // MODIFIED: Add AI tag if applicable
+      if(it.is_ai_generated){
+          const aiTag = document.createElement("span");
+          aiTag.className = "ai-tag";
+          aiTag.innerHTML = `<span class="material-symbols-outlined">auto_awesome</span>AI`;
+          cellAuthor.appendChild(aiTag);
+      }
 
       const cellDate = document.createElement("div");
       cellDate.className = "cell muted";
@@ -1051,7 +1089,13 @@
       ovFormat.textContent = item.format.toUpperCase();
       ovFormat.className = `pill ${item.format==='docx' ? 'docx' : ''}`;
       ovDate.textContent = fmtDate(item.updatedAt);
-      ovAuthor.textContent = item.author === "Tebby2008" ? "Chenyu Li" : item.author;
+      
+      // MODIFIED: Check for 'tebby' as well (case-insensitive) for the overlay view
+      const authorName = (item.author || "").toLowerCase();
+      const displayAuthor = (authorName === "tebby2008" || authorName === "tebby") ? "Chenyu Li" : item.author;
+      const aiTagHtml = item.is_ai_generated ? ` <span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>` : '';
+      ovAuthor.innerHTML = `${displayAuthor}${aiTagHtml}`;
+
       ovOpenRaw.href = `view.html?file=${encodeURIComponent(item.download_url)}`;
       ovOpenRaw.target = "_blank";
 
