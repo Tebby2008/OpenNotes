@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Condensed:wght@700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
@@ -18,10 +18,6 @@
       --muted: #6c757d;
       --accent: #96bfea;
       --accent-2: #b9d9f9;
-      --pdf-color: #f8e6ed; /* Lighter tone for thumbnail background with better contrast */
-      --pdf-color-2: #e91e63; /* Darker accent for pills */
-      --docx-color: #e8f0f8; /* Lighter tone for thumbnail background with better contrast */
-      --docx-color-2: var(--accent); /* Darker accent for pills */
       --gold: #ffc107;
       --shadow:0 10px 30px rgba(0,0,0,0.1);
       --radius:16px;
@@ -31,8 +27,10 @@
       --gap-lg:22px;
       --dark-header: #12171d;
       --footer-bg: #1e252e;
-      --icon-size-lg: 28px;
-      --icon-size-sm: 20px;
+      --thumb-pdf-bg: #e1f4ff;
+      --thumb-docx-bg: #e7fff0;
+      --thumb-pdf-icon: #3182ce;
+      --thumb-docx-icon: #38a169;
     }
 
     *{box-sizing:border-box}
@@ -47,22 +45,18 @@
       display: flex;
       flex-direction: column;
     }
-    
+
+    /* Common styles for all icons from Google Fonts */
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      font-size: var(--icon-size-lg);
+      font-size: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .icon-sm {
-      font-size: var(--icon-size-sm);
-    }
-    .search .material-symbols-outlined,
-    .download-btn .material-symbols-outlined,
-    .footer .material-symbols-outlined,
-    .back .material-symbols-outlined {
-      font-size: var(--icon-size-sm);
+    .icon {
+      /* For icons that need to be smaller, like in the footer */
+      font-size: 18px;
     }
     
     /* Redesigned Header */
@@ -141,7 +135,7 @@
       box-shadow:0 0 12px var(--accent);
     }
 
-    /* Expanding search */
+    /* Expanding search -- MODIFIED WIDTH */
     .search{
       display:flex; align-items:center; gap:8px;
       background:var(--panel-2); border-radius:999px;
@@ -149,7 +143,7 @@
       transition: box-shadow .2s ease;
     }
     .search:hover{ box-shadow:0 0 0 2px rgba(125,211,252,0.25) inset; }
-    .search .material-symbols-outlined{ font-size: var(--icon-size-sm); opacity:0.9 }
+    .search .material-symbols-outlined{ font-size: 18px; opacity:0.9 }
     .search input{
       width:140px; background:transparent; border:none; outline:none; color:var(--text);
       transition: width .25s ease; font:inherit;
@@ -169,8 +163,7 @@
     }
     .btn:hover{ background:rgba(0,0,0,0.06) }
     .btn:active{ transform: translateY(1px) }
-    .btn .material-symbols-outlined{ font-size:var(--icon-size-sm) }
-    .btn b{ font-weight: 700; font-family: "Noto Sans", sans-serif; }
+    .btn .material-symbols-outlined{ font-size:18px }
     .btn.active{
       background:linear-gradient(90deg, rgba(125,211,252,0.18), rgba(167,243,208,0.15));
       box-shadow:0 0 0 2px rgba(125,211,252,0.18) inset;
@@ -178,24 +171,9 @@
     /* Style for the active AI toggle button */
     .btn.active-ai{
       background: #fffbeb;
+      color: #b38600;
       box-shadow: 0 0 0 2px var(--gold) inset;
     }
-    #aiToggleBtn.btn.active-ai .material-symbols-outlined {
-        color: var(--gold);
-    }
-    .btn.active-ai b {
-      color: #b38600;
-    }
-    #aiToggleBtn .material-symbols-outlined{
-      font-variation-settings: 'FILL' 1, 'wght' 700;
-    }
-    #gridBtn svg,
-    #listBtn .material-symbols-outlined{
-      width: 20px;
-      height: 20px;
-      font-size: var(--icon-size-sm);
-    }
-    .btn b{ font-weight: 700; }
 
     /* Main content */
     .wrap{ padding:18px; z-index: 0; position:relative; margin-top: 36px; margin-bottom: 36px; flex: 1; }
@@ -226,20 +204,9 @@
       background:var(--panel-2);
       height:180px; display:flex; align-items:center; justify-content:center;
       overflow:hidden; position:relative;
-      flex-direction: column;
-      gap: 8px;
     }
     .thumb canvas{
       width:100%; height:100%; object-fit:cover; border-radius:12px;
-    }
-    .thumb span.material-symbols-outlined{
-      font-size: 80px;
-    }
-    .thumb .fmt-text{
-      font-family: 'Noto Sans Condensed', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      text-transform: uppercase;
     }
     .fmt-badge{
       position:absolute; bottom:10px; left:10px; padding:6px 10px;
@@ -247,16 +214,8 @@
       background:rgba(255,255,255,0.55); color:var(--text); border:1px solid rgba(0,0,0,0.1);
       backdrop-filter: blur(4px);
     }
-    .fmt-pdf{
-        box-shadow:0 0 0 2px var(--pdf-color-2) inset;
-        background:rgba(252,228,236,0.7);
-    }
-    .fmt-docx{
-        box-shadow:0 0 0 2px var(--docx-color-2) inset;
-        background:rgba(185,217,249,0.7);
-    }
-    .thumb.fmt-pdf { background: var(--pdf-color); }
-    .thumb.fmt-docx { background: var(--docx-color); }
+    .fmt-pdf{ box-shadow:0 0 0 2px rgba(125,211,252,0.35) inset }
+    .fmt-docx{ box-shadow:0 0 0 2px rgba(167,243,208,0.35) inset }
 
     .body{ padding:12px 14px 14px }
     .title-line{
@@ -284,34 +243,34 @@
       border: 1px solid var(--gold);
     }
     .ai-tag .material-symbols-outlined {
-      font-size: 14px;
+      font-size: 12px;
       color: var(--gold);
       font-variation-settings: 'FILL' 1, 'wght' 700;
     }
 
     .verified-tag {
-      color: var(--text);
-      background: transparent;
-      border: none;
-      height: auto;
-      width: auto;
+      color: #fff;
+      background: #007bff;
+      border-radius: 50%;
+      height: 18px;
+      width: 18px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       margin-left: 4px;
       vertical-align: middle;
+      border: 1px solid rgba(255, 255, 255, 0.4);
     }
     .verified-tag .material-symbols-outlined {
-      font-size: 16px;
-      color: var(--accent);
-      font-variation-settings: 'FILL' 1, 'wght' 400;
+      font-size: 14px;
+      font-variation-settings: 'FILL' 1, 'wght' 700;
     }
 
     .stats{
       margin-top:10px; display:flex; align-items:center; gap:12px; color:var(--muted); font-size:12px;
     }
     .stat{ display:inline-flex; align-items:center; gap:6px }
-    .stat .material-symbols-outlined { font-size:20px; opacity:0.85 }
+    .stat .material-symbols-outlined { font-size:16px; opacity:0.85 }
 
     /* Download button cursor fix */
     .download-btn {
@@ -329,7 +288,7 @@
       cursor: pointer;
     }
     .download-btn .material-symbols-outlined {
-      font-size: var(--icon-size-sm);
+      font-size: 18px;
       color: #fff;
     }
 
@@ -343,17 +302,7 @@
       overflow: hidden; /* Added to contain content */
     }
     .row:hover{ transform: translateY(-1px) }
-    .row .thumb{
-        height:66px;
-        border-radius:12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .list .thumb .fmt-text {
-        display: none;
-    }
-    .fmt-badge { display: none; }
+    .row .thumb{ height:66px; border-radius:12px }
     .row .main{
       display:grid; grid-template-columns: minmax(200px, 2fr) repeat(4, minmax(90px, 1fr));
       gap:10px; align-items:center;
@@ -414,7 +363,7 @@
       cursor:pointer; backdrop-filter: blur(4px);
       transition: transform .1s, background .2s, box-shadow .2s;
     }
-    .back .material-symbols-outlined { font-size: var(--icon-size-sm); }
+    .back .material-symbols-outlined { font-size: 22px; }
     .back:hover{ background:rgba(255,255,255,0.5) }
     .back:active{ transform: translateY(1px) }
 
@@ -462,7 +411,7 @@
       transform: translateY(1px);
     }
     .styled-btn .material-symbols-outlined {
-      font-size: var(--icon-size-sm);
+      font-size: 18px;
     }
 
     .styled-btn.download-accent {
@@ -474,27 +423,15 @@
       color: white;
     }
 
+
     /* Helpers */
     .pill{
       color:#001; background:var(--accent); border-radius:999px; padding:4px 8px; font-weight:700; font-size:12px;
     }
-    .pill.docx{
-        background:var(--docx-color-2);
-        color: white;
-    }
-    .pill.pdf {
-        background: var(--pdf-color-2);
-        color: white;
-    }
-    /* Active state for format toggle buttons */
-    .btn.active-pdf {
-      background: #fdf2f7;
-      box-shadow: 0 0 0 2px var(--pdf-color-2) inset;
-    }
-    .btn.active-docx {
-      background: #f2f8fd;
-      box-shadow: 0 0 0 2px var(--docx-color-2) inset;
-    }
+    .pill.docx{ background:var(--accent-2) }
+    /* The DOCX pill in list view needs to be a different color. */
+    .row .pill.docx{ background:var(--accent-2); }
+
 
     a.clean{ color:inherit; text-decoration:none; cursor: pointer; }
     .muted{ color:var(--muted) }
@@ -503,7 +440,7 @@
     .icon-only {
       padding: 8px;
     }
-    
+
     .sort-wrapper {
       position: relative;
     }
@@ -574,17 +511,15 @@
     footer .left a:hover {
       color: rgba(255,255,255,0.9);
     }
+    /* Style for the SVG icon */
     footer .left a .icon {
-      fill: rgba(255,255,255,0.6);
+        width: 18px;
+        height: 18px;
+        fill: rgba(255,255,255,0.6);
+        transition: fill .2s;
     }
     footer .left a:hover .icon {
       fill: rgba(255,255,255,0.9);
-    }
-    footer .left a svg {
-        height: 14px; /* Set a fixed height for the GitHub icon */
-        width: 14px;  /* Set a fixed width to prevent distortion */
-        vertical-align: middle;
-        fill: currentColor;
     }
     .total-views {
       display: flex;
@@ -597,9 +532,9 @@
     }
     .total-views span {
       font-weight: 600;
-      color: var(--muted);
+      color: rgba(255,255,255,0.9);
     }
-    footer .total-views span { color: rgba(255,255,255,0.9); }
+
 
     /* Small screens */
     @media (max-width: 860px){
@@ -641,7 +576,7 @@
       <div class="left">
         <div class="sort-wrapper">
           <button id="sortBtn" class="btn icon-only" title="Sort (Last Updated)">
-            <span class="material-symbols-outlined">filter_list</span>
+            <span class="material-symbols-outlined">sort</span>
           </button>
           <div id="sortDropdown" class="custom-dropdown hidden">
             <div data-sort="updated-desc" class="option active">Last updated ↓</div>
@@ -651,11 +586,8 @@
             <div data-sort="format-asc" class="option">Format A→Z</div>
           </div>
         </div>
-        <button id="typeBtn" class="btn"><b>ALL</b></button>
-        <button id="aiToggleBtn" class="btn active-ai" title="Toggle AI Content">
-          <span class="material-symbols-outlined">auto_awesome</span>
-          <b>Show AI</b>
-        </button>
+        <button id="typeBtn" class="btn">ALL</button>
+        <button id="aiToggleBtn" class="btn active-ai" title="Toggle AI Content">Show AI</button>
         <div class="search" role="search">
           <span class="material-symbols-outlined">search</span>
           <input id="searchInput" type="text" placeholder="Search notes..." aria-label="Search notes" />
@@ -667,10 +599,10 @@
         </button>
         <div class="toggle" role="tablist" aria-label="View mode">
           <button id="gridBtn" class="btn active icon-only" aria-pressed="true" title="Box view">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"></path></svg>
+            <span class="material-symbols-outlined">grid_view</span>
           </button>
           <button id="listBtn" class="btn icon-only" aria-pressed="false" title="List view">
-            <span class="material-symbols-outlined">lists</span>
+            <span class="material-symbols-outlined">list</span>
           </button>
         </div>
       </div>
@@ -727,7 +659,9 @@
       <a href="#" class="info-link" data-md="resources/contact.md">Contact Us</a>
       <a href="#" class="info-link" data-md="resources/about.md">About</a>
       <a href="https://github.com/Tebby2008/OpenNotes" target="_blank" rel="noopener">
-        <svg xmlns="http://www.w3.org/2000/svg" width="98" height="96"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z" fill="currentColor"/></svg>
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.89 8.207 11.415.6.11.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.043-1.61-4.043-1.61C4.425 18.043 3.6 17.062 3.6 17.062c-1.087-.744.084-.73.084-.73 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.493.996.108-.775.418-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.046.138 3.003.404 2.29-1.552 3.297-1.23 3.297-1.23.645 1.653.24 2.873.105 3.176.77.84 1.235 1.91 1.235 3.22 0 4.61-2.801 5.626-5.476 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.95 24 18.363 24 13.297c0-6.627-5.373-12-12-12"/>
+        </svg>
         Github
       </a>
     </div>
@@ -775,7 +709,6 @@
       const searchInput = document.getElementById("searchInput");
       const gridBtn = document.getElementById("gridBtn");
       const listBtn = document.getElementById("listBtn");
-      const typeBtn = document.getElementById("typeBtn");
       const aiToggleBtn = document.getElementById("aiToggleBtn");
   
       const overlay = document.getElementById("overlay");
@@ -977,14 +910,14 @@
   
       function makeThumb(fmt, url){
         const holder = document.createElement("div");
-        holder.className = `thumb fmt-${fmt}`;
+        holder.className = "thumb";
         holder.style.borderRadius = "12px";
   
         if(fmt === "pdf" && window['pdfjsLib']){
           const canvas = document.createElement("canvas");
           holder.appendChild(canvas);
           renderPdfFirstPage(url, canvas).catch(()=>{
-            holder.innerHTML = fileIcon(fmt);
+            holder.innerHTML = fileIcon("pdf");
           });
         } else { // Fallback for DOCX and other formats
           holder.innerHTML = fileIcon(fmt);
@@ -993,15 +926,16 @@
       }
   
       function fileIcon(fmt){
-        const iconName = "docs";
-        const color = 'white'; // White icon for inverted thumbnail
-        const text = fmt.toUpperCase();
-        
+        const iconName = fmt === "pdf" ? "description" : "article";
+        const bgColor = fmt === "pdf" ? "var(--thumb-pdf-bg)" : "var(--thumb-docx-bg)";
+        const iconColor = fmt === "pdf" ? "var(--thumb-pdf-icon)" : "var(--thumb-docx-icon)";
         return `
-          <span class="material-symbols-outlined" style="font-size: 42px; color: ${color};">
-              ${iconName}
-          </span>
-          <span class="fmt-text" style="color: ${color};">${text}</span>
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;background:${bgColor}">
+            <span class="material-symbols-outlined" style="font-size: 42px; color: ${iconColor};">
+                ${iconName}
+            </span>
+            <div class="pill ${fmt==='docx'?'docx':''}" style="margin-top:8px;">${fmt.toUpperCase()}</div>
+          </div>
         `;
       }
   
@@ -1038,7 +972,7 @@
         let authorHtml;
         const authorName = it.author || 'Unknown';
         if (it.author_username && it.author_username.toLowerCase() === 'tebby2008') {
-          authorHtml = `Chenyu Li <span class="verified-tag"><span class="material-symbols-outlined">verified</span></span>`;
+          authorHtml = `Chenyu Li <span class="verified-tag"><span class="material-symbols-outlined">check_circle</span></span>`;
         } else {
           authorHtml = authorName;
         }
@@ -1116,24 +1050,19 @@
       });
   
       // FILE TYPE toggle logic
+      const typeBtn = document.getElementById("typeBtn");
       const types = ["ALL", "PDF", "DOCX"];
       let idx = 0;
       typeBtn.addEventListener("click", () => {
         idx = (idx + 1) % types.length;
-        const currentType = types[idx];
-        typeBtn.innerHTML = `<b>${currentType}</b>`;
-        formatSelect.value = currentType.toLowerCase();
-        
-        typeBtn.classList.remove("active", "active-pdf", "active-docx");
-        if (currentType === "PDF") {
-            typeBtn.classList.add("active-pdf");
-        } else if (currentType === "DOCX") {
-            typeBtn.classList.add("active-docx");
-        } else {
-            typeBtn.classList.add("active");
-        }
-
+        typeBtn.textContent = types[idx];
+        formatSelect.value = types[idx] === "ALL" ? "all" : types[idx].toLowerCase();
         render();
+        if (types[idx] !== "ALL") {
+          typeBtn.classList.add("active");
+        } else {
+          typeBtn.classList.remove("active");
+        }
       });
   
       function renderRow(it){
@@ -1145,7 +1074,6 @@
   
         const thumb = makeThumb(it.format, it.download_url);
         thumb.style.height = "66px";
-        thumb.classList.add('icon-sm'); // New class to scale icon in row view
         const fmtBadge = thumb.querySelector('.fmt-badge');
         if (fmtBadge) {
           fmtBadge.style.display = 'none';
@@ -1167,7 +1095,7 @@
           authorName = "Chenyu Li";
           const verifiedTag = document.createElement("span");
           verifiedTag.className = "verified-tag";
-          verifiedTag.innerHTML = `<span class="material-symbols-outlined">verified</span>`;
+          verifiedTag.innerHTML = `<span class="material-symbols-outlined">check_circle</span>`;
           cellAuthor.innerHTML = authorName;
           cellAuthor.appendChild(verifiedTag);
         } else {
@@ -1242,13 +1170,13 @@
   
         ovTitle.textContent = item.title;
         ovFormat.textContent = item.format.toUpperCase();
-        ovFormat.className = `pill ${item.format==='docx' ? 'docx' : 'pdf'}`;
+        ovFormat.className = `pill ${item.format==='docx' ? 'docx' : ''}`;
         ovDate.textContent = fmtDate(item.updatedAt);
         
         let authorHtml;
         const authorName = item.author || 'Unknown';
         if (item.author_username && item.author_username.toLowerCase() === 'tebby2008') {
-          authorHtml = `Chenyu Li <span class="verified-tag"><span class="material-symbols-outlined">verified</span></span>`;
+          authorHtml = `Chenyu Li <span class="verified-tag"><span class="material-symbols-outlined">check_circle</span></span>`;
         } else {
           authorHtml = authorName;
         }
@@ -1344,9 +1272,9 @@
       });
   
       aiToggleBtn.addEventListener("click", () => {
-          showAI = !showAI;
+          showAI = !showAI; // Toggle the state
           aiToggleBtn.classList.toggle("active-ai");
-          aiToggleBtn.innerHTML = showAI ? `<span class="material-symbols-outlined">auto_awesome</span><b>Show AI</b>` : `<span class="material-symbols-outlined">auto_awesome</b></span><b>Hide AI</b>`;
+          aiToggleBtn.textContent = showAI ? "Show AI" : "Hide AI";
           render();
       });
   
