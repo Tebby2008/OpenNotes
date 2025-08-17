@@ -501,21 +501,6 @@
       font-weight: 600;
       color: rgba(255,255,255,0.9);
     }
-    .loading-spinner {
-        border: 8px solid rgba(0, 0, 0, 0.1);
-        border-left-color: #96bfea;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        box-shadow: 0 0 15px rgba(150, 191, 234, 0.7);
-        border-top-right-radius: 9999px;
-        border-bottom-right-radius: 9999px;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
 
 
     /* Small screens */
@@ -686,7 +671,6 @@
     let allItems = [];
     let viewMode = "grid";
     let showAI = true; // State for the AI toggle
-    const pdfCache = {};
 
     // --- Elements ---
     const container = document.getElementById("itemsContainer");
@@ -863,7 +847,7 @@
       container.innerHTML = "";
       container.className = viewMode === "grid" ? "grid" : "list";
 
-      // Render each item without thumbnail first
+      // Render each item
       for(const it of list){
         let element;
         if(viewMode === "grid"){
@@ -872,81 +856,23 @@
           element = renderRow(it);
         }
         container.appendChild(element);
-        
-        // Asynchronously load and append the thumbnail
-        loadThumb(element, it);
       }
     }
     
-    // Updated makeThumb function with caching
-    function loadThumb(element, item) {
-      const thumbHolder = element.querySelector(".thumb-holder");
-      if (!thumbHolder) return;
-
-      const { format, download_url } = item;
-      const cachedCanvas = pdfCache[download_url];
-
-      if (format === "pdf" && window['pdfjsLib']) {
-          if (cachedCanvas) {
-              const clone = cachedCanvas.cloneNode(true);
-              thumbHolder.replaceChildren(clone);
-              if (format === "pdf" || format === "docx") {
-                  thumbHolder.appendChild(renderFormatBadge(format));
-              }
-          } else {
-              // Show spinner while loading
-              thumbHolder.innerHTML = `<div class="loading-spinner"></div>`;
-              renderPdfFirstPage(download_url).then(canvas => {
-                  if (canvas) {
-                      pdfCache[download_url] = canvas;
-                      thumbHolder.replaceChildren(canvas);
-                      if (format === "pdf" || format === "docx") {
-                          thumbHolder.appendChild(renderFormatBadge(format));
-                      }
-                  } else {
-                      // Fallback to icon on error
-                      thumbHolder.innerHTML = fileIcon(format);
-                      if (format === "pdf" || format === "docx") {
-                          thumbHolder.appendChild(renderFormatBadge(format));
-                      }
-                  }
-              });
-          }
-      } else {
-          // For other formats, use the simple icon
-          thumbHolder.innerHTML = fileIcon(format);
-          if (format === "pdf" || format === "docx") {
-              thumbHolder.appendChild(renderFormatBadge(format));
-          }
-      }
+    // Renders a static thumbnail icon with a format badge
+    function renderStaticThumbnail(item) {
+        const thumbHolder = document.createElement("div");
+        thumbHolder.className = "thumb thumb-holder";
+        thumbHolder.innerHTML = fileIcon(item.format);
+        thumbHolder.appendChild(renderFormatBadge(item.format));
+        return thumbHolder;
     }
-
 
     function renderFormatBadge(fmt){
       const span = document.createElement("span");
       span.className = `fmt-badge fmt-${fmt}`;
       span.textContent = fmt.toUpperCase();
       return span;
-    }
-    
-    // This function now returns a canvas or null
-    async function renderPdfFirstPage(url){
-      try {
-          const pdf = await pdfjsLib.getDocument({url}).promise;
-          const page = await pdf.getPage(1);
-          const viewport = page.getViewport({scale: 0.5});
-          const scale = Math.min(1.2, Math.max(0.6, 240 / (viewport.width*1.2))); // Using a fixed width for calculation
-          const vp = page.getViewport({scale});
-          
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext('2d');
-          canvas.width = vp.width; canvas.height = vp.height;
-          await page.render({canvasContext: ctx, viewport: vp}).promise;
-          return canvas;
-      } catch (e) {
-          console.error("Failed to render PDF page:", e);
-          return null;
-      }
     }
 
     function fileIcon(fmt){
@@ -969,8 +895,7 @@
       card.setAttribute("role", "button");
       card.setAttribute("aria-label", `${it.title}`);
       
-      const thumbHolder = document.createElement("div");
-      thumbHolder.className = "thumb thumb-holder";
+      const thumbHolder = renderStaticThumbnail(it);
       card.appendChild(thumbHolder);
 
       const body = document.createElement("div");
@@ -1079,8 +1004,7 @@
       row.setAttribute("role", "button");
       row.setAttribute("aria-label", `${it.title}`);
 
-      const thumbHolder = document.createElement("div");
-      thumbHolder.className = "thumb thumb-holder";
+      const thumbHolder = renderStaticThumbnail(it);
       row.appendChild(thumbHolder);
 
       const main = document.createElement("div");
