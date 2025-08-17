@@ -17,7 +17,7 @@
       --text: #212529;
       --muted: #6c757d;
       --accent: #96bfea;
-      --accent-2: #51cf66;
+      --accent-2: #b9d9f9;
       --shadow:0 10px 30px rgba(0,0,0,0.1);
       --radius:16px;
       --radius-sm:12px;
@@ -43,6 +43,7 @@
       height: 50vh;
       background: var(--dark-header);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       box-shadow: 0 10px 30px rgba(0,0,0,0.1);
@@ -52,6 +53,24 @@
         width: 45vw;
         height: auto;
         max-width: 750px;
+    }
+    .logo-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .logo-container p {
+        color: rgba(255,255,255,0.8);
+        font-size: 14px;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .logo-container p img {
+        height: 18px;
+        width: auto;
     }
     @media (max-width: 860px){
       .title-logo { width: 40vw; }
@@ -349,7 +368,15 @@
 
   <header>
     <div class="title-section">
-      <img src="resources/logo.svg" alt="OpenNotes Logo" class="title-logo" />
+      <div class="logo-container">
+        <img src="resources/logo.svg" alt="OpenNotes Logo" class="title-logo" />
+        <p>
+          the open platform for notes by 
+          <a href="https://ingenium.rf.gd" target="_blank" rel="noopener">
+            <img src="resources/ingenium.png" alt="Ingenium Logo" />
+          </a>
+        </p>
+      </div>
     </div>
     <div class="controls">
       <select id="sortSelect" style="display:none">
@@ -387,7 +414,7 @@
       </div>
       <div class="right">
         <button id="uploadBtn" class="btn icon-only" title="How to Upload">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13h-3v3H8v-3H5l4-4 4 4zm-1-8h2v2h-2z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 12h-4V8h-2v4H9v2h4v4h2v-4h4zM7 20v-2h2v2H7zm0-4v-2h2v2H7zm4 0v-2h2v2h-2zm-4-4V8h2v2H7zm4 0v-2h2v2h-2zm4 0v-2h2v2h-2zm0-4V8h2v2h-2zM3 3v18h18V3H3zm2 2h14v14H5V5z"/></svg>
         </button>
         <div class="toggle" role="tablist" aria-label="View mode">
           <button id="gridBtn" class="btn active icon-only" aria-pressed="true" title="Box view">
