@@ -1,6 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 
+function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KiB', 'MiB', 'GiB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
 async function generateNotesData() {
     try {
         const { Octokit } = await import('@octokit/rest');
@@ -46,7 +55,7 @@ async function generateNotesData() {
                     author: commitAuthor.name,
                     author_username: authorData.login || null,
                     last_updated: commitAuthor.date,
-                    file_size: file.size,
+                    file_size: formatBytes(file.size),
                     is_ai_generated: isAiGenerated,
                 });
             }
