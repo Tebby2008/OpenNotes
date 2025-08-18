@@ -28,7 +28,7 @@ jobs:
           fi
           
           NOTES_TO_GENERATE=$(find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) | while read -r NOTE; do
-            THUMBNAIL_PATH="resources/thumbnails/$(basename "$NOTE" | sed 's/\./_/g').jpg"
+            THUMBNAIL_PATH="resources/thumbnails/$(basename "$NOTE" | sed 's/\./_/g' | sed 's/ /_/g').jpg"
             if [[ ! -f "$THUMBNAIL_PATH" ]]; then
               echo "$NOTE"
             fi
@@ -74,7 +74,7 @@ jobs:
           mkdir -p resources/thumbnails
           
           while read -r NOTE; do
-            THUMBNAIL_PATH="resources/thumbnails/$(basename "$NOTE" | sed 's/\./_/g').jpg"
+            THUMBNAIL_PATH="resources/thumbnails/$(basename "$NOTE" | sed 's/\./_/g' | sed 's/ /_/g').jpg"
             echo "Generating thumbnail for ${NOTE}"
             if [[ "$NOTE" == *.pdf ]]; then
               pdftocairo -jpeg -singlefile -scale-to 600 "$NOTE" "${THUMBNAIL_PATH%.jpg}"
@@ -93,12 +93,15 @@ jobs:
       - name: Delete Orphaned Thumbnails
         if: steps.check.outputs.has_changes > 0
         run: |
-          find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) > notes.txt
-          find resources/thumbnails/ -type f -name "*.jpg" | while read -r THUMBNAIL; do
-            NOTE_NAME=$(basename "$THUMBNAIL" .jpg | sed 's/_/./g')
-            if ! grep -q "Notes/${NOTE_NAME}.pdf" notes.txt && ! grep -q "Notes/${NOTE_NAME}.docx" notes.txt; then
-              echo "Deleting orphaned thumbnail: $THUMBNAIL"
-              rm "$THUMBNAIL"
+          VALID_THUMBNAILS=$(find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) | while read -r NOTE; do
+            basename "$NOTE" | sed 's/\./_/g' | sed 's/ /_/g'
+          done)
+
+          find resources/thumbnails/ -type f -name "*.jpg" | while read -r THUMBNAIL_PATH; do
+            THUMBNAIL_NAME=$(basename "$THUMBNAIL_PATH" .jpg)
+            if ! echo "$VALID_THUMBNAILS" | grep -q "^${THUMBNAIL_NAME}$"; then
+              echo "Deleting orphaned thumbnail: $THUMBNAIL_PATH"
+              rm "$THUMBNAIL_PATH"
             fi
           done
 
