@@ -167,43 +167,18 @@
     .card { position: relative; transition: var(--trans-hover); z-index: 0; background: var(--panel); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; cursor: pointer; }
     .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); z-index: 10; }
 
-    .thumb { 
-      background: var(--panel-2); 
-      height: 180px; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      overflow: hidden; 
-      position: relative; /* This is key for positioning children */
-    }
-    .thumb .thumb-content {
-      position: absolute; 
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      display: flex; 
-      align-items: center; 
-      justify-content: center;
-    }
+    .thumb { background: var(--panel-2); height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; flex-direction: column; gap: 8px; }
     .thumb img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      position: absolute;
-      top: 0;
-      left: 0;
-      opacity: 0;
-      transition: opacity 0.2s ease-in-out;
-    }
-    .thumb img.loaded {
-        opacity: 1;
-    }
-    .thumb .default-icon {
-        position: relative;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
         z-index: 1;
     }
-    
     .thumb span.material-symbols-outlined { font-size: 80px; }
-    .thumb .fmt-text { font-family: 'Noto Sans Condensed', sans-serif; font-size: 16px; font-weight: 700; text-transform: uppercase; }
+    .thumb .fmt-text { font-family: 'Noto Sans Condensed', sans-serif; font-size: 16px; font-weight: 700; text-transform: uppercase; position: relative; z-index: 0; }
     
     /* Simplified format badge styles */
     .fmt-badge { position: absolute; bottom: 10px; left: 10px; padding: 6px 10px; font-size: 12px; font-weight: 700; border-radius: 999px; background: rgba(255, 255, 255, 0.55); color: var(--text); border: 1px solid rgba(0, 0, 0, 0.1); backdrop-filter: blur(4px); }
@@ -800,21 +775,14 @@
         holder.style.borderRadius = "16px";
         
         // Add default icon as a base
-        const defaultIcon = document.createElement("div");
-        defaultIcon.className = "default-icon";
-        defaultIcon.innerHTML = fileIcon(fmt);
-        holder.appendChild(defaultIcon);
+        holder.innerHTML = fileIcon(fmt);
 
         // Add the image on top, with fallback logic
         const img = document.createElement("img");
         img.src = url;
         img.alt = `Thumbnail for ${fmt.toUpperCase()} file`;
-        img.className = "thumb-img";
-        img.onload = function() {
-            this.classList.add('loaded');
-        };
         img.onerror = function() {
-          this.remove();
+          this.remove(); // Remove the img element if it fails to load
         };
         holder.appendChild(img);
 
@@ -827,10 +795,8 @@
         const color = fmt === "pdf" ? rootStyles.getPropertyValue('--pdf-main-color') : rootStyles.getPropertyValue('--docx-main-color');
         const text = fmt.toUpperCase();
         return `
-          <div class="thumb-content">
-            <span class="material-symbols-outlined" style="font-size: 42px; color: ${color};">${iconName}</span>
-            <span class="fmt-text" style="color: ${color};">${text}</span>
-          </div>
+          <span class="material-symbols-outlined" style="font-size: 42px; color: ${color};">${iconName}</span>
+          <span class="fmt-text" style="color: ${color};">${text}</span>
         `;
       }
 
