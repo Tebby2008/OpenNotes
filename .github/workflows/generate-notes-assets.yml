@@ -16,52 +16,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Check for missing thumbnails
-        id: check_thumbnails
-        run: |
-          # Use a variable to track if any thumbnails are missing
-          THUMBNAILS_MISSING=false
-          DOCX_THUMBNAILS_MISSING=false
-          
-          # Find all notes and check if a corresponding thumbnail exists
-          while read -r NOTE; do
-            NOTE_NAME=$(basename "$NOTE" | sed 's/\(.*\)\./\1_/')
-            THUMBNAIL_PATH="resources/thumbnails/${NOTE_NAME}.jpg"
-            
-            if [[ ! -f "$THUMBNAIL_PATH" ]]; then
-              THUMBNAILS_MISSING=true
-              echo "Missing thumbnail for: $NOTE"
-              
-              if [[ "$NOTE" == *.docx ]]; then
-                DOCX_THUMBNAILS_MISSING=true
-              fi
-            fi
-          done < <(find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \))
-          
-          # Set outputs based on checks
-          if [ "$THUMBNAILS_MISSING" = true ]; then
-            echo "has_missing=true" >> $GITHUB_OUTPUT
-          fi
-          
-          if [ "$DOCX_THUMBNAILS_MISSING" = true ]; then
-            echo "has_docx_missing=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Install general dependencies
-        if: steps.check_thumbnails.outputs.has_missing == 'true'
+      
+      - name: Set up Environment
         run: |
           npm install @octokit/rest fs path
           sudo apt-get update
-          sudo apt-get install -y poppler-utils imagemagick
-
-      - name: Install DOCX dependencies
-        if: steps.check_thumbnails.outputs.has_docx_missing == 'true'
-        run: |
-          sudo apt-get install -y unoconv libreoffice-writer
+          sudo apt-get install -y poppler-utils unoconv libreoffice-writer imagemagick
 
       - name: Generate Notes Metadata and Thumbnails
-        if: steps.check_thumbnails.outputs.has_missing == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -70,11 +32,9 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
-          # Find all notes and output to a file for later use
           find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) > notes.txt
           mkdir -p resources/thumbnails
           
-          # Delete orphaned thumbnails
           for THUMBNAIL in resources/thumbnails/*.jpg; do
             NOTE_NAME=$(basename "$THUMBNAIL" .jpg | sed 's/\(.*\)_/\1./')
             if ! grep -q "Notes/${NOTE_NAME}.pdf" notes.txt && ! grep -q "Notes/${NOTE_NAME}.docx" notes.txt; then
@@ -83,7 +43,6 @@ jobs:
             fi
           done
 
-          # Generate thumbnails for missing files
           while read -r NOTE; do
             NOTE_NAME=$(basename "$NOTE" | sed 's/\(.*\)\./\1_/')
             THUMBNAIL_PATH="resources/thumbnails/${NOTE_NAME}.jpg"
