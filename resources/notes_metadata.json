@@ -7,6 +7,7 @@
     "author": "tebby",
     "author_username": "Tebby2008",
     "last_updated": "2025-08-17T02:06:16Z",
+    "file_size": "8.4 MiB",
     "is_ai_generated": false
   },
   {
@@ -17,6 +18,7 @@
     "author": "Tebby2008",
     "author_username": "Tebby2008",
     "last_updated": "2025-08-17T01:29:18Z",
+    "file_size": "191.63 KiB",
     "is_ai_generated": false
   },
   {
@@ -27,6 +29,7 @@
     "author": "Tebby2008",
     "author_username": "Tebby2008",
     "last_updated": "2025-08-17T01:29:18Z",
+    "file_size": "4.18 MiB",
     "is_ai_generated": false
   },
   {
@@ -37,6 +40,7 @@
     "author": "tebby",
     "author_username": "Tebby2008",
     "last_updated": "2025-08-17T01:35:00Z",
+    "file_size": "23.14 MiB",
     "is_ai_generated": false
   },
   {
@@ -47,6 +51,7 @@
     "author": "tebby",
     "author_username": "Tebby2008",
     "last_updated": "2025-08-17T01:57:26Z",
+    "file_size": "6.03 MiB",
     "is_ai_generated": true
   },
   {
@@ -57,6 +62,7 @@
     "author": "Tebby2008",
     "author_username": "Tebby2008",
     "last_updated": "2025-08-17T01:29:18Z",
+    "file_size": "109.34 KiB",
     "is_ai_generated": false
   },
   {
@@ -67,6 +73,7 @@
     "author": "tebby",
     "author_username": "Tebby2008",
     "last_updated": "2025-08-17T01:57:26Z",
+    "file_size": "5.94 MiB",
     "is_ai_generated": true
   },
   {
@@ -77,6 +84,7 @@
     "author": "tebby",
     "author_username": "Tebby2008",
     "last_updated": "2025-08-17T02:42:25Z",
+    "file_size": "8.71 KiB",
     "is_ai_generated": true
   },
   {
@@ -87,6 +95,18 @@
     "author": "tebby",
     "author_username": "Tebby2008",
     "last_updated": "2025-08-17T15:42:30Z",
+    "file_size": "2.86 MiB",
+    "is_ai_generated": false
+  },
+  {
+    "name": "THIS IS JUST A TEST DOC.docx",
+    "path": "Notes/THIS IS JUST A TEST DOC.docx",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/THIS%20IS%20JUST%20A%20TEST%20DOC.docx",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/THIS%20IS%20JUST%20A%20TEST%20DOC_docx.jpg",
+    "author": "tebby",
+    "author_username": "Tebby2008",
+    "last_updated": "2025-08-18T01:34:56Z",
+    "file_size": "9.7 KiB",
     "is_ai_generated": false
   }
 ]
