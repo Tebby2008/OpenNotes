@@ -666,7 +666,7 @@
 
         const dlBtn = document.createElement("button");
         dlBtn.className = "download-btn";
-        dlBtn.title = it.formattedSize ? `Download (${it.formattedSize})` : "Download";
+        dlBtn.title = it.file_size ? `Download (${it.file_size})` : "Download";
         dlBtn.innerHTML = `<span class="material-symbols-outlined">download</span>`;
         dlBtn.addEventListener("click", async (e) => {
             e.stopPropagation();
@@ -746,7 +746,7 @@
         rightEnd.className = "right-end";
         const dlCircle = document.createElement("button");
         dlCircle.className = "btn";
-        dlBtn.title = it.formattedSize ? `Download (${it.formattedSize})` : "Download";
+        dlCircle.title = it.file_size ? `Download (${it.file_size})` : "Download";
         dlCircle.innerHTML = `<span class="material-symbols-outlined">download</span>`;
         dlCircle.addEventListener("click", async (e) => {
           e.stopPropagation();
