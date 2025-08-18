@@ -545,11 +545,21 @@
       };
       const stripExt = (name) => name.replace(/\.[^/.]+$/, "");
       const extOf = (name) => (name.split('.').pop() || "").toLowerCase();
+      
+      // MODIFIED FUNCTION
       const toggleOverlay = (el, state, callback) => {
         document.body.style.overflow = state ? 'hidden' : '';
-        el.style.display = state ? 'block' : 'none';
-        el.setAttribute("aria-hidden", !state);
-        requestAnimationFrame(() => el.classList.toggle("open", state));
+        if (state) {
+          el.style.display = 'block';
+          el.setAttribute("aria-hidden", !state);
+          requestAnimationFrame(() => el.classList.add("open"));
+        } else {
+          el.classList.remove("open");
+          el.addEventListener('transitionend', function handler() {
+            el.style.display = 'none';
+            el.removeEventListener('transitionend', handler);
+          });
+        }
         if (callback) callback();
       };
       
@@ -987,4 +997,7 @@
       })();
   </script>
 </body>
-</html>
+
+
+
+
