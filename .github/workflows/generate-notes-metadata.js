@@ -44,9 +44,9 @@ async function generateNotesData() {
 
                 // Construct the thumbnail URL
                 const fileNameWithoutExt = path.basename(file.name);
-                const thumbnailName = fileNameWithoutExt.replace(/\./g, '_');
+                const thumbnailName = fileNameWithoutExt.replace(/\.([^.]+)$/, '_$1');
                 const thumbnailUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/resources/thumbnails/${encodeURIComponent(thumbnailName)}.jpg`;
-
+                
                 notesMetadata.push({
                     name: file.name,
                     path: file.path,
