@@ -168,7 +168,7 @@
     .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); z-index: 10; }
 
     .thumb { background: var(--panel-2); height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; flex-direction: column; gap: 8px; }
-    .thumb canvas { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
     .thumb span.material-symbols-outlined { font-size: 80px; }
     .thumb .fmt-text { font-family: 'Noto Sans Condensed', sans-serif; font-size: 16px; font-weight: 700; text-transform: uppercase; }
     
@@ -466,7 +466,6 @@
   </footer>
 
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
   <script>
       const REPO_OWNER = "Tebby2008";
       const REPO_NAME  = "OpenNotes";
@@ -558,7 +557,7 @@
       }
 
       async function fetchNotes() {
-        const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/notes_metadata.json`;
+        const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`;
         const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to fetch notes_metadata.json.");
         const metadata = await res.json();
@@ -577,6 +576,7 @@
             author: meta.author,
             author_username: meta.author_username,
             is_ai_generated: meta.is_ai_generated,
+            thumbnail_url: meta.thumbnail_url,
             views: 0,
             downloads: 0,
           };
@@ -622,7 +622,7 @@
         card.setAttribute("role", "button");
         card.setAttribute("aria-label", `${it.title}`);
 
-        const thumb = makeThumb(it.format, it.download_url);
+        const thumb = makeThumb(it.format, it.thumbnail_url);
         thumb.appendChild(renderFormatBadge(it.format));
 
         const body = document.createElement("div");
@@ -684,7 +684,7 @@
         row.setAttribute("role", "button");
         row.setAttribute("aria-label", `${it.title}`);
 
-        const thumb = makeThumb(it.format, it.download_url);
+        const thumb = makeThumb(it.format, it.thumbnail_url);
         thumb.style.height = "66px";
         thumb.classList.add('icon-sm');
         const fmtBadge = thumb.querySelector('.fmt-badge');
@@ -765,16 +765,19 @@
         const holder = document.createElement("div");
         holder.className = `thumb fmt-${fmt}`;
         holder.style.borderRadius = "16px";
+        
+        // Add default icon as a base
+        holder.innerHTML = fileIcon(fmt);
 
-        if (fmt === "pdf" && window.pdfjsLib) {
-          const canvas = document.createElement("canvas");
-          holder.appendChild(canvas);
-          renderPdfFirstPage(url, canvas).catch(() => {
-            holder.innerHTML = fileIcon(fmt);
-          });
-        } else {
-          holder.innerHTML = fileIcon(fmt);
-        }
+        // Add the image on top, with fallback logic
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = `Thumbnail for ${fmt.toUpperCase()} file`;
+        img.onerror = function() {
+          this.remove(); // Remove the img element if it fails to load
+        };
+        holder.appendChild(img);
+
         return holder;
       }
         
@@ -787,17 +790,6 @@
           <span class="material-symbols-outlined" style="font-size: 42px; color: ${color};">${iconName}</span>
           <span class="fmt-text" style="color: ${color};">${text}</span>
         `;
-      }
-
-      async function renderPdfFirstPage(url, canvas) {
-        const pdf = await pdfjsLib.getDocument({url}).promise;
-        const page = await pdf.getPage(1);
-        const viewport = page.getViewport({scale: 0.5});
-        const scale = Math.min(1.2, Math.max(0.6, canvas.parentElement.clientWidth / (viewport.width * 1.2)));
-        const vp = page.getViewport({scale});
-        const ctx = canvas.getContext('2d');
-        canvas.width = vp.width; canvas.height = vp.height;
-        await page.render({canvasContext: ctx, viewport: vp}).promise;
       }
 
       function openOverlay(item) {
