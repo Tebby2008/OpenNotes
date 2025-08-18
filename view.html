@@ -9,7 +9,6 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Ensure the iframe fills the entire page */
         #doc {
             width: 100vw;
             height: 100vh;
@@ -18,45 +17,27 @@
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center m-0 p-0">
-
-    <!-- 
-      The iframe is the core of this viewer. Its source will be set by JavaScript
-      to display the requested document. 
-    -->
     <iframe src="" id="doc" style="border:none"></iframe>
 
     <script>
-        // Use a function to ensure all logic is self-contained.
         function displayDocument() {
-            // Get the 'file' URL parameter from the current page's URL.
             const params = new URLSearchParams(window.location.search);
             const fileUrl = params.get("file");
 
-            // Get the iframe element.
             const docIframe = document.getElementById("doc");
 
-            // Check if a file URL was actually provided.
             if (!fileUrl) {
                 console.error("No file URL provided in the 'file' query parameter.");
                 docIframe.contentDocument.body.innerHTML = '<p class="text-xl text-center text-gray-500 mt-20">No file to display. Please provide a URL in the `?file=` query parameter.</p>';
                 return;
             }
 
-            // A list of supported file types and their respective viewer services.
-            // We'll prioritize Microsoft's viewer for Office files due to its global reach and China-specific service.
-            // For PDFs, we'll use a public PDF viewer like PDF.js, which is a library that can be hosted on your own server or a CDN,
-            // avoiding dependence on external services that might be blocked.
             const viewers = {
-                // Microsoft Office Online viewer for DOCX, PPTX, XLSX files.
-                // This is a reliable option as Microsoft has a partnership in China.
                 office: {
                     extensions: ['.docx', '.pptx', '.xlsx'],
                     url: 'https://view.officeapps.live.com/op/embed.aspx?src='
                 },
-                // Google Docs Viewer is known to be blocked in China.
-                // We will use a dedicated PDF viewer service or a library for better reliability.
-                // This example uses a link to a viewer from a popular open-source project, PDF.js.
-                // You could also host a similar viewer yourself for full control.
+
                 pdf: {
                     extensions: ['.pdf'],
                     url: 'https://mozilla.github.io/pdf.js/web/viewer.html?file='
@@ -66,23 +47,17 @@
             const lowerCaseFileUrl = fileUrl.toLowerCase();
             let finalUrl = fileUrl;
 
-            // Loop through the viewers to find a match for the file extension.
             for (const viewer in viewers) {
                 const isSupported = viewers[viewer].extensions.some(ext => lowerCaseFileUrl.endsWith(ext));
                 if (isSupported) {
-                    // If a match is found, use the corresponding viewer URL.
-                    // The URL is encoded to ensure it is safe to use as a query parameter.
                     finalUrl = `${viewers[viewer].url}${encodeURIComponent(fileUrl)}`;
-                    break; // Exit the loop once a viewer is found.
+                    break;
                 }
             }
             
-            // Set the iframe's source to the final URL.
-            // If no viewer was matched, it will default to the original URL.
             docIframe.src = finalUrl;
         }
 
-        // Call the function to display the document when the page loads.
         window.onload = displayDocument;
     </script>
 
