@@ -229,7 +229,7 @@
     .row:hover { transform: translateY(-1px); }
     .row .thumb { height: 66px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
     .list .thumb .fmt-text, .list .fmt-badge { display: none; }
-    .row .main { display: grid; grid-template-columns: minmax(200px, 2fr) repeat(4, minmax(90px, 1fr)); gap: 10px; align-items: center; }
+    .row .main { display: grid; grid-template-columns: minmax(200px, 2fr) minmax(108px, 1.2fr) 1fr 0.6fr 1fr; gap: 10px; align-items: center; }
     .row .main .cell { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     .row .title-line { margin: 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .row .right-end { display: flex; align-items: center; gap: 8px; }
@@ -374,7 +374,7 @@
 
       <div class="left">
         <div class="sort-wrapper">
-          <button id="sortBtn" class="btn icon-only" title="Sort (Last Updated)">
+          <button id="sortBtn" class="btn icon-only" title="Sort notes">
             <span class="material-symbols-outlined">filter_list</span>
           </button>
           <div id="sortDropdown" class="custom-dropdown hidden">
@@ -498,7 +498,7 @@
       const repo  = window.__repo  || REPO_NAME;
 
       let allItems = [];
-      let viewMode = "grid";
+      let viewMode = localStorage.getItem('openNotesViewMode') || 'grid';
       let showAI = true;
 
       const container = document.getElementById("itemsContainer");
@@ -528,6 +528,15 @@
       
       let currentSort = "updated-desc";
       let currentFormat = "all";
+
+      if (viewMode == 'grid') {
+        gridBtn.classList.add("active"); gridBtn.setAttribute("aria-pressed", "true");
+        listBtn.classList.remove("active"); listBtn.setAttribute("aria-pressed", "false");
+      }
+      else {
+        listBtn.classList.add("active"); listBtn.setAttribute("aria-pressed", "true");
+        gridBtn.classList.remove("active"); gridBtn.setAttribute("aria-pressed", "false");
+      }
 
       const fmtDate = (iso) => {
         if (!iso) return "—";
@@ -657,7 +666,7 @@
 
         const dlBtn = document.createElement("button");
         dlBtn.className = "download-btn";
-        dlBtn.title = "Download";
+        dlBtn.title = it.formattedSize ? `Download (${it.formattedSize})` : "Download";
         dlBtn.innerHTML = `<span class="material-symbols-outlined">download</span>`;
         dlBtn.addEventListener("click", async (e) => {
             e.stopPropagation();
@@ -737,7 +746,7 @@
         rightEnd.className = "right-end";
         const dlCircle = document.createElement("button");
         dlCircle.className = "btn";
-        dlCircle.title = "Download";
+        dlBtn.title = it.formattedSize ? `Download (${it.formattedSize})` : "Download";
         dlCircle.innerHTML = `<span class="material-symbols-outlined">download</span>`;
         dlCircle.addEventListener("click", async (e) => {
           e.stopPropagation();
@@ -774,10 +783,8 @@
         holder.className = `thumb fmt-${fmt}`;
         holder.style.borderRadius = "16px";
         
-        // Add default icon as a base
         holder.innerHTML = fileIcon(fmt);
 
-        // Add the image on top, with fallback logic
         const img = document.createElement("img");
         img.src = url;
         img.alt = `Thumbnail for ${fmt.toUpperCase()} file`;
@@ -870,12 +877,14 @@
 
       gridBtn.addEventListener("click", () => {
         viewMode = "grid";
+        localStorage.setItem('openNotesViewMode', 'grid');
         gridBtn.classList.add("active"); gridBtn.setAttribute("aria-pressed", "true");
         listBtn.classList.remove("active"); listBtn.setAttribute("aria-pressed", "false");
         render();
       });
       listBtn.addEventListener("click", () => {
         viewMode = "list";
+        localStorage.setItem('openNotesViewMode', 'list');
         listBtn.classList.add("active"); listBtn.setAttribute("aria-pressed", "true");
         gridBtn.classList.remove("active"); gridBtn.setAttribute("aria-pressed", "false");
         render();
