@@ -20,22 +20,38 @@ jobs:
       - name: Check for new notes
         id: check
         run: |
-          find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) > new_notes.txt
+          if [ ! -d "Notes" ]; then
+            echo "Notes directory does not exist, no new notes to process."
+            echo "has_changes=0" >> $GITHUB_OUTPUT
+            echo "has_new_docxs=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
           
-          NEW_NOTES_COUNT=0
-          while read -r NOTE; do
+          NOTES_TO_GENERATE=$(find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) | while read -r NOTE; do
             THUMBNAIL_PATH="resources/thumbnails/$(basename "$NOTE" | sed 's/\./_/g').jpg"
             if [[ ! -f "$THUMBNAIL_PATH" ]]; then
-              ((NEW_NOTES_COUNT++))
-              if [[ "$NOTE" == *.docx ]]; then
-                echo "has_new_docxs=true" >> $GITHUB_OUTPUT
-              fi
+              echo "$NOTE"
             fi
-          done < new_notes.txt
-          
-          echo "has_changes=${NEW_NOTES_COUNT}" >> $GITHUB_OUTPUT
+          done)
 
-      - name: Install common dependencies (imagemagick, poppler-utils)
+          if [ -z "$NOTES_TO_GENERATE" ]; then
+            echo "No new notes to process."
+            echo "has_changes=0" >> $GITHUB_OUTPUT
+            echo "has_new_docxs=false" >> $GITHUB_OUTPUT
+          else
+            echo "New notes to process found."
+            echo "has_changes=1" >> $GITHUB_OUTPUT
+            
+            if echo "$NOTES_TO_GENERATE" | grep -q '.docx$'; then
+              echo "has_new_docxs=true" >> $GITHUB_OUTPUT
+            else
+              echo "has_new_docxs=false" >> $GITHUB_OUTPUT
+            fi
+            
+            echo "$NOTES_TO_GENERATE" > new_notes_to_process.txt
+          fi
+
+      - name: Install common dependencies (npm, imagemagick, poppler-utils)
         if: steps.check.outputs.has_changes > 0
         run: |
           npm install @octokit/rest fs path
@@ -56,24 +72,23 @@ jobs:
           git config --global user.name "github-actions[bot]"
           
           mkdir -p resources/thumbnails
-          find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) | while read -r NOTE; do
+          
+          while read -r NOTE; do
             THUMBNAIL_PATH="resources/thumbnails/$(basename "$NOTE" | sed 's/\./_/g').jpg"
-            if [[ ! -f "$THUMBNAIL_PATH" ]]; then
-              echo "Generating thumbnail for ${NOTE}"
-              if [[ "$NOTE" == *.pdf ]]; then
-                pdftocairo -jpeg -singlefile -scale-to 600 "$NOTE" "${THUMBNAIL_PATH%.jpg}"
-              elif [[ "$NOTE" == *.docx ]]; then
-                unoconv --stdout -f pdf "$NOTE" > temp.pdf
-                pdftocairo -jpeg -singlefile -scale-to 600 temp.pdf "${THUMBNAIL_PATH%.jpg}"
-                rm temp.pdf
-              fi
-
-              if [[ -f "${THUMBNAIL_PATH%.jpg}" ]]; then
-                echo "Compressing thumbnail: ${THUMBNAIL_PATH%.jpg}"
-                mogrify -quality 70 "${THUMBNAIL_PATH%.jpg}"
-              fi
+            echo "Generating thumbnail for ${NOTE}"
+            if [[ "$NOTE" == *.pdf ]]; then
+              pdftocairo -jpeg -singlefile -scale-to 600 "$NOTE" "${THUMBNAIL_PATH%.jpg}"
+            elif [[ "$NOTE" == *.docx ]]; then
+              unoconv --stdout -f pdf "$NOTE" > temp.pdf
+              pdftocairo -jpeg -singlefile -scale-to 600 temp.pdf "${THUMBNAIL_PATH%.jpg}"
+              rm temp.pdf
             fi
-          done
+
+            if [[ -f "${THUMBNAIL_PATH%.jpg}" ]]; then
+              echo "Compressing thumbnail: ${THUMBNAIL_PATH%.jpg}"
+              mogrify -quality 70 "${THUMBNAIL_PATH%.jpg}"
+            fi
+          done < new_notes_to_process.txt
           
       - name: Delete Orphaned Thumbnails
         if: steps.check.outputs.has_changes > 0
