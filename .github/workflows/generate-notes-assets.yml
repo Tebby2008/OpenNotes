@@ -60,6 +60,7 @@ jobs:
           
           mkdir -p resources/thumbnails
           
+          # Use a loop to handle the new thumbnail naming convention
           for THUMBNAIL in resources/thumbnails/*.jpg; do
             NOTE_NAME=$(basename "$THUMBNAIL" .jpg | sed 's/_/./g')
             if ! grep -q "Notes/${NOTE_NAME}.pdf" notes.txt && ! grep -q "Notes/${NOTE_NAME}.docx" notes.txt; then
@@ -75,16 +76,16 @@ jobs:
             if [[ ! -f "$THUMBNAIL_PATH" ]]; then
                 echo "Generating thumbnail for ${NOTE}"
                 if [[ "$NOTE" == *.pdf ]]; then
-                  pdftocairo -jpeg -singlefile -scale-to 600 "$NOTE" "$THUMBNAIL_PATH"
+                  pdftocairo -jpeg -singlefile -scale-to 600 "$NOTE" "${THUMBNAIL_PATH%.jpg}"
                 elif [[ "$NOTE" == *.docx ]]; then
                   unoconv --stdout -f pdf "$NOTE" > temp.pdf
-                  pdftocairo -jpeg -singlefile -scale-to 600 temp.pdf "$THUMBNAIL_PATH"
+                  pdftocairo -jpeg -singlefile -scale-to 600 temp.pdf "${THUMBNAIL_PATH%.jpg}"
                   rm temp.pdf
                 fi
 
-                if [[ -f "$THUMBNAIL_PATH" ]]; then
-                  echo "Compressing thumbnail: $THUMBNAIL_PATH"
-                  mogrify -quality 70 -path resources/thumbnails "$THUMBNAIL_PATH"
+                if [[ -f "${THUMBNAIL_PATH%.jpg}" ]]; then
+                  echo "Compressing thumbnail: ${THUMBNAIL_PATH%.jpg}"
+                  mogrify -quality 70 -path resources/thumbnails "${THUMBNAIL_PATH%.jpg}"
                 fi
             fi
           done < notes.txt
@@ -93,6 +94,9 @@ jobs:
             echo "Committing thumbnail changes..."
             git add resources/thumbnails/
             git commit -m "feat(ci): auto-generate and compress thumbnails"
+            # Pull the latest changes before pushing to avoid conflicts
+            git pull --rebase
+            # Push the changes to the repository
             git push
             echo "::set-output name=has_changes::true"
           else
