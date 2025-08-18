@@ -17,25 +17,89 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Set up Environment
+      - name: Check for new notes
+        id: check
+        run: |
+          find Notes/ -type f -name "*.pdf" > new_pdfs.txt
+          find Notes/ -type f -name "*.docx" > new_docxs.txt
+          
+          NEW_PDF_COUNT=$(while read -r NOTE; do
+            THUMBNAIL_PATH="resources/thumbnails/$(basename "$NOTE" | sed 's/\./_/g').jpg"
+            if [[ ! -f "$THUMBNAIL_PATH" ]]; then
+              echo "$NOTE"
+            fi
+          done < new_pdfs.txt | wc -l)
+
+          NEW_DOCX_COUNT=$(while read -r NOTE; do
+            THUMBNAIL_PATH="resources/thumbnails/$(basename "$NOTE" | sed 's/\./_/g').jpg"
+            if [[ ! -f "$THUMBNAIL_PATH" ]]; then
+              echo "$NOTE"
+            fi
+          done < new_docxs.txt | wc -l)
+          
+          echo "has_new_pdfs=${NEW_PDF_COUNT}" >> $GITHUB_OUTPUT
+          echo "has_new_docxs=${NEW_DOCX_COUNT}" >> $GITHUB_OUTPUT
+          echo "has_changes=$((NEW_PDF_COUNT + NEW_DOCX_COUNT > 0))" >> $GITHUB_OUTPUT
+
+      - name: Install common dependencies (npm, imagemagick)
+        if: steps.check.outputs.has_changes > 0
         run: |
           npm install @octokit/rest fs path
           sudo apt-get update
-          sudo apt-get install -y poppler-utils unoconv libreoffice-writer imagemagick
+          sudo apt-get install -y imagemagick
 
-      - name: Generate Notes Metadata and Thumbnails
+      - name: Install PDF-specific dependencies (poppler-utils)
+        if: steps.check.outputs.has_new_pdfs > 0
+        run: |
+          sudo apt-get install -y poppler-utils
+      
+      - name: Install DOCX-specific dependencies (unoconv, libreoffice)
+        if: steps.check.outputs.has_new_docxs > 0
+        run: |
+          sudo apt-get install -y unoconv libreoffice-writer
+
+      - name: Generate Notes Metadata
+        run: node .github/workflows/generate-notes-metadata.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          node .github/workflows/generate-notes-metadata.js
 
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          
-          find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) > notes.txt
+      - name: Generate PDF Thumbnails
+        if: steps.check.outputs.has_new_pdfs > 0
+        run: |
           mkdir -p resources/thumbnails
+          find Notes/ -type f -name "*.pdf" | while read -r NOTE; do
+            THUMBNAIL_PATH="resources/thumbnails/$(basename "$NOTE" | sed 's/\./_/g').jpg"
+            if [[ ! -f "$THUMBNAIL_PATH" ]]; then
+              echo "Generating thumbnail for ${NOTE}"
+              pdftocairo -jpeg -singlefile -scale-to 600 "$NOTE" "${THUMBNAIL_PATH%.jpg}"
+              if [[ -f "${THUMBNAIL_PATH%.jpg}" ]]; then
+                mogrify -quality 70 "${THUMBNAIL_PATH%.jpg}"
+              fi
+            fi
+          done
+
+      - name: Generate DOCX Thumbnails
+        if: steps.check.outputs.has_new_docxs > 0
+        run: |
+          mkdir -p resources/thumbnails
+          find Notes/ -type f -name "*.docx" | while read -r NOTE; do
+            THUMBNAIL_PATH="resources/thumbnails/$(basename "$NOTE" | sed 's/\./_/g').jpg"
+            if [[ ! -f "$THUMBNAIL_PATH" ]]; then
+              echo "Generating thumbnail for ${NOTE}"
+              unoconv --stdout -f pdf "$NOTE" > temp.pdf
+              pdftocairo -jpeg -singlefile -scale-to 600 temp.pdf "${THUMBNAIL_PATH%.jpg}"
+              rm temp.pdf
+              if [[ -f "${THUMBNAIL_PATH%.jpg}" ]]; then
+                mogrify -quality 70 "${THUMBNAIL_PATH%.jpg}"
+              fi
+            fi
+          done
           
-          for THUMBNAIL in resources/thumbnails/*.jpg; do
+      - name: Delete Orphaned Thumbnails
+        if: steps.check.outputs.has_changes > 0
+        run: |
+          find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) > notes.txt
+          find resources/thumbnails/ -type f -name "*.jpg" | while read -r THUMBNAIL; do
             NOTE_NAME=$(basename "$THUMBNAIL" .jpg | sed 's/_/./g')
             if ! grep -q "Notes/${NOTE_NAME}.pdf" notes.txt && ! grep -q "Notes/${NOTE_NAME}.docx" notes.txt; then
               echo "Deleting orphaned thumbnail: $THUMBNAIL"
@@ -43,36 +107,13 @@ jobs:
             fi
           done
 
-          while read -r NOTE; do
-            NOTE_NAME=$(basename "$NOTE" | sed 's/\./_/g')
-            THUMBNAIL_PATH="resources/thumbnails/${NOTE_NAME}.jpg"
-            
-            if [[ ! -f "$THUMBNAIL_PATH" ]]; then
-                echo "Generating thumbnail for ${NOTE}"
-                if [[ "$NOTE" == *.pdf ]]; then
-                  pdftocairo -jpeg -singlefile -scale-to 600 "$NOTE" "${THUMBNAIL_PATH%.jpg}"
-                elif [[ "$NOTE" == *.docx ]]; then
-                  unoconv --stdout -f pdf "$NOTE" > temp.pdf
-                  pdftocairo -jpeg -singlefile -scale-to 600 temp.pdf "${THUMBNAIL_PATH%.jpg}"
-                  rm temp.pdf
-                fi
-
-                if [[ -f "${THUMBNAIL_PATH%.jpg}" ]]; then
-                  echo "Compressing thumbnail: ${THUMBNAIL_PATH%.jpg}"
-                  mogrify -quality 70 "${THUMBNAIL_PATH%.jpg}"
-                fi
-            fi
-          done < notes.txt
-
-          if [[ -n $(git status --porcelain) ]]; then
-            echo "Committing all changes..."
-            git add resources/notes_metadata.json
-            git add resources/thumbnails/
-            git commit -m "feat(ci): Auto-generate notes metadata and thumbnails"
-            git pull --rebase
-            git push
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "No changes to commit."
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          fi
+      - name: Commit changes
+        if: steps.check.outputs.has_changes > 0
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add resources/notes_metadata.json
+          git add resources/thumbnails/
+          git commit -m "feat(ci): Auto-generate notes metadata and thumbnails"
+          git pull --rebase
+          git push
