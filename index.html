@@ -598,12 +598,13 @@
             path: meta.path,
             download_url: meta.download_url,
             html_url: `https://github.com/${owner}/${repo}/blob/${BRANCH}/${encodeURIComponent(meta.path)}`,
+            thumbnail_url: meta.thumbnail_url,
             format: format,
             updatedAt: meta.last_updated,
             author: meta.author,
             author_username: meta.author_username,
+            file_size: meta.file_size,
             is_ai_generated: meta.is_ai_generated,
-            thumbnail_url: meta.thumbnail_url,
             views: 0,
             downloads: 0,
           };
@@ -656,7 +657,7 @@
         body.className = "body";
         const title = document.createElement("div");
         title.className = "title-line";
-        title.textContent = it.title;
+        title.textContent = it.title.replace(/\(AI\)(?=[^()]*)$/, '');
 
         const meta = document.createElement("div");
         meta.className = "meta";
@@ -722,7 +723,7 @@
 
         const cellTitle = document.createElement("div");
         cellTitle.className = "cell";
-        cellTitle.innerHTML = `<div class="title-line">${it.title}</div>`;
+        cellTitle.innerHTML = `<div class="title-line">${it.title.replace(/\(AI\)(?=[^()]*)$/, '')}</div>`;
 
         const cellAuthor = document.createElement("div");
         cellAuthor.className = "cell muted";
@@ -997,7 +998,3 @@
       })();
   </script>
 </body>
-
-
-
-
