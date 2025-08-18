@@ -46,6 +46,7 @@ async function generateNotesData() {
                     author: commitAuthor.name,
                     author_username: authorData.login || null,
                     last_updated: commitAuthor.date,
+                    file_size: file.size,
                     is_ai_generated: isAiGenerated,
                 });
             }
