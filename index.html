@@ -820,7 +820,7 @@
 
       function openOverlay(item) {
         toggleOverlay(overlay, true, () => {
-          ovTitle.textContent = item.title;
+          ovTitle.textContent = item.title.replace(/\(AI\)(?=[^()]*)$/, '');;
           ovFormat.textContent = item.format.toUpperCase();
           ovFormat.className = `pill ${item.format === 'docx' ? 'docx' : 'pdf'}`;
           ovDate.textContent = fmtDate(item.updatedAt);
@@ -998,3 +998,7 @@
       })();
   </script>
 </body>
+
+
+
+
