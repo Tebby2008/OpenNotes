@@ -62,6 +62,12 @@
       --docx-main-color: #8c9eff;
     }
 
+    /* New CSS rule to invert images in light mode */
+    body:not(.dark-mode) .header-logo,
+    body:not(.dark-mode) .header-subtitle img {
+      filter: invert(1);
+    }
+
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     
@@ -545,11 +551,12 @@
       const darkModeIcon = darkModeToggle.querySelector('.material-symbols-outlined');
 
       const isDarkMode = localStorage.getItem('openNotesDarkMode') === 'true';
-      if (!isDarkMode) {
-          document.body.classList.add('light-mode');
-          darkModeIcon.textContent = 'dark_mode';
-          darkModeToggle.title = 'Switch to Dark Mode';
+      if (isDarkMode) {
+          document.body.classList.add('dark-mode');
       }
+      darkModeIcon.textContent = isDarkMode ? 'light_mode' : 'dark_mode';
+      darkModeToggle.title = isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+
       darkModeToggle.addEventListener('click', () => {
           document.body.classList.toggle('dark-mode');
           const isDark = document.body.classList.contains('dark-mode');
