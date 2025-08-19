@@ -338,13 +338,54 @@
     .styled-btn {
       background: rgba(0,0,0,0.05); color: var(--text); border: 1px solid transparent; border-radius: 999px;
       padding: 12px 18px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
-      transition: all var(--trans-speed) var(--trans-ease); text-decoration: none; font-weight: 500; font-size: 1rem;
+      transition: all var(--trans-speed) var(--trans-ease); text-decoration: none; font-weight: 550; font-size: 1rem;
     }
     .dark-mode .styled-btn { background: rgba(255,255,255,0.1); }
     .styled-btn:hover { background: rgba(0,0,0,0.08); }
     .dark-mode .styled-btn:hover { background: rgba(255,255,255,0.15); }
     .styled-btn.download-accent { background: var(--accent); color: white; }
     .styled-btn.download-accent:hover { background: #1d4ed8; }
+
+    /* New styles for the button group */
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+    /* Styles for the pop-up notification */
+    .popup-notification {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--panel-glass);
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      color: var(--text);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      z-index: 1002;
+    }
+    .dark-mode .popup-notification {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .popup-notification.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-10px);
+    }
+    .popup-notification .material-symbols-outlined.success-icon {
+      color: #3ce078;
+      font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
+    }
+
 
     .back {
       position: fixed; top: auto; bottom: 24px; left: 24px; z-index: 1001;
@@ -466,10 +507,16 @@
         <div class="kv">Views: <strong id="ovViews">0</strong></div>
         <div class="kv">Downloads: <strong id="ovDownloads">0</strong></div>
         <div style="margin-top:auto; display:flex; flex-direction:column; gap:10px; padding-top: 1rem;">
-          <a id="ovOpenRaw" class="styled-btn" target="_blank" rel="noopener">
-            <span class="material-symbols-outlined">open_in_new</span>
-            View Raw
-          </a>
+          <div class="button-group">
+            <a id="ovOpenRaw" class="styled-btn" target="_blank" rel="noopener" style="flex: 1;">
+              <span class="material-symbols-outlined">open_in_new</span>
+              View Raw
+            </a>
+            <button id="ovShareBtn" class="styled-btn" title="Copy link">
+              <span class="material-symbols-outlined">share</span>
+              Share
+            </button>
+          </div>
           <button id="ovDownload" class="styled-btn download-accent">
             <span class="material-symbols-outlined">download</span>
             Download
@@ -487,6 +534,11 @@
     <div class="viewer" style="grid-template-columns: 1fr; max-width: 800px; height: 80vh;">
       <div class="overlay-content" id="infoContent"></div>
     </div>
+  </div>
+
+  <div id="popupNotification" class="popup-notification">
+    <span class="material-symbols-outlined success-icon">check_circle</span>
+    Link copied successfully
   </div>
   
   <footer>
@@ -542,6 +594,7 @@
       const ovViews = document.getElementById("ovViews");
       const ovDownloads = document.getElementById("ovDownloads");
       const ovOpenRaw = document.getElementById("ovOpenRaw");
+      const ovShareBtn = document.getElementById("ovShareBtn");
       const ovDownload = document.getElementById("ovDownload");
       const infoOverlay = document.getElementById("infoOverlay");
       const infoBackBtn = document.getElementById("infoBackBtn");
@@ -550,6 +603,7 @@
       const websiteViewsEl = document.getElementById('websiteViews');
       const darkModeToggle = document.getElementById("darkModeToggle");
       const darkModeIcon = darkModeToggle.querySelector('.material-symbols-outlined');
+      const popupNotification = document.getElementById('popupNotification');
 
       const isDarkMode = localStorage.getItem('openNotesDarkMode') === 'true';
       if (isDarkMode) {
@@ -587,6 +641,14 @@
         if (!state) {
             history.replaceState({}, '', '#');
         }
+      };
+
+      const showPopup = (message) => {
+        popupNotification.querySelector('span:last-child').textContent = message;
+        popupNotification.classList.add('show');
+        setTimeout(() => {
+          popupNotification.classList.remove('show');
+        }, 3000);
       };
 
       const updateCounter = async (itemPath, counterType) => {
@@ -720,8 +782,7 @@
         ovFormat.className = `pill fmt-${item.format}`;
         ovDate.textContent = fmtDate(item.updatedAt);
         ovAuthor.innerHTML = `${getAuthorHtml(item)}${item.is_ai_generated ? ` <span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>` : ''}`;
-        ovOpenRaw.href = item.download_url;
-        // Keep the original view.html path as the user requested
+        ovOpenRaw.href = `view.html?file=${encodeURIComponent(item.download_url)}`;
         docFrame.src = `view.html?file=${encodeURIComponent(item.download_url)}`;
         ovViews.textContent = item.views || 0;
         ovDownloads.textContent = item.downloads || 0;
@@ -733,6 +794,16 @@
             render();
           }
         });
+
+        ovShareBtn.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            showPopup('Link copied successfully');
+          } catch (err) {
+            console.error('Failed to copy text: ', err);
+            showPopup('Failed to copy link');
+          }
+        };
 
         ovDownload.onclick = async () => {
           const data = await updateCounter(item.path, 'downloads');
