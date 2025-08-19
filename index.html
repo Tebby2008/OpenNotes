@@ -583,9 +583,9 @@
         el.setAttribute("aria-hidden", !state);
         state ? el.classList.add("open") : el.classList.remove("open");
 
-        // New: Update URL state when closing an overlay
+        // Update URL state when closing an overlay
         if (!state) {
-            history.pushState({}, '', '/');
+            history.replaceState({}, '', '#');
         }
       };
 
@@ -711,9 +711,8 @@
       }
 
       function openOverlay(item) {
-        // New: Push a new state to the browser history
-        const notePath = `/Notes/${encodeURIComponent(item.name)}`;
-        history.pushState({ note: item }, '', notePath);
+        // Use hash-based routing for GitHub Pages
+        history.pushState({ note: item }, '', `#Notes/${encodeURIComponent(item.name)}`);
         
         toggleOverlay(overlay, true);
         ovTitle.textContent = item.title.replace(/\(AI\)(?=[^()]*)$/, '');
@@ -721,7 +720,8 @@
         ovFormat.className = `pill fmt-${item.format}`;
         ovDate.textContent = fmtDate(item.updatedAt);
         ovAuthor.innerHTML = `${getAuthorHtml(item)}${item.is_ai_generated ? ` <span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>` : ''}`;
-        ovOpenRaw.href = `view.html?file=${encodeURIComponent(item.download_url)}`;
+        ovOpenRaw.href = item.download_url;
+        // Keep the original view.html path as the user requested
         docFrame.src = `view.html?file=${encodeURIComponent(item.download_url)}`;
         ovViews.textContent = item.views || 0;
         ovDownloads.textContent = item.downloads || 0;
@@ -748,9 +748,8 @@
       }
 
       async function openInfoOverlay(mdFile) {
-        // New: Push a new state to the browser history
-        const infoPath = `/${mdFile.split('/').pop()}`; // Format as /[filename].md
-        history.pushState({ info: mdFile }, '', infoPath);
+        // Use hash-based routing for GitHub Pages
+        history.pushState({ info: mdFile }, '', `#/${mdFile.split('/').pop()}`);
         
         toggleOverlay(infoOverlay, true);
         infoContent.innerHTML = "Loading...";
@@ -843,20 +842,19 @@
         });
       }
       
-      // New: Handle initial URL on page load and popstate event
-      async function handleUrlState() {
-          const path = window.location.pathname;
-          if (path.startsWith('/Notes/')) {
-              const noteName = decodeURIComponent(path.substring('/Notes/'.length));
-              const note = allItems.find(item => item.name === noteName);
-              if (note) {
-                  openOverlay(note);
-              }
-          } else if (path.endsWith('.md')) {
-              const mdFile = `resources/${path.substring(1)}`;
-              // The original openInfoOverlay assumes a path relative to the root, so we prepend 'resources/'
-              openInfoOverlay(mdFile);
-          }
+      // Handle initial URL on page load and popstate event using hash
+      function handleUrlState() {
+        const hash = window.location.hash;
+        if (hash.startsWith('#Notes/')) {
+            const noteName = decodeURIComponent(hash.substring('#Notes/'.length));
+            const note = allItems.find(item => item.name === noteName);
+            if (note) {
+                openOverlay(note);
+            }
+        } else if (hash.endsWith('.md')) {
+            const mdFile = `resources/${hash.substring(2)}`;
+            openInfoOverlay(mdFile);
+        }
       }
 
       window.addEventListener('popstate', (event) => {
@@ -888,7 +886,7 @@
           if(res.ok) websiteViewsEl.textContent = (await res.json()).views;
           render();
           add3dInteraction();
-          handleUrlState(); // New: Call the function to handle the initial URL state
+          handleUrlState();
         } catch(e) {
           console.error(e);
           container.innerHTML = `<p>Couldn’t load notes. Please check the repository settings and try again.</p>`;
