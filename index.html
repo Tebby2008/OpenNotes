@@ -65,7 +65,7 @@
     /* New CSS rule to invert images in light mode */
     body:not(.dark-mode) .header-logo,
     body:not(.dark-mode) .header-subtitle img {
-      filter: invert(1);
+      filter: invert(0.9) hue-rotate(180deg) brightness(1.2) saturate(1.5);
     }
 
     * { box-sizing: border-box; }
@@ -144,7 +144,6 @@
     .btn:hover { background: rgba(0, 0, 0, 0.04); }
     .dark-mode .btn:hover { background: rgba(255, 255, 255, 0.08); }
     .btn:active { transform: scale(0.96); }
-    .btn.icon-only { padding: 8px; }
     .btn.active { background: var(--panel); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
     .dark-mode .btn.active { box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
     .btn.active-ai { background: var(--panel); box-shadow: 0 0 0 2px var(--gold-glow) inset; color: #b38600; }
@@ -205,8 +204,8 @@
     .dark-mode .custom-dropdown { border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
     .custom-dropdown.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
     .custom-dropdown .option { padding: 10px 14px; cursor: pointer; border-radius: 8px; font-weight: 500; transition: background 0.2s, color 0.2s; }
-    .custom-dropdown .option:hover { background: var(--accent-glow); }
-    .dark-mode .custom-dropdown .option:hover { background: rgba(59, 130, 246, 0.2); }
+    .custom-dropdown .option:hover { background: rgba(0,0,0,0.03); }
+    .dark-mode .custom-dropdown .option:hover { background: rgba(255,255,255,0.08); }
     .custom-dropdown .option.active { background: var(--accent); color: white; }
 
     .wrap { padding: 0 24px 48px; }
@@ -253,7 +252,7 @@
     }
 
     .thumb {
-      background: rgba(0,0,0,0.03); height: 180px;
+      background: rgba(0,0,0,0.03); height: 180px; border-radius: 16px;
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; position: relative;
     }
