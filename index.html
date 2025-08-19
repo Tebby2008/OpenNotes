@@ -798,7 +798,7 @@
         ovShareBtn.onclick = async () => {
           try {
             await navigator.clipboard.writeText(window.location.href);
-            showPopup('Link copied successfully');
+            showPopup('check_circle');
           } catch (err) {
             console.error('Failed to copy text: ', err);
             showPopup('Failed to copy link');
