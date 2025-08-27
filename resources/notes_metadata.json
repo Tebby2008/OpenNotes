@@ -88,6 +88,17 @@
     "is_ai_generated": true
   },
   {
+    "name": "IB Physics (Electrostatics and Electric Fields).pdf",
+    "path": "Notes/IB Physics (Electrostatics and Electric Fields).pdf",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Physics%20(Electrostatics%20and%20Electric%20Fields).pdf",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/IB%20Physics%20(Electrostatics%20and%20Electric%20Fields)_pdf.jpg",
+    "author": "tebby",
+    "author_username": "Tebby2008",
+    "last_updated": "2025-08-27T01:50:35Z",
+    "file_size": "7.81 MiB",
+    "is_ai_generated": false
+  },
+  {
     "name": "Python Guide (AI).docx",
     "path": "Notes/Python Guide (AI).docx",
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/Python%20Guide%20(AI).docx",
