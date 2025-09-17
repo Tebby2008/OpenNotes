@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>OpenNotes - Notes made open</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js"></script>
+  <style>
+    :root {
+      /* New color variables for glassmorphism and enhanced glow effects */
+      --bg-light: #f7f9fc;
+      --panel-light: #ffffff;
+      --panel-glass-light: rgba(255, 255, 255, 0.75);
+      --panel-glass-dark: rgba(255, 255, 255, 0.55);
+      --text-light: #1a1d21;
+      --text-muted-light: #6c757d;
+      --accent-light: #3b82f6;
+      --accent-light-bg: #dbeafe;
+      --accent-glow-light: rgba(59, 130, 246, 0.2);
+      --gold-light: #f59e0b;
+      --gold-glow-light: rgba(245, 158, 11, 0.2);
+      
+      /* Dark Mode Colors */
+      --bg-dark: #111827;
+      --panel-dark: #1f2937;
+      --panel-glass-dark: rgba(31, 41, 55, 0.85);
+      --panel-glass-dark-light: rgba(31, 41, 55, 0.65);
+      --text-dark: #e5e7eb;
+      --text-muted-dark: #9ca3af;
+      --accent-dark-bg: #3b82f6;
+      --accent-glow-dark: rgba(59, 130, 246, 0.1);
+      --gold-dark: #fde047;
+      --gold-glow-dark: rgba(253, 224, 71, 0.1);
+      
+      /* General variables for shadows, borders, etc. */
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
+      --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
+      --shadow-lg-dark: 0 16px 40px rgba(0, 0, 0, 0.4);
+      --border-light: 1px solid rgba(255, 255, 255, 0.5);
+      --border-dark: 1px solid rgba(255, 255, 255, 0.1);
+      --radius: 16px;
+      --radius-sm: 12px;
+      --trans-speed: 0.3s;
+      --trans-ease: cubic-bezier(0.25, 0.8, 0.25, 1);
+      
+      /* File type styles */
+      --pdf-main-color: #e91e63;
+      --pdf-bg-color: #fce4ec;
+      --docx-main-color: #2563eb;
+      --docx-bg-color: #dbeafe;
+    }
+    
+    .dark-mode {
+      --bg: var(--bg-dark);
+      --panel: var(--panel-dark);
+      --panel-glass: var(--panel-glass-dark-light);
+      --panel-glass-light: var(--panel-glass-dark);
+      --text: var(--text-dark);
+      --text-muted: var(--text-muted-dark);
+      --accent: var(--accent-dark-bg);
+      --accent-light: var(--accent-dark-bg);
+      --accent-glow: var(--accent-glow-dark);
+      --gold: var(--gold-dark);
+      --gold-glow: var(--gold-glow-dark);
+      --shadow: var(--shadow-dark);
+      --shadow-lg: var(--shadow-lg-dark);
+      --border: var(--border-dark);
+      
+      --pdf-bg-color: #4a148c;
+      --docx-bg-color: #1a237e;
+      --pdf-main-color: #ff80ab;
+      --docx-main-color: #8c9eff;
+    }
+    
+    body:not(.dark-mode) {
+      --bg: var(--bg-light);
+      --panel: var(--panel-light);
+      --panel-glass: var(--panel-glass-dark);
+      --panel-glass-light: var(--panel-glass-light);
+      --text: var(--text-light);
+      --text-muted: var(--text-muted-light);
+      --accent: var(--accent-light);
+      --accent-light: var(--accent-light-bg);
+      --accent-glow: var(--accent-glow-light);
+      --gold: var(--gold-light);
+      --gold-glow: var(--gold-glow-light);
+      --shadow: var(--shadow);
+      --shadow-lg: var(--shadow-lg);
+      --border: var(--border-light);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      transition: background-color var(--trans-speed) ease, color var(--trans-speed) ease;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle at 10% 20%, var(--accent-glow), transparent 40%),
+                  radial-gradient(circle at 90% 85%, var(--gold-glow), transparent 40%);
+      animation: slow-pan 25s ease-in-out infinite alternate;
+      z-index: -1;
+    }
+
+    @keyframes slow-pan {
+      from { transform: translate(0%, 0%) scale(1); }
+      to { transform: translate(5%, -5%) scale(1.1); }
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 20px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4rem 1.5rem 2rem;
+      text-align: center;
+    }
+    .header-logo { width: 100%; max-width: 400px; margin-bottom: 1rem; }
+    .header-subtitle { color: var(--text-muted); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+    .header-subtitle img { height: 24px; }
+    
+    .controls-container {
+      position: sticky;
+      top: 16px; z-index: 100;
+      padding-bottom: 2rem;
+    }
+    .controls {
+      display: flex;
+      align-items: center; justify-content: space-between; gap: 8px;
+      background: var(--panel-glass);
+      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      border: var(--border);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+      border-radius: 999px;
+      padding: 8px;
+      width: max-content;
+      max-width: calc(100vw - 20px);
+      margin: 0 auto;
+      transition: border var(--trans-speed) ease, box-shadow var(--trans-speed) ease;
+    }
+    .dark-mode .controls { border: var(--border); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+    .controls .left, .controls .right { display: flex; align-items: center; gap: 4px; }
+
+    .btn {
+      background: transparent; color: var(--text);
+      border: none;
+      border-radius: 999px; padding: 8px 12px;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; font-weight: 500; font-size: 0.875rem;
+      text-decoration: none; white-space: nowrap;
+      transition: background var(--trans-speed) var(--trans-ease), box-shadow var(--trans-speed) var(--trans-ease), transform 0.1s ease;
+    }
+    .btn:hover { background: rgba(0, 0, 0, 0.04); }
+    .dark-mode .btn:hover { background: rgba(255, 255, 255, 0.08); }
+    .btn:active { transform: scale(0.96); }
+    .btn.active { background: var(--panel); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+    .dark-mode .btn.active { box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .btn.active-ai { background: var(--panel); box-shadow: 0 0 0 2px var(--gold-glow) inset; color: #b38600; }
+    .dark-mode .btn.active-ai { color: var(--gold); }
+    #aiToggleBtn.active-ai .material-symbols-outlined { color: var(--gold); font-variation-settings: 'FILL' 1; }
+    .btn.active-sort { background: var(--accent-light); color: var(--accent); }
+    .dark-mode .btn.active-sort { background: var(--accent); color: white; }
+
+    .search {
+      display: flex; align-items: center; background: rgba(0,0,0,0.03);
+      border-radius: 999px;
+      padding-left: 12px;
+      border: 1px solid transparent; transition: all var(--trans-speed) var(--trans-ease);
+    }
+    .dark-mode .search { background: rgba(255,255,255,0.08); }
+    .search:focus-within { background: var(--panel); border-color: rgba(0,0,0,0.05); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .dark-mode .search:focus-within { background: var(--panel); border-color: rgba(255,255,255,0.1); }
+    .search input {
+      height: 34px; background: transparent; border: none; outline: none;
+      color: var(--text); font: inherit; padding: 0 12px 0 8px; width: 140px; transition: width var(--trans-speed) var(--trans-ease);
+    }
+    .search input::placeholder { color: var(--text-muted); }
+    .search:focus-within input { width: 220px; }
+
+    .toggle { display: flex; background: rgba(0,0,0,0.03); padding: 4px; border-radius: 999px; }
+    .dark-mode .toggle { background: rgba(255,255,255,0.08); }
+    
+    .dark-mode-toggle {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: none;
+        border: none;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
+        outline: inherit;
+        white-space: nowrap;
+        color: var(--text-muted);
+        transition: color .2s;
+    }
+    
+    .dark-mode-toggle:hover {
+        color: var(--accent);
+    }
+
+    .sort-wrapper { position: relative; }
+    .custom-dropdown {
+      position: absolute;
+      top: calc(100% + 8px); left: 0; 
+      background: var(--panel-glass); backdrop-filter: blur(16px);
+      border: var(--border);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); 
+      z-index: 20; display: flex; flex-direction: column; 
+      min-width: 200px; padding: 6px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px); 
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+    .dark-mode .custom-dropdown { border: var(--border); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
+    .custom-dropdown.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    .custom-dropdown .option { padding: 10px 14px; cursor: pointer; border-radius: 8px; font-weight: 500;
+      transition: background 0.2s, color 0.2s; }
+    .custom-dropdown .option:hover { background: rgba(0,0,0,0.03); }
+    .dark-mode .custom-dropdown .option:hover { background: rgba(255,255,255,0.08); }
+    .custom-dropdown .option.active { background: var(--accent); color: white; }
+
+    .wrap { padding: 0 24px 48px; }
+    .grid { display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; perspective: 2500px; }
+    .list { display: flex; flex-direction: column; gap: 16px; }
+
+    .card, .row {
+      --glow-opacity: 0;
+      --glow-x: 50%; --glow-y: 50%;
+      position: relative;
+      background: var(--panel-glass-light);
+      border: var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      transition: transform var(--trans-speed) var(--trans-ease), box-shadow var(--trans-speed) var(--trans-ease);
+      overflow: hidden;
+      will-change: transform;
+      cursor: pointer;
+    }
+    .dark-mode .card, .dark-mode .row { border: var(--border); }
+    .card::before, .row::before {
+      content: ''; position: absolute; left: 0; top: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(circle at var(--glow-x) var(--glow-y), var(--accent-glow), transparent 40%);
+      opacity: var(--glow-opacity);
+      transition: opacity var(--trans-speed) var(--trans-ease);
+      z-index: 0;
+    }
+    .card:hover, .row:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: var(--shadow-lg);
+      z-index: 10;
+      --glow-opacity: 1;
+    }
+    .card > *, .row > * { position: relative; z-index: 1; }
+
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(20px) rotateX(-5deg); }
+      to { opacity: 1; transform: translateY(0) rotateX(0deg); }
+    }
+    .card, .row {
+      animation: fade-in-up 0.6s var(--trans-ease) forwards;
+      opacity: 0; transform-origin: bottom center;
+    }
+
+    .thumb {
+      background: rgba(0,0,0,0.03); height: 180px;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    .dark-mode .thumb { background: rgba(255,255,255,0.05); }
+    .thumb img {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      object-fit: cover; z-index: 1; transition: transform 0.4s var(--trans-ease);
+    }
+    .card:hover .thumb img { transform: scale(1.05); }
+
+    .fmt-badge {
+      position: absolute; bottom: 12px; right: 12px; z-index: 2;
+      padding: 4px 10px; font-size: 12px; font-weight: 600;
+      border-radius: 999px; background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .dark-mode .fmt-badge { background: rgba(31, 41, 55, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1); }
+    .fmt-pdf { color: var(--pdf-main-color); }
+    .fmt-docx { color: var(--docx-main-color); }
+
+    .body { padding: 16px; }
+    .title-line { font-weight: 600; font-size: 1.05rem; margin: 0 0 8px; line-height: 1.3; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; }
+    .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--text-muted); font-size: 13px; }
+    .author-line { display: inline-flex; align-items: center; gap: 4px; }
+    .meta .dot { width: 4px; height: 4px; border-radius: 50%;
+      background: rgba(0,0,0,0.2); }
+    .dark-mode .meta .dot { background: rgba(255,255,255,0.3); }
+    .ai-tag {
+      background: var(--gold-glow); color: #b38600; font-size: 10px; font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .dark-mode .ai-tag { color: var(--gold); }
+    .ai-tag .material-symbols-outlined { font-size: 14px; color: var(--gold); font-variation-settings: 'FILL' 1; }
+    .verified-tag .material-symbols-outlined { color: var(--accent); font-variation-settings: 'FILL' 1; font-size: 16px; }
+
+    .stats { margin-top: 12px; display: flex; align-items: center; gap: 16px; color: var(--text-muted); font-size: 13px; }
+    .stat { display: inline-flex; align-items: center; gap: 6px; }
+    .stat .material-symbols-outlined { font-size: 18px; }
+
+    .row { display: grid;
+      grid-template-columns: 80px 1fr auto; gap: 16px; align-items: center; padding: 12px; }
+    .row .thumb { height: 100%; width: 100%; border-radius: var(--radius-sm); }
+    .row .main { display: grid; grid-template-columns: minmax(200px, 2fr) 1fr 1fr 1fr;
+      gap: 16px; align-items: center; }
+    .row .main .cell { display: flex; align-items: center; gap: 6px; min-width: 0;
+      overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; }
+    .row .title-line { font-size: 15px; }
+    .row .pill {
+        padding: 4px 10px; font-weight: 600;
+        font-size: 12px; border-radius: 999px;
+        background: rgba(0,0,0,0.05);
+    }
+    .dark-mode .row .pill { background: rgba(255,255,255,0.1); }
+
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(247, 249, 252, 0.4);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      z-index: 1000; padding: 24px;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity var(--trans-speed) ease;
+      pointer-events: none;
+    }
+    .dark-mode .overlay { background: rgba(17, 24, 39, 0.7); }
+    .overlay.open { opacity: 1; pointer-events: auto; }
+    .viewer {
+      background: var(--panel-glass);
+      border: var(--border);
+      box-shadow: 0 16px 70px rgba(0, 0, 0, 0.2);
+      border-radius: 22px;
+      width: 100%; height: 100%; display: grid;
+      grid-template-columns: 1fr minmax(300px, 380px);
+      overflow: hidden;
+      transform: scale(0.95); opacity: 0;
+      transition: transform var(--trans-speed) var(--trans-ease), opacity var(--trans-speed) var(--trans-ease);
+    }
+    .dark-mode .viewer { border: var(--border); box-shadow: 0 16px 70px rgba(0, 0, 0, 0.5); }
+    .overlay.open .viewer { transform: scale(1); opacity: 1; }
+
+    .viewer .left { padding: 12px; background: rgba(0,0,0,0.02); }
+    .dark-mode .viewer .left { background: rgba(255,255,255,0.05); }
+    .docframe { width: 100%; height: 100%;
+      border: none; border-radius: 12px; background: var(--panel); }
+    .viewer .right { padding: 24px; display: flex; flex-direction: column;
+      gap: 12px; }
+    .viewer .right .title { font-size: 24px; font-weight: 700; }
+    .kv { font-size: 14px; color: var(--text-muted); display: flex; gap: 8px; align-items: center; }
+    .kv strong { color: var(--text); font-weight: 600; }
+    .styled-btn {
+      background: rgba(0,0,0,0.05); color: var(--text); border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 12px 18px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+      transition: all var(--trans-speed) var(--trans-ease);
+      text-decoration: none; font-weight: 550; font-size: 1rem;
+    }
+    .dark-mode .styled-btn { background: rgba(255,255,255,0.1); }
+    .styled-btn:hover { background: rgba(0,0,0,0.08); }
+    .dark-mode .styled-btn:hover { background: rgba(255,255,255,0.15); }
+    .styled-btn.download-accent { background: var(--accent); color: white; }
+    .styled-btn.download-accent:hover { background: #1d4ed8; }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+    .popup-notification {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--panel-glass);
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      border-radius: 999px;
+      border: var(--border);
+      color: var(--text);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+      z-index: 1002;
+    }
+    .dark-mode .popup-notification {
+      border: var(--border);
+    }
+    .popup-notification.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-10px);
+    }
+    .popup-notification .material-symbols-outlined.success-icon {
+      color: #3ce078;
+      font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
+    }
+
+
+    .back {
+      position: fixed;
+      top: auto; bottom: 24px; left: 24px; z-index: 1001;
+      background: var(--panel-glass); backdrop-filter: blur(8px);
+      color: var(--text);
+      border: var(--border);
+      padding: 10px 16px; font-size: 1rem; border-radius: 999px;
+      display: flex; align-items: center; gap: 8px;
+      cursor: pointer; transition: all var(--trans-speed) var(--trans-ease);
+    }
+    .dark-mode .back { border: var(--border); }
+    .back:hover { background: var(--panel); box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
+    .dark-mode .back:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+    .back:active { transform: translateY(0); }
+
+    .overlay-content { padding: 2rem; overflow-y: auto; }
+
+    footer {
+      background: transparent; color: var(--text-muted);
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto; 
+      font-size: 14px;
+    }
+    footer .left { 
+      display: flex;
+      gap: 24px; 
+      align-items: center; 
+      flex-wrap: wrap; 
+    }
+    footer .right {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+    footer a { color: var(--text-muted); text-decoration: none; transition: color .2s;
+      display: flex; align-items: center; gap: 6px; }
+    footer a:hover { color: var(--accent); }
+    footer svg { height: 18px; width: 18px; fill: currentColor; }
+    .total-views {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+      <img draggable = false src="resources/logo.svg" alt="OpenNotes Logo" class="header-logo" />
+      <p class="header-subtitle">
+        the open platform for notes by
+        <a href="https://ingenium.rf.gd" target="_blank" rel="noopener">
+          <img draggable = false src="resources/ingenium.png" alt="Ingenium Logo" />
+        </a>
+      </p>
+  </header>
+
+  <div class="controls-container">
+    <div class="controls">
+      <div class="left">
+        <div class="sort-wrapper">
+          <button id="sortBtn" class="btn icon-only" title="Sort notes">
+            <span class="material-symbols-outlined">filter_list</span>
+          </button>
+          <div id="sortDropdown" class="custom-dropdown">
+            <div data-sort="updated-desc" class="option active">Last updated ↓</div>
+            <div data-sort="updated-asc" class="option">Last updated ↑</div>
+            <div data-sort="title-asc" class="option">Title A→Z</div>
+            <div data-sort="title-desc" class="option">Title Z→A</div>
+            <div data-sort="format-asc" class="option">Format A→Z</div>
+          </div>
+        </div>
+        <button id="typeBtn" class="btn"><b>ALL</b></button>
+        <button id="aiToggleBtn" class="btn active-ai" title="Toggle AI Content">
+          <span class="material-symbols-outlined">auto_awesome</span>
+          <b>Show AI</b>
+        </button>
+      </div>
+      <div class="right">
+        <div class="search" role="search">
+          <span class="material-symbols-outlined">search</span>
+          <input id="searchInput" type="text" placeholder="Search notes..." aria-label="Search notes" />
+        </div>
+        <button id="uploadBtn" class="btn icon-only" title="How to Upload" data-md="resources/upload.md">
+          <span class="material-symbols-outlined">upload</span>
+        </button>
+        <div class="toggle" role="tablist" aria-label="View mode">
+          <button id="gridBtn" class="btn active icon-only" aria-pressed="true" title="Grid view">
+            <span class="material-symbols-outlined">grid_view</span>
+          </button>
+          <button id="listBtn" class="btn icon-only" aria-pressed="false" title="List view">
+            <span class="material-symbols-outlined">view_list</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section id="itemsContainer" class="grid" aria-live="polite"></section>
+  </main>
+  
+  <div id="overlay" class="overlay" aria-hidden="true">
+    <button id="backBtn" class="back" aria-label="Back">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Back
+    </button>
+    <div class="viewer" role="dialog" aria-modal="true" aria-label="Document viewer">
+      <div class="left">
+        <iframe id="docFrame" class="docframe" title="Document preview"></iframe>
+      </div>
+      <div class="right">
+        <div class="title" id="ovTitle">Title</div>
+        <div class="kv"><span class="pill" id="ovFormat">PDF</span></div>
+        <div class="kv">Date: <strong id="ovDate">—</strong></div>
+        <div class="kv">Author: <strong id="ovAuthor">—</strong></div>
+        <div class="kv">Views: <strong id="ovViews">0</strong></div>
+        <div class="kv">Downloads: <strong id="ovDownloads">0</strong></div>
+        <div style="margin-top:auto; display:flex; flex-direction:column; gap:10px; padding-top: 1rem;">
+          <div class="button-group">
+            <a id="ovOpenRaw" class="styled-btn" target="_blank" rel="noopener" style="flex: 1;">
+              <span class="material-symbols-outlined">open_in_new</span>
+              View Raw
+            </a>
+            <button id="ovShareBtn" class="styled-btn" title="Copy link">
+              <span class="material-symbols-outlined">share</span>
+              Share
+            </button>
+          </div>
+          <button id="ovDownload" class="styled-btn download-accent">
+            <span class="material-symbols-outlined">download</span>
+            Download
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="infoOverlay" class="overlay" aria-hidden="true">
+    <button id="infoBackBtn" class="back" aria-label="Back">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Back
+    </button>
+    <div class="viewer" style="grid-template-columns: 1fr; max-width: 800px; height: 80vh;">
+      <div class="overlay-content" id="infoContent"></div>
+    </div>
+  </div>
+
+  <div id="popupNotification" class="popup-notification">
+    <span class="material-symbols-outlined success-icon">check_circle</span>
+    Link copied successfully
+  </div>
+  
+  <footer>
+    <div class="left">
+      <a href="#" class="info-link" data-md="resources/terms-privacy.md">Terms & Privacy</a>
+      <a href="#" class="info-link" data-md="resources/contact.md">Contact Us</a>
+      <a href="#" class="info-link" data-md="resources/about.md">About</a>
+      <a href="https://github.com/Tebby2008/OpenNotes" target="_blank" rel="noopener">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 96" fill="currentColor" class="icon"><path fill-rule="evenodd" 
+clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg> Github </a>
+    </div>
+    <div class="right">
+      <button id="darkModeToggle" class="dark-mode-toggle" title="Switch to Dark Mode">
+        <span class="material-symbols-outlined">light_mode</span>
+      </button>
+      <div class="total-views">
+        <span class="material-symbols-outlined">visibility</span>
+        <span id="websiteViews">0</span>
+      </div>
+    </div>
+  </footer>
+  <script>
+    const REPO_OWNER = "Tebby2008";
+    const REPO_NAME = "OpenNotes";
+    const BRANCH = "main";
+    const API_URL = "https://open-notes.tebby2008-li.workers.dev";
+    const owner = window.__owner || REPO_OWNER;
+    const repo = window.__repo || REPO_NAME;
+    let allItems = [];
+    let viewMode = localStorage.getItem('openNotesViewMode') || 'grid';
+    let showAI = true;
+    let currentSort = "updated-desc";
+    let currentFormat = "all";
+    const container = document.getElementById("itemsContainer");
+    const searchInput = document.getElementById("searchInput");
+    const gridBtn = document.getElementById("gridBtn");
+    const listBtn = document.getElementById("listBtn");
+    const typeBtn = document.getElementById("typeBtn");
+    const aiToggleBtn = document.getElementById("aiToggleBtn");
+    const sortBtn = document.getElementById("sortBtn");
+    const sortDropdown = document.getElementById("sortDropdown");
+    const overlay = document.getElementById("overlay");
+    const backBtn = document.getElementById("backBtn");
+    const docFrame = document.getElementById("docFrame");
+    const ovTitle = document.getElementById("ovTitle");
+    const ovFormat = document.getElementById("ovFormat");
+    const ovDate = document.getElementById("ovDate");
+    const ovAuthor = document.getElementById("ovAuthor");
+    const ovViews = document.getElementById("ovViews");
+    const ovDownloads = document.getElementById("ovDownloads");
+    const ovOpenRaw = document.getElementById("ovOpenRaw");
+    const ovShareBtn = document.getElementById("ovShareBtn");
+    const ovDownload = document.getElementById("ovDownload");
+    const infoOverlay = document.getElementById("infoOverlay");
+    const infoBackBtn = document.getElementById("infoBackBtn");
+    const infoContent = document.getElementById("infoContent");
+    const infoLinks = document.querySelectorAll('.info-link, #uploadBtn');
+    const websiteViewsEl = document.getElementById('websiteViews');
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    const darkModeIcon = darkModeToggle.querySelector('.material-symbols-outlined');
+    const popupNotification = document.getElementById('popupNotification');
+    const isDarkMode = localStorage.getItem('openNotesDarkMode') === 'true';
+    if (isDarkMode) {
+      document.body.classList.add('dark-mode');
+    }
+    darkModeIcon.textContent = isDarkMode ? 'light_mode' : 'dark_mode';
+    darkModeToggle.title = isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    darkModeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('openNotesDarkMode', isDark);
+      darkModeIcon.textContent = isDark ? 'light_mode' : 'dark_mode';
+      darkModeToggle.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    });
+    if (viewMode === 'grid') {
+      gridBtn.classList.add("active");
+      gridBtn.setAttribute("aria-pressed", "true");
+      listBtn.classList.remove("active");
+      listBtn.setAttribute("aria-pressed", "false");
+    } else {
+      listBtn.classList.add("active");
+      listBtn.setAttribute("aria-pressed", "true");
+      gridBtn.classList.remove("active");
+      gridBtn.setAttribute("aria-pressed", "false");
+    }
+    const fmtDate = (iso) => !iso ? "—" : new Date(iso).toLocaleDateString('en-GB');
+    const stripExt = (name) => name.replace(/\.[^/.]+$/, "");
+    const extOf = (name) => (name.split('.').pop() || "").toLowerCase();
+    const toggleOverlay = (el, state) => {
+      document.body.style.overflow = state ? 'hidden' : '';
+      el.setAttribute("aria-hidden", !state);
+      state ? el.classList.add("open") : el.classList.remove("open");
+      if (!state) {
+        history.replaceState({}, '', '#');
+      }
+    };
+    const showPopup = (message) => {
+      popupNotification.querySelector('span:last-child').textContent = message;
+      popupNotification.classList.add('show');
+      setTimeout(() => {
+        popupNotification.classList.remove('show');
+      }, 3000);
+    };
+
+    const add3dInteraction = () => {
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const xc = rect.width / 2;
+                const yc = rect.height / 2;
+                const rx = ((y - yc) / yc) * 5;
+                const ry = ((x - xc) / xc) * -5;
+                card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) scale(1.05)`;
+                
+                // Update glow position
+                card.style.setProperty('--glow-x', `${(x / rect.width) * 100}%`);
+                card.style.setProperty('--glow-y', `${(y / rect.height) * 100}%`);
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
+            });
+        });
+    };
+
+    const render = () => {
+        container.innerHTML = "";
+        const filteredItems = allItems.filter(item => {
+            const matchesAI = showAI || !item.isAI;
+            const matchesFormat = currentFormat === "all" || item.format === currentFormat;
+            const matchesSearch = searchInput.value === "" || 
+                                  item.title.toLowerCase().includes(searchInput.value.toLowerCase()) || 
+                                  item.author.toLowerCase().includes(searchInput.value.toLowerCase());
+            return matchesAI && matchesFormat && matchesSearch;
+        });
+
+        filteredItems.sort((a, b) => {
+            if (currentSort === "updated-asc") return new Date(a.date) - new Date(b.date);
+            if (currentSort === "updated-desc") return new Date(b.date) - new Date(a.date);
+            if (currentSort === "title-asc") return a.title.localeCompare(b.title);
+            if (currentSort === "title-desc") return b.title.localeCompare(a.title);
+            if (currentSort === "format-asc") return a.format.localeCompare(b.format);
+            return 0;
+        });
+
+        if (viewMode === 'grid') {
+            container.classList.add('grid');
+            container.classList.remove('list');
+            filteredItems.forEach(item => {
+                const card = createCard(item);
+                container.appendChild(card);
+            });
+        } else {
+            container.classList.add('list');
+            container.classList.remove('grid');
+            filteredItems.forEach(item => {
+                const row = createRow(item);
+                container.appendChild(row);
+            });
+        }
+    };
+
+    const createCard = (item) => {
+        const card = document.createElement("a");
+        card.classList.add("card");
+        card.href = `#note-${item.path}`;
+        card.setAttribute("aria-label", `View note: ${item.title}`);
+        card.innerHTML = `
+            <div class="thumb">
+                <img src="${item.thumb}" alt="${item.title}" />
+                <span class="fmt-badge fmt-${item.format}">${item.format.toUpperCase()}</span>
+            </div>
+            <div class="body">
+                <h3 class="title-line">${item.title}</h3>
+                <div class="meta">
+                    <span class="author-line">${item.author} ${item.isVerified ? '<span class="verified-tag material-symbols-outlined" title="Verified Author">check_circle</span>' : ''}</span>
+                    <span class="dot"></span>
+                    <span class="date-line">${fmtDate(item.date)}</span>
+                    ${item.isAI ? '<span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span> AI Content</span>' : ''}
+                </div>
+                <div class="stats">
+                    <span class="stat"><span class="material-symbols-outlined">visibility</span> ${item.views}</span>
+                    <span class="stat"><span class="material-symbols-outlined">download</span> ${item.downloads}</span>
+                </div>
+            </div>
+        `;
+        return card;
+    };
+
+    const createRow = (item) => {
+        const row = document.createElement("a");
+        row.classList.add("row");
+        row.href = `#note-${item.path}`;
+        row.setAttribute("aria-label", `View note: ${item.title}`);
+        row.innerHTML = `
+            <div class="thumb">
+                <img src="${item.thumb}" alt="${item.title}" />
+            </div>
+            <div class="main">
+                <div class="cell title-line">
+                    <span class="title-line">${item.title}</span>
+                </div>
+                <div class="cell">
+                    <span class="pill fmt-${item.format}" style="color: ${item.isPDF ? 'var(--pdf-main-color)' : 'var(--docx-main-color)'};">${item.format.toUpperCase()}</span>
+                </div>
+                <div class="cell">
+                    <span class="author-line">${item.author} ${item.isVerified ? '<span class="verified-tag material-symbols-outlined">check_circle</span>' : ''}</span>
+                </div>
+                <div class="cell">
+                    <span class="date-line">${fmtDate(item.date)}</span>
+                </div>
+            </div>
+            <div class="cell stats">
+                <span class="stat"><span class="material-symbols-outlined">visibility</span> ${item.views}</span>
+                <span class="stat"><span class="material-symbols-outlined">download</span> ${item.downloads}</span>
+            </div>
+        `;
+        return row;
+    };
+
+    const fetchNotes = async () => {
+      // Logic for fetching notes from a data source
+      // This is a placeholder; replace with your actual fetch logic
+      const demoData = [
+          {
+              path: 'example-note-1.md',
+              title: 'Introduction to Web Development',
+              author: 'Alice Johnson',
+              date: '2023-10-26T10:00:00Z',
+              format: 'md',
+              thumb: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/placeholder.png',
+              isAI: false,
+              isVerified: true,
+              views: 124,
+              downloads: 58
+          },
+          {
+              path: 'example-note-2.pdf',
+              title: 'Data Science Fundamentals',
+              author: 'Bob Williams',
+              date: '2023-10-25T14:30:00Z',
+              format: 'pdf',
+              thumb: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/placeholder.png',
+              isAI: true,
+              isVerified: false,
+              views: 205,
+              downloads: 91
+          },
+          {
+              path: 'example-note-3.docx',
+              title: 'The Art of Design Thinking',
+              author: 'Charlie Brown',
+              date: '2023-10-24T09:15:00Z',
+              format: 'docx',
+              thumb: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/placeholder.png',
+              isAI: false,
+              isVerified: false,
+              views: 89,
+              downloads: 32
+          }
+      ];
+      return new Promise(resolve => setTimeout(() => resolve(demoData), 500));
+    };
+
+    const getNoteStats = async (noteIds) => {
+        // Logic for fetching stats; placeholder
+        return {
+            'example-note-1.md': { views: 124, downloads: 58 },
+            'example-note-2.pdf': { views: 205, downloads: 91 },
+            'example-note-3.docx': { views: 89, downloads: 32 }
+        };
+    };
+
+    const openOverlay = (item) => {
+      // Logic to open document viewer
+      const mdFiles = ['md', 'txt'];
+      if(mdFiles.includes(item.format)) {
+        docFrame.srcdoc = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: sans-serif; padding: 20px; }
+            </style>
+          </head>
+          <body>
+            <div id="content">Loading...</div>
+            <script>
+              fetch('https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/notes/${item.path}')
+                .then(res => res.text())
+                .then(text => {
+                  document.getElementById('content').innerHTML = DOMPurify.sanitize(marked.parse(text));
+                });
+            </script>
+          </body>
+          </html>
+        `;
+      } else {
+        docFrame.src = `https://docs.google.com/gview?url=https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/notes/${item.path}&embedded=true`;
+      }
+
+      ovTitle.textContent = item.title;
+      ovFormat.textContent = item.format.toUpperCase();
+      ovFormat.style.color = item.format === 'pdf' ? 'var(--pdf-main-color)' : 'var(--docx-main-color)';
+      ovDate.textContent = fmtDate(item.date);
+      ovAuthor.textContent = item.author;
+      ovViews.textContent = item.views;
+      ovDownloads.textContent = item.downloads;
+      ovOpenRaw.href = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/notes/${item.path}`;
+      ovDownload.href = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/notes/${item.path}`;
+      ovShareBtn.onclick = () => {
+        navigator.clipboard.writeText(window.location.href);
+        showPopup('Link copied successfully!');
+      };
+      
+      toggleOverlay(overlay, true);
+    };
+
+    const openInfoOverlay = async (mdFile) => {
+      try {
+        const res = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${mdFile}`);
+        const text = await res.text();
+        infoContent.innerHTML = DOMPurify.sanitize(marked.parse(text));
+        toggleOverlay(infoOverlay, true);
+      } catch (error) {
+        console.error("Failed to fetch info file:", error);
+      }
+    };
+    
+    document.addEventListener("click", (e) => {
+        if (e.target.closest("#sortBtn")) {
+            sortDropdown.classList.toggle("open");
+        } else if (e.target.closest("#typeBtn")) {
+            // Placeholder for type button logic
+            console.log("Type button clicked");
+        } else if (e.target.closest("#aiToggleBtn")) {
+            showAI = !showAI;
+            aiToggleBtn.classList.toggle("active-ai", showAI);
+            aiToggleBtn.querySelector('b').textContent = showAI ? "Show AI" : "Hide AI";
+            render();
+        } else if (e.target.closest("#gridBtn")) {
+            viewMode = 'grid';
+            localStorage.setItem('openNotesViewMode', 'grid');
+            gridBtn.classList.add("active");
+            gridBtn.setAttribute("aria-pressed", "true");
+            listBtn.classList.remove("active");
+            listBtn.setAttribute("aria-pressed", "false");
+            render();
+        } else if (e.target.closest("#listBtn")) {
+            viewMode = 'list';
+            localStorage.setItem('openNotesViewMode', 'list');
+            listBtn.classList.add("active");
+            listBtn.setAttribute("aria-pressed", "true");
+            gridBtn.classList.remove("active");
+            gridBtn.setAttribute("aria-pressed", "false");
+            render();
+        } else if (e.target.closest(".custom-dropdown .option")) {
+            sortDropdown.classList.remove("open");
+            document.querySelector('.custom-dropdown .option.active').classList.remove('active');
+            e.target.classList.add('active');
+            currentSort = e.target.getAttribute('data-sort');
+            render();
+        } else if (e.target.closest(".card") || e.target.closest(".row")) {
+            e.preventDefault();
+            const notePath = e.target.closest("a").href.split("#note-")[1];
+            const item = allItems.find(i => i.path === notePath);
+            if (item) {
+                history.pushState({note: item}, '', e.target.closest("a").href);
+                openOverlay(item);
+            }
+        } else if (e.target.closest("#backBtn") || !e.target.closest(".viewer")) {
+            if (overlay.classList.contains('open')) toggleOverlay(overlay, false);
+            if (infoOverlay.classList.contains('open')) toggleOverlay(infoOverlay, false);
+        } else if (e.target.closest(".info-link, #uploadBtn")) {
+            e.preventDefault();
+            const mdFile = e.target.closest("a, button").getAttribute('data-md');
+            openInfoOverlay(mdFile);
+        } else if (e.target.closest("#infoBackBtn") || !e.target.closest("#infoOverlay")) {
+            if (infoOverlay.classList.contains('open')) toggleOverlay(infoOverlay, false);
+        }
+    });
+
+    searchInput.addEventListener('input', () => {
+        render();
+    });
+
+    window.addEventListener('popstate', (event) => {
+        const state = event.state;
+        if (state && state.note) {
+            openOverlay(state.note);
+        } else if (state && state.info) {
+            openInfoOverlay(state.info);
+        } else {
+            if (overlay.classList.contains('open')) toggleOverlay(overlay, false);
+            if (infoOverlay.classList.contains('open')) toggleOverlay(infoOverlay, false);
+        }
+    });
+
+    (async function init() {
+      try {
+        allItems = await fetchNotes();
+        const noteIds = allItems.map(item => item.path);
+        if (noteIds.length > 0) {
+            const stats = await getNoteStats(noteIds);
+            allItems.forEach(item => {
+                if (stats[item.path]) {
+                    item.views = stats[item.path].views;
+                    item.downloads = stats[item.path].downloads;
+                }
+            });
+        }
+        const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
+        if(res.ok) websiteViewsEl.textContent = (await res.json()).views;
+        render();
+        add3dInteraction();
+        handleUrlState();
+      } catch(e) {
+        console.error(e);
+        container.innerHTML = `<p>Couldn’t load notes. Please check the repository settings and try again.</p>`;
+      }
+    })();
+  </script>
+</body>
+</html>
