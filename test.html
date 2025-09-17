@@ -8,98 +8,59 @@
   <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js"></script>
   <style>
+    /* New & Refined Color Palette and General Styles */
     :root {
-      /* New color variables for glassmorphism and enhanced glow effects */
-      --bg-light: #f7f9fc;
-      --panel-light: #ffffff;
-      --panel-glass-light: rgba(255, 255, 255, 0.75);
-      --panel-glass-dark: rgba(255, 255, 255, 0.55);
-      --text-light: #1a1d21;
-      --text-muted-light: #6c757d;
-      --accent-light: #3b82f6;
-      --accent-light-bg: #dbeafe;
-      --accent-glow-light: rgba(59, 130, 246, 0.2);
-      --gold-light: #f59e0b;
-      --gold-glow-light: rgba(245, 158, 11, 0.2);
-      
-      /* Dark Mode Colors */
-      --bg-dark: #111827;
-      --panel-dark: #1f2937;
-      --panel-glass-dark: rgba(31, 41, 55, 0.85);
-      --panel-glass-dark-light: rgba(31, 41, 55, 0.65);
-      --text-dark: #e5e7eb;
-      --text-muted-dark: #9ca3af;
-      --accent-dark-bg: #3b82f6;
-      --accent-glow-dark: rgba(59, 130, 246, 0.1);
-      --gold-dark: #fde047;
-      --gold-glow-dark: rgba(253, 224, 71, 0.1);
-      
-      /* General variables for shadows, borders, etc. */
-      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
-      --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.3);
-      --shadow-lg-dark: 0 16px 40px rgba(0, 0, 0, 0.4);
-      --border-light: 1px solid rgba(255, 255, 255, 0.5);
-      --border-dark: 1px solid rgba(255, 255, 255, 0.1);
-      --radius: 16px;
-      --radius-sm: 12px;
-      --trans-speed: 0.3s;
+      --bg: #f0f4f8;
+      --panel: #ffffff;
+      --panel-glass: rgba(255, 255, 255, 0.65);
+      --panel-glass-light: rgba(255, 255, 255, 0.85);
+      --text: #172b4d;
+      --text-muted: #5e6c84;
+      --accent: #00b8d9; /* A subtle teal */
+      --accent-light: #e6fffa;
+      --accent-glow: rgba(0, 184, 217, 0.2);
+      --gold: #ffc400;
+      --gold-glow: rgba(255, 196, 0, 0.2);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.1);
+      --radius: 20px;
+      --radius-sm: 15px;
+      --trans-speed: 0.4s;
       --trans-ease: cubic-bezier(0.25, 0.8, 0.25, 1);
-      
-      /* File type styles */
       --pdf-main-color: #e91e63;
       --pdf-bg-color: #fce4ec;
       --docx-main-color: #2563eb;
       --docx-bg-color: #dbeafe;
     }
-    
+
     .dark-mode {
-      --bg: var(--bg-dark);
-      --panel: var(--panel-dark);
-      --panel-glass: var(--panel-glass-dark-light);
-      --panel-glass-light: var(--panel-glass-dark);
-      --text: var(--text-dark);
-      --text-muted: var(--text-muted-dark);
-      --accent: var(--accent-dark-bg);
-      --accent-light: var(--accent-dark-bg);
-      --accent-glow: var(--accent-glow-dark);
-      --gold: var(--gold-dark);
-      --gold-glow: var(--gold-glow-dark);
-      --shadow: var(--shadow-dark);
-      --shadow-lg: var(--shadow-lg-dark);
-      --border: var(--border-dark);
-      
+      --bg: #121212;
+      --panel: #1e1e1e;
+      --panel-glass: rgba(30, 30, 30, 0.7);
+      --panel-glass-light: rgba(30, 30, 30, 0.9);
+      --text: #e0e0e0;
+      --text-muted: #b0b0b0;
+      --accent: #26c6da;
+      --accent-light: #004d40;
+      --accent-glow: rgba(38, 198, 218, 0.15);
+      --gold: #ffeb3b;
+      --gold-glow: rgba(255, 235, 59, 0.15);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
       --pdf-bg-color: #4a148c;
       --docx-bg-color: #1a237e;
       --pdf-main-color: #ff80ab;
       --docx-main-color: #8c9eff;
     }
-    
-    body:not(.dark-mode) {
-      --bg: var(--bg-light);
-      --panel: var(--panel-light);
-      --panel-glass: var(--panel-glass-dark);
-      --panel-glass-light: var(--panel-glass-light);
-      --text: var(--text-light);
-      --text-muted: var(--text-muted-light);
-      --accent: var(--accent-light);
-      --accent-light: var(--accent-light-bg);
-      --accent-glow: var(--accent-glow-light);
-      --gold: var(--gold-light);
-      --gold-glow: var(--gold-glow-light);
-      --shadow: var(--shadow);
-      --shadow-lg: var(--shadow-lg);
-      --border: var(--border-light);
-    }
 
+    /* General Body and Animation */
     * { box-sizing: border-box; }
     html, body { height: 100%; }
-    
     body {
       margin: 0;
       background-color: var(--bg);
@@ -118,13 +79,18 @@
       width: 100%; height: 100%;
       background: radial-gradient(circle at 10% 20%, var(--accent-glow), transparent 40%),
                   radial-gradient(circle at 90% 85%, var(--gold-glow), transparent 40%);
-      animation: slow-pan 25s ease-in-out infinite alternate;
+      animation: slow-pan 25s ease-in-out infinite alternate, pulse-glow 30s ease-in-out infinite alternate;
       z-index: -1;
     }
-
+    
     @keyframes slow-pan {
       from { transform: translate(0%, 0%) scale(1); }
       to { transform: translate(5%, -5%) scale(1.1); }
+    }
+    
+    @keyframes pulse-glow {
+      from { filter: brightness(1); }
+      to { filter: brightness(1.2); }
     }
 
     .material-symbols-outlined {
@@ -144,6 +110,7 @@
     .header-subtitle { color: var(--text-muted); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
     .header-subtitle img { height: 24px; }
     
+    /* Controls and Buttons */
     .controls-container {
       position: sticky;
       top: 16px; z-index: 100;
@@ -154,21 +121,19 @@
       align-items: center; justify-content: space-between; gap: 8px;
       background: var(--panel-glass);
       backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border: var(--border);
+      border: 1px solid rgba(255, 255, 255, 0.5);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
       border-radius: 999px;
       padding: 8px;
       width: max-content;
       max-width: calc(100vw - 20px);
       margin: 0 auto;
-      transition: border var(--trans-speed) ease, box-shadow var(--trans-speed) ease;
     }
-    .dark-mode .controls { border: var(--border); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+    .dark-mode .controls { border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
     .controls .left, .controls .right { display: flex; align-items: center; gap: 4px; }
 
     .btn {
-      background: transparent; color: var(--text);
-      border: none;
+      background: transparent; color: var(--text); border: none;
       border-radius: 999px; padding: 8px 12px;
       display: flex; align-items: center; gap: 8px;
       cursor: pointer; font-weight: 500; font-size: 0.875rem;
@@ -188,8 +153,7 @@
 
     .search {
       display: flex; align-items: center; background: rgba(0,0,0,0.03);
-      border-radius: 999px;
-      padding-left: 12px;
+      border-radius: 999px; padding-left: 12px;
       border: 1px solid transparent; transition: all var(--trans-speed) var(--trans-ease);
     }
     .dark-mode .search { background: rgba(255,255,255,0.08); }
@@ -220,68 +184,96 @@
         transition: color .2s;
     }
     
-    .dark-mode-toggle:hover {
-        color: var(--accent);
-    }
+    .dark-mode-toggle:hover { color: var(--accent); }
 
+    /* Dropdowns */
     .sort-wrapper { position: relative; }
     .custom-dropdown {
-      position: absolute;
-      top: calc(100% + 8px); left: 0; 
+      position: absolute; top: calc(100% + 8px); left: 0; 
       background: var(--panel-glass); backdrop-filter: blur(16px);
-      border: var(--border);
+      border: 1px solid rgba(255, 255, 255, 0.5);
       border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); 
       z-index: 20; display: flex; flex-direction: column; 
       min-width: 200px; padding: 6px;
-      opacity: 0;
-      pointer-events: none;
+      opacity: 0; pointer-events: none;
       transform: translateY(10px); 
       transition: opacity 0.2s ease, transform 0.2s ease;
     }
-    .dark-mode .custom-dropdown { border: var(--border); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
+    .dark-mode .custom-dropdown { border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
     .custom-dropdown.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
-    .custom-dropdown .option { padding: 10px 14px; cursor: pointer; border-radius: 8px; font-weight: 500;
-      transition: background 0.2s, color 0.2s; }
+    .custom-dropdown .option { padding: 10px 14px; cursor: pointer; border-radius: 8px; font-weight: 500; transition: background 0.2s, color 0.2s; }
     .custom-dropdown .option:hover { background: rgba(0,0,0,0.03); }
     .dark-mode .custom-dropdown .option:hover { background: rgba(255,255,255,0.08); }
     .custom-dropdown .option.active { background: var(--accent); color: white; }
 
+    /* Main Content Layout */
     .wrap { padding: 0 24px 48px; }
-    .grid { display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; perspective: 2500px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; perspective: 2500px; }
     .list { display: flex; flex-direction: column; gap: 16px; }
 
+    /* Cards & Rows */
     .card, .row {
       --glow-opacity: 0;
       --glow-x: 50%; --glow-y: 50%;
       position: relative;
       background: var(--panel-glass-light);
-      border: var(--border);
+      border: 1px solid rgba(255, 255, 255, 0.6);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      transition: transform var(--trans-speed) var(--trans-ease), box-shadow var(--trans-speed) var(--trans-ease);
+      transition: transform var(--trans-speed) var(--trans-ease), box-shadow var(--trans-speed) var(--trans-ease), background-color var(--trans-speed) var(--trans-ease);
       overflow: hidden;
       will-change: transform;
       cursor: pointer;
+      isolation: isolate; /* To ensure ::after is properly contained */
     }
-    .dark-mode .card, .dark-mode .row { border: var(--border); }
+    
+    .dark-mode .card, .dark-mode .row { border: 1px solid rgba(255, 255, 255, 0.1); }
+    
+    /* Hover "Shine" effect */
     .card::before, .row::before {
-      content: ''; position: absolute; left: 0; top: 0;
+      content: '';
+      position: absolute;
+      left: 0; top: 0;
       width: 100%; height: 100%;
       background: radial-gradient(circle at var(--glow-x) var(--glow-y), var(--accent-glow), transparent 40%);
       opacity: var(--glow-opacity);
       transition: opacity var(--trans-speed) var(--trans-ease);
-      z-index: 0;
+      z-index: 1;
     }
+    
+    .card::after, .row::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        45deg,
+        transparent 40%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 60%
+      );
+      transform: translateX(-100%);
+      transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+      z-index: 2;
+    }
+    
+    .card:hover::after, .row:hover::after {
+      transform: translateX(100%);
+    }
+
     .card:hover, .row:hover {
-      transform: translateY(-10px) scale(1.03);
+      transform: translateY(-5px) scale(1.01);
       box-shadow: var(--shadow-lg);
       z-index: 10;
       --glow-opacity: 1;
     }
-    .card > *, .row > * { position: relative; z-index: 1; }
+    
+    .card > *, .row > * { position: relative; z-index: 3; }
 
+    /* Fade-in Animation */
     @keyframes fade-in-up {
       from { opacity: 0; transform: translateY(20px) rotateX(-5deg); }
       to { opacity: 1; transform: translateY(0) rotateX(0deg); }
@@ -299,21 +291,19 @@
     }
     .dark-mode .thumb { background: rgba(255,255,255,0.05); }
     .thumb img {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       object-fit: cover; z-index: 1; transition: transform 0.4s var(--trans-ease);
     }
     .card:hover .thumb img { transform: scale(1.05); }
 
     .fmt-badge {
-      position: absolute; bottom: 12px; right: 12px; z-index: 2;
+      position: absolute; bottom: 12px; right: 12px; z-index: 4;
       padding: 4px 10px; font-size: 12px; font-weight: 600;
       border-radius: 999px; background: rgba(255, 255, 255, 0.6);
       backdrop-filter: blur(4px);
       border: 1px solid rgba(0, 0, 0, 0.05);
     }
-    .dark-mode .fmt-badge { background: rgba(31, 41, 55, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1); }
+    .dark-mode .fmt-badge { background: rgba(31, 41, 55, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); }
     .fmt-pdf { color: var(--pdf-main-color); }
     .fmt-docx { color: var(--docx-main-color); }
 
@@ -322,8 +312,7 @@
       text-overflow: ellipsis; }
     .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--text-muted); font-size: 13px; }
     .author-line { display: inline-flex; align-items: center; gap: 4px; }
-    .meta .dot { width: 4px; height: 4px; border-radius: 50%;
-      background: rgba(0,0,0,0.2); }
+    .meta .dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(0,0,0,0.2); }
     .dark-mode .meta .dot { background: rgba(255,255,255,0.3); }
     .ai-tag {
       background: var(--gold-glow); color: #b38600; font-size: 10px; font-weight: 600;
@@ -338,13 +327,10 @@
     .stat { display: inline-flex; align-items: center; gap: 6px; }
     .stat .material-symbols-outlined { font-size: 18px; }
 
-    .row { display: grid;
-      grid-template-columns: 80px 1fr auto; gap: 16px; align-items: center; padding: 12px; }
+    .row { display: grid; grid-template-columns: 80px 1fr auto; gap: 16px; align-items: center; padding: 12px; }
     .row .thumb { height: 100%; width: 100%; border-radius: var(--radius-sm); }
-    .row .main { display: grid; grid-template-columns: minmax(200px, 2fr) 1fr 1fr 1fr;
-      gap: 16px; align-items: center; }
-    .row .main .cell { display: flex; align-items: center; gap: 6px; min-width: 0;
-      overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; }
+    .row .main { display: grid; grid-template-columns: minmax(200px, 2fr) 1fr 1fr 1fr; gap: 16px; align-items: center; }
+    .row .main .cell { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; }
     .row .title-line { font-size: 15px; }
     .row .pill {
         padding: 4px 10px; font-weight: 600;
@@ -353,20 +339,21 @@
     }
     .dark-mode .row .pill { background: rgba(255,255,255,0.1); }
 
+    /* Overlays & Modals */
     .overlay {
       position: fixed; inset: 0;
-      background: rgba(247, 249, 252, 0.4);
+      background: rgba(240, 244, 248, 0.4);
       backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
       z-index: 1000; padding: 24px;
       display: flex; align-items: center; justify-content: center;
       opacity: 0; transition: opacity var(--trans-speed) ease;
       pointer-events: none;
     }
-    .dark-mode .overlay { background: rgba(17, 24, 39, 0.7); }
+    .dark-mode .overlay { background: rgba(18, 18, 18, 0.7); }
     .overlay.open { opacity: 1; pointer-events: auto; }
     .viewer {
       background: var(--panel-glass);
-      border: var(--border);
+      border: 1px solid rgba(255, 255, 255, 0.8);
       box-shadow: 0 16px 70px rgba(0, 0, 0, 0.2);
       border-radius: 22px;
       width: 100%; height: 100%; display: grid;
@@ -375,15 +362,13 @@
       transform: scale(0.95); opacity: 0;
       transition: transform var(--trans-speed) var(--trans-ease), opacity var(--trans-speed) var(--trans-ease);
     }
-    .dark-mode .viewer { border: var(--border); box-shadow: 0 16px 70px rgba(0, 0, 0, 0.5); }
+    .dark-mode .viewer { border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 70px rgba(0, 0, 0, 0.5); }
     .overlay.open .viewer { transform: scale(1); opacity: 1; }
 
     .viewer .left { padding: 12px; background: rgba(0,0,0,0.02); }
     .dark-mode .viewer .left { background: rgba(255,255,255,0.05); }
-    .docframe { width: 100%; height: 100%;
-      border: none; border-radius: 12px; background: var(--panel); }
-    .viewer .right { padding: 24px; display: flex; flex-direction: column;
-      gap: 12px; }
+    .docframe { width: 100%; height: 100%; border: none; border-radius: 12px; background: var(--panel); }
+    .viewer .right { padding: 24px; display: flex; flex-direction: column; gap: 12px; }
     .viewer .right .title { font-size: 24px; font-weight: 700; }
     .kv { font-size: 14px; color: var(--text-muted); display: flex; gap: 8px; align-items: center; }
     .kv strong { color: var(--text); font-weight: 600; }
@@ -398,78 +383,59 @@
     .styled-btn:hover { background: rgba(0,0,0,0.08); }
     .dark-mode .styled-btn:hover { background: rgba(255,255,255,0.15); }
     .styled-btn.download-accent { background: var(--accent); color: white; }
-    .styled-btn.download-accent:hover { background: #1d4ed8; }
+    .styled-btn.download-accent:hover { background: #0089a5; }
 
-    .button-group {
-      display: flex;
-      gap: 10px;
-      margin-top: auto;
-    }
+    /* Notification & Back Button */
+    .button-group { display: flex; gap: 10px; margin-top: auto; }
     .popup-notification {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
+      position: fixed; bottom: 24px; left: 50%;
       transform: translateX(-50%);
-      background: var(--panel-glass);
-      backdrop-filter: blur(10px);
-      padding: 12px 24px;
-      border-radius: 999px;
-      border: var(--border);
-      color: var(--text);
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      background: var(--panel-glass); backdrop-filter: blur(10px);
+      padding: 12px 24px; border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      color: var(--text); font-weight: 500;
+      display: flex; align-items: center; gap: 8px;
       box-shadow: var(--shadow);
-      opacity: 0;
-      pointer-events: none;
+      opacity: 0; pointer-events: none;
       transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
       z-index: 1002;
     }
-    .dark-mode .popup-notification {
-      border: var(--border);
-    }
-    .popup-notification.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-10px);
-    }
+    .dark-mode .popup-notification { border: 1px solid rgba(255, 255, 255, 0.1); }
+    .popup-notification.show { opacity: 1; transform: translateX(-50%) translateY(-10px); }
     .popup-notification .material-symbols-outlined.success-icon {
-      color: #3ce078;
-      font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
+      color: #3ce078; font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 24;
     }
-
 
     .back {
-      position: fixed;
-      top: auto; bottom: 24px; left: 24px; z-index: 1001;
+      position: fixed; top: auto; bottom: 24px; left: 24px; z-index: 1001;
       background: var(--panel-glass); backdrop-filter: blur(8px);
       color: var(--text);
-      border: var(--border);
+      border: 1px solid rgba(0, 0, 0, 0.05);
       padding: 10px 16px; font-size: 1rem; border-radius: 999px;
       display: flex; align-items: center; gap: 8px;
       cursor: pointer; transition: all var(--trans-speed) var(--trans-ease);
     }
-    .dark-mode .back { border: var(--border); }
+    .dark-mode .back { border: 1px solid rgba(255, 255, 255, 0.1); }
     .back:hover { background: var(--panel); box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
     .dark-mode .back:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
     .back:active { transform: translateY(0); }
-
     .overlay-content { padding: 2rem; overflow-y: auto; }
 
+    /* Footer */
     footer {
       background: transparent; color: var(--text-muted);
       padding: 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: auto; 
+      margin-top: auto;
       font-size: 14px;
     }
-    footer .left { 
+    footer .left {
       display: flex;
-      gap: 24px; 
-      align-items: center; 
-      flex-wrap: wrap; 
+      gap: 24px;
+      align-items: center;
+      flex-wrap: wrap;
     }
     footer .right {
       display: flex;
@@ -561,7 +527,8 @@
         <div class="kv">Author: <strong id="ovAuthor">—</strong></div>
         <div class="kv">Views: <strong id="ovViews">0</strong></div>
         <div class="kv">Downloads: <strong id="ovDownloads">0</strong></div>
-        <div style="margin-top:auto; display:flex; flex-direction:column; gap:10px; padding-top: 1rem;">
+        <div style="margin-top:auto;
+          display:flex; flex-direction:column; gap:10px; padding-top: 1rem;">
           <div class="button-group">
             <a id="ovOpenRaw" class="styled-btn" target="_blank" rel="noopener" style="flex: 1;">
               <span class="material-symbols-outlined">open_in_new</span>
@@ -586,7 +553,8 @@
       <span class="material-symbols-outlined">arrow_back</span>
       Back
     </button>
-    <div class="viewer" style="grid-template-columns: 1fr; max-width: 800px; height: 80vh;">
+    <div class="viewer" style="grid-template-columns: 1fr;
+      max-width: 800px; height: 80vh;">
       <div class="overlay-content" id="infoContent"></div>
     </div>
   </div>
@@ -603,7 +571,8 @@
       <a href="#" class="info-link" data-md="resources/about.md">About</a>
       <a href="https://github.com/Tebby2008/OpenNotes" target="_blank" rel="noopener">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 96" fill="currentColor" class="icon"><path fill-rule="evenodd" 
-clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg> Github </a>
+          clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg> Github
+      </a>
     </div>
     <div class="right">
       <button id="darkModeToggle" class="dark-mode-toggle" title="Switch to Dark Mode">
@@ -615,6 +584,7 @@ clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 3
       </div>
     </div>
   </footer>
+  
   <script>
     const REPO_OWNER = "Tebby2008";
     const REPO_NAME = "OpenNotes";
@@ -655,6 +625,7 @@ clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 3
     const darkModeToggle = document.getElementById("darkModeToggle");
     const darkModeIcon = darkModeToggle.querySelector('.material-symbols-outlined');
     const popupNotification = document.getElementById('popupNotification');
+    
     const isDarkMode = localStorage.getItem('openNotesDarkMode') === 'true';
     if (isDarkMode) {
       document.body.classList.add('dark-mode');
@@ -668,6 +639,7 @@ clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 3
       darkModeIcon.textContent = isDark ? 'light_mode' : 'dark_mode';
       darkModeToggle.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
     });
+
     if (viewMode === 'grid') {
       gridBtn.classList.add("active");
       gridBtn.setAttribute("aria-pressed", "true");
@@ -679,343 +651,355 @@ clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 3
       gridBtn.classList.remove("active");
       gridBtn.setAttribute("aria-pressed", "false");
     }
+
     const fmtDate = (iso) => !iso ? "—" : new Date(iso).toLocaleDateString('en-GB');
     const stripExt = (name) => name.replace(/\.[^/.]+$/, "");
     const extOf = (name) => (name.split('.').pop() || "").toLowerCase();
+    
     const toggleOverlay = (el, state) => {
       document.body.style.overflow = state ? 'hidden' : '';
       el.setAttribute("aria-hidden", !state);
       state ? el.classList.add("open") : el.classList.remove("open");
-      if (!state) {
-        history.replaceState({}, '', '#');
-      }
+      if (!state) { history.replaceState({}, '', '#'); }
     };
+    
     const showPopup = (message) => {
-      popupNotification.querySelector('span:last-child').textContent = message;
+      popupNotification.textContent = message;
       popupNotification.classList.add('show');
-      setTimeout(() => {
-        popupNotification.classList.remove('show');
-      }, 3000);
+      setTimeout(() => { popupNotification.classList.remove('show'); }, 3000);
     };
 
-    const add3dInteraction = () => {
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('mousemove', e => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const xc = rect.width / 2;
-                const yc = rect.height / 2;
-                const rx = ((y - yc) / yc) * 5;
-                const ry = ((x - xc) / xc) * -5;
-                card.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg) scale(1.05)`;
-                
-                // Update glow position
-                card.style.setProperty('--glow-x', `${(x / rect.width) * 100}%`);
-                card.style.setProperty('--glow-y', `${(y / rect.height) * 100}%`);
-            });
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = `rotateX(0deg) rotateY(0deg) scale(1)`;
-            });
-        });
+    const toggleView = (newView) => {
+      viewMode = newView;
+      localStorage.setItem('openNotesViewMode', newView);
+      if (newView === 'grid') {
+        container.classList.remove("list");
+        container.classList.add("grid");
+        gridBtn.classList.add("active");
+        gridBtn.setAttribute("aria-pressed", "true");
+        listBtn.classList.remove("active");
+        listBtn.setAttribute("aria-pressed", "false");
+      } else {
+        container.classList.remove("grid");
+        container.classList.add("list");
+        listBtn.classList.add("active");
+        listBtn.setAttribute("aria-pressed", "true");
+        gridBtn.classList.remove("active");
+        gridBtn.setAttribute("aria-pressed", "false");
+      }
+      render();
+      add3dInteraction();
     };
 
-    const render = () => {
-        container.innerHTML = "";
-        const filteredItems = allItems.filter(item => {
-            const matchesAI = showAI || !item.isAI;
-            const matchesFormat = currentFormat === "all" || item.format === currentFormat;
-            const matchesSearch = searchInput.value === "" || 
-                                  item.title.toLowerCase().includes(searchInput.value.toLowerCase()) || 
-                                  item.author.toLowerCase().includes(searchInput.value.toLowerCase());
-            return matchesAI && matchesFormat && matchesSearch;
-        });
+    gridBtn.addEventListener('click', () => toggleView('grid'));
+    listBtn.addEventListener('click', () => toggleView('list'));
 
-        filteredItems.sort((a, b) => {
-            if (currentSort === "updated-asc") return new Date(a.date) - new Date(b.date);
-            if (currentSort === "updated-desc") return new Date(b.date) - new Date(a.date);
-            if (currentSort === "title-asc") return a.title.localeCompare(b.title);
-            if (currentSort === "title-desc") return b.title.localeCompare(a.title);
-            if (currentSort === "format-asc") return a.format.localeCompare(b.format);
-            return 0;
-        });
-
+    const sortItems = (items) => {
+      const sortedItems = [...items];
+      if (currentSort === "updated-desc") {
+        sortedItems.sort((a, b) => new Date(b.last_updated) - new Date(a.last_updated));
+      } else if (currentSort === "updated-asc") {
+        sortedItems.sort((a, b) => new Date(a.last_updated) - new Date(b.last_updated));
+      } else if (currentSort === "title-asc") {
+        sortedItems.sort((a, b) => stripExt(a.title).localeCompare(stripExt(b.title)));
+      } else if (currentSort === "title-desc") {
+        sortedItems.sort((a, b) => stripExt(b.title).localeCompare(stripExt(a.title)));
+      } else if (currentSort === "format-asc") {
+        sortedItems.sort((a, b) => extOf(a.path).localeCompare(extOf(b.path)));
+      }
+      return sortedItems;
+    };
+    
+    const render = (query = '') => {
+      const filteredItems = allItems.filter(item => {
+        const titleMatch = stripExt(item.title).toLowerCase().includes(query.toLowerCase());
+        const authorMatch = item.author.toLowerCase().includes(query.toLowerCase());
+        const aiMatch = !showAI ? !item.ai : true;
+        const formatMatch = currentFormat === "all" ? true : extOf(item.path) === currentFormat;
+        return (titleMatch || authorMatch) && aiMatch && formatMatch;
+      });
+      const sortedItems = sortItems(filteredItems);
+      container.innerHTML = sortedItems.map((item, index) => {
+        const delay = index * 0.05;
+        const thumbStyle = item.thumbnail ? `background-image: url('${item.thumbnail}');` : '';
+        const format = extOf(item.path);
+        const formatClass = format === 'pdf' ? 'fmt-pdf' : format === 'docx' ? 'fmt-docx' : '';
+        const isAi = item.ai ? '<span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span> AI</span>' : '';
+        const isVerified = item.verified ? '<span class="verified-tag" title="Verified Author"><span class="material-symbols-outlined">verified</span></span>' : '';
+        const views = item.views ? `${item.views}` : `0`;
+        const downloads = item.downloads ? `${item.downloads}` : `0`;
+        
         if (viewMode === 'grid') {
-            container.classList.add('grid');
-            container.classList.remove('list');
-            filteredItems.forEach(item => {
-                const card = createCard(item);
-                container.appendChild(card);
-            });
-        } else {
-            container.classList.add('list');
-            container.classList.remove('grid');
-            filteredItems.forEach(item => {
-                const row = createRow(item);
-                container.appendChild(row);
-            });
-        }
-    };
-
-    const createCard = (item) => {
-        const card = document.createElement("a");
-        card.classList.add("card");
-        card.href = `#note-${item.path}`;
-        card.setAttribute("aria-label", `View note: ${item.title}`);
-        card.innerHTML = `
-            <div class="thumb">
-                <img src="${item.thumb}" alt="${item.title}" />
-                <span class="fmt-badge fmt-${item.format}">${item.format.toUpperCase()}</span>
-            </div>
-            <div class="body">
-                <h3 class="title-line">${item.title}</h3>
+          return `
+            <article class="card" data-index="${index}" style="animation-delay: ${delay}s;">
+              <div class="thumb">
+                ${item.thumbnail ? `<img src="${item.thumbnail}" alt="${stripExt(item.title)} thumbnail" draggable="false" />` : ''}
+                <span class="fmt-badge ${formatClass}">${format.toUpperCase()}</span>
+              </div>
+              <div class="body">
+                <h3 class="title-line">${stripExt(item.title)}</h3>
                 <div class="meta">
-                    <span class="author-line">${item.author} ${item.isVerified ? '<span class="verified-tag material-symbols-outlined" title="Verified Author">check_circle</span>' : ''}</span>
-                    <span class="dot"></span>
-                    <span class="date-line">${fmtDate(item.date)}</span>
-                    ${item.isAI ? '<span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span> AI Content</span>' : ''}
+                  <span class="author-line">${item.author} ${isVerified}</span>
+                  <span class="dot"></span>
+                  <span>${fmtDate(item.last_updated)}</span>
+                  ${isAi}
                 </div>
                 <div class="stats">
-                    <span class="stat"><span class="material-symbols-outlined">visibility</span> ${item.views}</span>
-                    <span class="stat"><span class="material-symbols-outlined">download</span> ${item.downloads}</span>
+                  <span class="stat"><span class="material-symbols-outlined">visibility</span> ${views}</span>
+                  <span class="stat"><span class="material-symbols-outlined">download</span> ${downloads}</span>
                 </div>
-            </div>
-        `;
-        return card;
-    };
-
-    const createRow = (item) => {
-        const row = document.createElement("a");
-        row.classList.add("row");
-        row.href = `#note-${item.path}`;
-        row.setAttribute("aria-label", `View note: ${item.title}`);
-        row.innerHTML = `
-            <div class="thumb">
-                <img src="${item.thumb}" alt="${item.title}" />
-            </div>
-            <div class="main">
-                <div class="cell title-line">
-                    <span class="title-line">${item.title}</span>
+              </div>
+            </article>
+          `;
+        } else {
+          return `
+            <article class="row" data-index="${index}" style="animation-delay: ${delay}s;">
+              <div class="thumb" style="${thumbStyle}">
+                <span class="fmt-badge ${formatClass}">${format.toUpperCase()}</span>
+              </div>
+              <div class="main">
+                <div class="cell title-cell">
+                  <h3 class="title-line">${stripExt(item.title)}</h3>
                 </div>
                 <div class="cell">
-                    <span class="pill fmt-${item.format}" style="color: ${item.isPDF ? 'var(--pdf-main-color)' : 'var(--docx-main-color)'};">${item.format.toUpperCase()}</span>
+                  <span class="material-symbols-outlined">person</span>
+                  <span class="text-overflow-ellipsis">${item.author} ${isVerified}</span>
                 </div>
                 <div class="cell">
-                    <span class="author-line">${item.author} ${item.isVerified ? '<span class="verified-tag material-symbols-outlined">check_circle</span>' : ''}</span>
+                  <span class="material-symbols-outlined">schedule</span>
+                  <span>${fmtDate(item.last_updated)}</span>
                 </div>
-                <div class="cell">
-                    <span class="date-line">${fmtDate(item.date)}</span>
+                <div class="cell views-downloads-cell">
+                  <div class="stat"><span class="material-symbols-outlined">visibility</span> ${views}</div>
+                  <div class="stat"><span class="material-symbols-outlined">download</span> ${downloads}</div>
                 </div>
-            </div>
-            <div class="cell stats">
-                <span class="stat"><span class="material-symbols-outlined">visibility</span> ${item.views}</span>
-                <span class="stat"><span class="material-symbols-outlined">download</span> ${item.downloads}</span>
-            </div>
-        `;
-        return row;
+              </div>
+              <div class="cell format-cell">
+                 ${isAi}
+              </div>
+            </article>
+          `;
+        }
+      }).join('');
     };
 
     const fetchNotes = async () => {
-      // Logic for fetching notes from a data source
-      // This is a placeholder; replace with your actual fetch logic
-      const demoData = [
-          {
-              path: 'example-note-1.md',
-              title: 'Introduction to Web Development',
-              author: 'Alice Johnson',
-              date: '2023-10-26T10:00:00Z',
-              format: 'md',
-              thumb: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/placeholder.png',
-              isAI: false,
-              isVerified: true,
-              views: 124,
-              downloads: 58
-          },
-          {
-              path: 'example-note-2.pdf',
-              title: 'Data Science Fundamentals',
-              author: 'Bob Williams',
-              date: '2023-10-25T14:30:00Z',
-              format: 'pdf',
-              thumb: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/placeholder.png',
-              isAI: true,
-              isVerified: false,
-              views: 205,
-              downloads: 91
-          },
-          {
-              path: 'example-note-3.docx',
-              title: 'The Art of Design Thinking',
-              author: 'Charlie Brown',
-              date: '2023-10-24T09:15:00Z',
-              format: 'docx',
-              thumb: 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/placeholder.png',
-              isAI: false,
-              isVerified: false,
-              views: 89,
-              downloads: 32
-          }
-      ];
-      return new Promise(resolve => setTimeout(() => resolve(demoData), 500));
+      const notesUrl = `https://api.github.com/repos/${owner}/${repo}/contents/notes?ref=${BRANCH}`;
+      const res = await fetch(notesUrl);
+      if (!res.ok) throw new Error("Could not fetch notes from GitHub.");
+      const items = await res.json();
+      return items.filter(item => item.type === "file" && (item.name.endsWith('.md') || item.name.endsWith('.pdf') || item.name.endsWith('.docx'))).map(item => {
+        const parsedName = item.name.replace(/\.[^/.]+$/, "").split("~");
+        const author = parsedName[1] || "Unknown";
+        const isVerified = parsedName.length > 2 && parsedName[2] === 'verified';
+        return {
+          path: item.path,
+          title: item.name,
+          author: author.replace(/-/g, ' '),
+          last_updated: item.last_modified,
+          thumbnail: `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/thumbnails/${item.name}.png`,
+          ai: item.name.includes('~AI~'),
+          verified: isVerified
+        };
+      });
     };
 
     const getNoteStats = async (noteIds) => {
-        // Logic for fetching stats; placeholder
-        return {
-            'example-note-1.md': { views: 124, downloads: 58 },
-            'example-note-2.pdf': { views: 205, downloads: 91 },
-            'example-note-3.docx': { views: 89, downloads: 32 }
-        };
-    };
-
-    const openOverlay = (item) => {
-      // Logic to open document viewer
-      const mdFiles = ['md', 'txt'];
-      if(mdFiles.includes(item.format)) {
-        docFrame.srcdoc = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <style>
-              body { font-family: sans-serif; padding: 20px; }
-            </style>
-          </head>
-          <body>
-            <div id="content">Loading...</div>
-            <script>
-              fetch('https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/notes/${item.path}')
-                .then(res => res.text())
-                .then(text => {
-                  document.getElementById('content').innerHTML = DOMPurify.sanitize(marked.parse(text));
-                });
-            </script>
-          </body>
-          </html>
-        `;
-      } else {
-        docFrame.src = `https://docs.google.com/gview?url=https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/notes/${item.path}&embedded=true`;
-      }
-
-      ovTitle.textContent = item.title;
-      ovFormat.textContent = item.format.toUpperCase();
-      ovFormat.style.color = item.format === 'pdf' ? 'var(--pdf-main-color)' : 'var(--docx-main-color)';
-      ovDate.textContent = fmtDate(item.date);
-      ovAuthor.textContent = item.author;
-      ovViews.textContent = item.views;
-      ovDownloads.textContent = item.downloads;
-      ovOpenRaw.href = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/notes/${item.path}`;
-      ovDownload.href = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/notes/${item.path}`;
-      ovShareBtn.onclick = () => {
-        navigator.clipboard.writeText(window.location.href);
-        showPopup('Link copied successfully!');
-      };
-      
-      toggleOverlay(overlay, true);
-    };
-
-    const openInfoOverlay = async (mdFile) => {
       try {
-        const res = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${mdFile}`);
-        const text = await res.text();
-        infoContent.innerHTML = DOMPurify.sanitize(marked.parse(text));
-        toggleOverlay(infoOverlay, true);
-      } catch (error) {
-        console.error("Failed to fetch info file:", error);
+        const res = await fetch(`${API_URL}/notes`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ noteIds })
+        });
+        if (!res.ok) throw new Error("Could not fetch note stats.");
+        return await res.json();
+      } catch (e) {
+        console.error("Error fetching note stats:", e);
+        return {};
       }
     };
     
-    document.addEventListener("click", (e) => {
-        if (e.target.closest("#sortBtn")) {
-            sortDropdown.classList.toggle("open");
-        } else if (e.target.closest("#typeBtn")) {
-            // Placeholder for type button logic
-            console.log("Type button clicked");
-        } else if (e.target.closest("#aiToggleBtn")) {
-            showAI = !showAI;
-            aiToggleBtn.classList.toggle("active-ai", showAI);
-            aiToggleBtn.querySelector('b').textContent = showAI ? "Show AI" : "Hide AI";
-            render();
-        } else if (e.target.closest("#gridBtn")) {
-            viewMode = 'grid';
-            localStorage.setItem('openNotesViewMode', 'grid');
-            gridBtn.classList.add("active");
-            gridBtn.setAttribute("aria-pressed", "true");
-            listBtn.classList.remove("active");
-            listBtn.setAttribute("aria-pressed", "false");
-            render();
-        } else if (e.target.closest("#listBtn")) {
-            viewMode = 'list';
-            localStorage.setItem('openNotesViewMode', 'list');
-            listBtn.classList.add("active");
-            listBtn.setAttribute("aria-pressed", "true");
-            gridBtn.classList.remove("active");
-            gridBtn.setAttribute("aria-pressed", "false");
-            render();
-        } else if (e.target.closest(".custom-dropdown .option")) {
-            sortDropdown.classList.remove("open");
-            document.querySelector('.custom-dropdown .option.active').classList.remove('active');
-            e.target.classList.add('active');
-            currentSort = e.target.getAttribute('data-sort');
-            render();
-        } else if (e.target.closest(".card") || e.target.closest(".row")) {
-            e.preventDefault();
-            const notePath = e.target.closest("a").href.split("#note-")[1];
-            const item = allItems.find(i => i.path === notePath);
-            if (item) {
-                history.pushState({note: item}, '', e.target.closest("a").href);
-                openOverlay(item);
-            }
-        } else if (e.target.closest("#backBtn") || !e.target.closest(".viewer")) {
-            if (overlay.classList.contains('open')) toggleOverlay(overlay, false);
-            if (infoOverlay.classList.contains('open')) toggleOverlay(infoOverlay, false);
-        } else if (e.target.closest(".info-link, #uploadBtn")) {
-            e.preventDefault();
-            const mdFile = e.target.closest("a, button").getAttribute('data-md');
-            openInfoOverlay(mdFile);
-        } else if (e.target.closest("#infoBackBtn") || !e.target.closest("#infoOverlay")) {
-            if (infoOverlay.classList.contains('open')) toggleOverlay(infoOverlay, false);
-        }
-    });
+    const openOverlay = (item) => {
+      ovTitle.textContent = stripExt(item.title);
+      ovAuthor.textContent = item.author;
+      ovDate.textContent = fmtDate(item.last_updated);
+      ovViews.textContent = item.views ? item.views : '0';
+      ovDownloads.textContent = item.downloads ? item.downloads : '0';
+      
+      const format = extOf(item.path);
+      ovFormat.textContent = format.toUpperCase();
+      const formatClass = format === 'pdf' ? 'fmt-pdf' : format === 'docx' ? 'fmt-docx' : '';
+      ovFormat.className = `pill ${formatClass}`;
 
-    searchInput.addEventListener('input', () => {
-        render();
-    });
+      const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${item.path}`;
+      ovOpenRaw.href = rawUrl;
+      ovDownload.onclick = () => {
+        window.open(rawUrl, '_blank');
+        if (typeof logDownload === 'function') logDownload(item.path);
+      };
 
-    window.addEventListener('popstate', (event) => {
-        const state = event.state;
-        if (state && state.note) {
-            openOverlay(state.note);
-        } else if (state && state.info) {
-            openInfoOverlay(state.info);
-        } else {
-            if (overlay.classList.contains('open')) toggleOverlay(overlay, false);
-            if (infoOverlay.classList.contains('open')) toggleOverlay(infoOverlay, false);
-        }
-    });
-
-    (async function init() {
-      try {
-        allItems = await fetchNotes();
-        const noteIds = allItems.map(item => item.path);
-        if (noteIds.length > 0) {
-            const stats = await getNoteStats(noteIds);
-            allItems.forEach(item => {
-                if (stats[item.path]) {
-                    item.views = stats[item.path].views;
-                    item.downloads = stats[item.path].downloads;
-                }
-            });
-        }
-        const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
-        if(res.ok) websiteViewsEl.textContent = (await res.json()).views;
-        render();
-        add3dInteraction();
-        handleUrlState();
-      } catch(e) {
-        console.error(e);
-        container.innerHTML = `<p>Couldn’t load notes. Please check the repository settings and try again.</p>`;
+      let viewerUrl;
+      if (format === 'pdf' || format === 'docx') {
+          viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(rawUrl)}&embedded=true`;
+      } else {
+          viewerUrl = `https://htmlpreview.github.io/?${encodeURIComponent(rawUrl)}`;
       }
-    })();
+      docFrame.src = viewerUrl;
+
+      toggleOverlay(overlay, true);
+      history.pushState({ note: item }, '', `#note-${encodeURIComponent(item.path)}`);
+      if (typeof logView === 'function') logView(item.path);
+    };
+
+    const openInfoOverlay = async (mdFile) => {
+      const rawUrl = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/${mdFile}`;
+      try {
+        const res = await fetch(rawUrl);
+        if (!res.ok) throw new Error("Could not fetch info content.");
+        const mdText = await res.text();
+        const html = marked.parse(mdText);
+        infoContent.innerHTML = DOMPurify.sanitize(html);
+        toggleOverlay(infoOverlay, true);
+        history.pushState({ info: mdFile }, '', `#info-${mdFile.replace(/\./g, '-')}`);
+      } catch (e) {
+        infoContent.innerHTML = `<p>Error loading content.</p>`;
+      }
+    };
+
+    const add3dInteraction = () => {
+      if (viewMode === 'grid') {
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+          card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            card.style.setProperty('--glow-x', `${(x / rect.width) * 100}%`);
+            card.style.setProperty('--glow-y', `${(y / rect.height) * 100}%`);
+          });
+        });
+      }
+    };
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.addEventListener('click', (e) => {
+        const card = e.target.closest('.card');
+        const row = e.target.closest('.row');
+        if (card) {
+          const item = allItems[card.dataset.index];
+          if (item) openOverlay(item);
+        } else if (row) {
+          const item = allItems[row.dataset.index];
+          if (item) openOverlay(item);
+        }
+      });
+
+      backBtn.addEventListener('click', () => history.back());
+      infoBackBtn.addEventListener('click', () => history.back());
+
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value;
+        render(query);
+      });
+
+      aiToggleBtn.addEventListener('click', () => {
+        showAI = !showAI;
+        aiToggleBtn.classList.toggle('active-ai', showAI);
+        const toggleText = aiToggleBtn.querySelector('b');
+        const toggleIcon = aiToggleBtn.querySelector('.material-symbols-outlined');
+        toggleText.textContent = showAI ? 'Show AI' : 'Hide AI';
+        toggleIcon.textContent = showAI ? 'auto_awesome' : 'auto_awesome_off';
+        render(searchInput.value);
+      });
+
+      sortBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sortDropdown.classList.toggle('open');
+      });
+
+      sortDropdown.addEventListener('click', (e) => {
+        if (e.target.classList.contains('option')) {
+          const newSort = e.target.dataset.sort;
+          if (newSort !== currentSort) {
+            currentSort = newSort;
+            document.querySelectorAll('#sortDropdown .option').forEach(opt => opt.classList.remove('active'));
+            e.target.classList.add('active');
+            render(searchInput.value);
+          }
+          sortDropdown.classList.remove('open');
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!sortDropdown.contains(e.target) && !sortBtn.contains(e.target)) {
+          sortDropdown.classList.remove('open');
+        }
+      });
+      
+      ovShareBtn.addEventListener('click', async () => {
+          try {
+              await navigator.clipboard.writeText(window.location.href);
+              showPopup('Link copied successfully!');
+          } catch (err) {
+              showPopup('Failed to copy link.');
+          }
+      });
+
+      infoLinks.forEach(link => {
+          link.addEventListener('click', (e) => {
+              e.preventDefault();
+              const mdFile = link.dataset.md;
+              openInfoOverlay(mdFile);
+          });
+      });
+
+      const handleUrlState = () => {
+          const hash = window.location.hash;
+          if (hash.startsWith('#note-')) {
+              const itemPath = decodeURIComponent(hash.substring(6));
+              const item = allItems.find(i => i.path === itemPath);
+              if (item) openOverlay(item);
+          } else if (hash.startsWith('#info-')) {
+              const mdFile = `resources/${hash.substring(6).replace(/-/g, '.')}`;
+              openInfoOverlay(mdFile);
+          }
+      }
+
+      window.addEventListener('popstate', (event) => {
+          const state = event.state;
+          if (state && state.note) {
+              openOverlay(state.note);
+          } else if (state && state.info) {
+              openInfoOverlay(state.info);
+          } else {
+              if (overlay.classList.contains('open')) toggleOverlay(overlay, false);
+              if (infoOverlay.classList.contains('open')) toggleOverlay(infoOverlay, false);
+          }
+      });
+
+      (async function init() {
+        try {
+          allItems = await fetchNotes();
+          const noteIds = allItems.map(item => item.path);
+          if (noteIds.length > 0) {
+              const stats = await getNoteStats(noteIds);
+              allItems.forEach(item => {
+                  if (stats[item.path]) {
+                      item.views = stats[item.path].views;
+                      item.downloads = stats[item.path].downloads;
+                  }
+              });
+          }
+          const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
+          if(res.ok) websiteViewsEl.textContent = (await res.json()).views;
+          render();
+          add3dInteraction();
+          handleUrlState();
+        } catch(e) {
+          console.error(e);
+          container.innerHTML = `<p>Couldn’t load notes. Please check the repository settings and try again.</p>`;
+        }
+      })();
   </script>
 </body>
 </html>
