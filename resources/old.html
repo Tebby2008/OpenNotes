@@ -826,8 +826,8 @@
           ovDate.textContent = fmtDate(item.updatedAt);
           const aiTagHtml = item.is_ai_generated ? ` <span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>` : '';
           ovAuthor.innerHTML = `${getAuthorHtml(item)}${aiTagHtml}`;
-          ovOpenRaw.href = `https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/view.html?file=${encodeURIComponent(item.download_url)}`;
-          docFrame.src = `https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/view.html?file=${encodeURIComponent(item.download_url)}`;
+          ovOpenRaw.href = `https://tebby2008.github.io/OpenNotes/view.html?file=${encodeURIComponent(item.download_url)}`;
+          docFrame.src = `https://tebby2008.github.io/OpenNotes/view.html?file=${encodeURIComponent(item.download_url)}`;
           ovViews.textContent = item.views || 0;
           ovDownloads.textContent = item.downloads || 0;
           
@@ -998,6 +998,7 @@
       })();
   </script>
 </body>
+
 
 
 
