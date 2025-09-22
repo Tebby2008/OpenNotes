@@ -347,12 +347,12 @@
   <header>
     <div class="title-section">
       <div class="logo-container">
-        <img src="resources/logo.svg" alt="OpenNotes Logo" class="title-logo" />
+        <img src="logo.svg" alt="OpenNotes Logo" class="title-logo" />
         <div class="line"></div>
         <p>
           the open platform for notes by 
           <a href="https://ingenium.rf.gd" target="_blank" rel="noopener">
-            <img src="resources/ingenium.png" alt="Ingenium Logo" />
+            <img src="ingenium.png" alt="Ingenium Logo" />
           </a>
         </p>
       </div>
@@ -826,8 +826,8 @@
           ovDate.textContent = fmtDate(item.updatedAt);
           const aiTagHtml = item.is_ai_generated ? ` <span class="ai-tag"><span class="material-symbols-outlined">auto_awesome</span>AI</span>` : '';
           ovAuthor.innerHTML = `${getAuthorHtml(item)}${aiTagHtml}`;
-          ovOpenRaw.href = `view.html?file=${encodeURIComponent(item.download_url)}`;
-          docFrame.src = `view.html?file=${encodeURIComponent(item.download_url)}`;
+          ovOpenRaw.href = `https://github.com/Tebby2008/OpenNotes/blob/2e5113801400d975d609c7a6d9333eadde0d2a36/view.html?file=${encodeURIComponent(item.download_url)}`;
+          docFrame.src = `https://github.com/Tebby2008/OpenNotes/blob/2e5113801400d975d609c7a6d9333eadde0d2a36/view.html?file=${encodeURIComponent(item.download_url)}`;
           ovViews.textContent = item.views || 0;
           ovDownloads.textContent = item.downloads || 0;
           
@@ -998,6 +998,7 @@
       })();
   </script>
 </body>
+
 
 
 
