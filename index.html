@@ -1,41 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>OpenNotes - Redirecting or Loading</title>
+    <title>OpenNotes - Notes made open</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <meta http-equiv="refresh" content="0; url=https://opennotes.pages.dev/">
+
     <style>
-        /* Basic styling for the loading/error message */
         body { font-family: sans-serif; text-align: center; padding: 50px; }
-        #loading-message { color: #007bff; }
-        #fallback-message { color: #dc3545; display: none; }
-        #fallback-content { display: none; border: 1px solid #ccc; padding: 20px; margin-top: 20px; text-align: left; }
+        #redirect-message { color: #007bff; }
     </style>
 </head>
 <body>
-    <div id="loading-message">
-        <p>🚀 Connecting to the main site at opennotes.pages.dev...</p>
-        <p>If this takes longer than 3 seconds, we will automatically load a local mirror.</p>
+    <div id="redirect-message">
+        <p>If you are not redirected automatically, <a id="manualLink" href="https://opennotes.pages.dev/">click here</a>.</p>
     </div>
 
-    <div id="fallback-message">
-        <h2>⚠️ Connection Failed or Blocked</h2>
-        <p>The main site could not be reached. Loading the content directly from GitHub Pages as a fallback.</p>
-    </div>
-
-    <div id="fallback-content">
-        <p>If you see this, the JavaScript has failed to load the new site.</p>
-        <p>Click here to load the fallback version: <a id="fallbackLink" href="#">Load Fallback</a></p>
-    </div>
-    
-
-    <script>
+    <script>       
         const NEW_BASE_URL = 'https://opennotes.pages.dev';
         const OLD_BASE_PATH = '/OpenNotes';
-        const TIMEOUT_MS = 3000; // 3 seconds timeout
-
-        // --- 1. Calculate New URL ---
+        
         const oldPath = window.location.pathname;
         const oldHash = window.location.hash;
         
@@ -46,63 +31,9 @@
 
         const newURL = `${NEW_BASE_URL}${pathSegment}${oldHash}`;
         
-        // The fallback path is the current path, but on the current domain
-        // If the new site fails, we assume the user just wants the content here.
-        const fallbackPath = `${oldPath}${oldHash}`; 
-        
-        // --- 2. Check Reachability of New URL ---
-        function checkAndRedirect() {
-            // Attempt to fetch a tiny resource from the new site (e.g., the favicon)
-            // or just the base URL, with a short timeout.
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-            
-            fetch(NEW_BASE_URL + '/favicon.ico', { method: 'HEAD', signal: controller.signal })
-                .then(response => {
-                    clearTimeout(timeoutId);
-                    // If we get a response (even a 404, as long as the fetch didn't fail/timeout)
-                    if (response.ok || response.status < 500) {
-                        // Success: Redirect to the new URL
-                        console.log('Main site reached. Redirecting...');
-                        window.location.replace(newURL);
-                    } else {
-                        // Soft failure (e.g., 500 status from the server)
-                        handleFallback();
-                    }
-                })
-                .catch(error => {
-                    // Hard failure (network block, DNS error, or timeout)
-                    clearTimeout(timeoutId);
-                    if (error.name === 'AbortError' || error.name === 'TypeError') {
-                         console.log('Connection failed or timed out. Loading fallback.');
-                         handleFallback();
-                    }
-                });
-        }
+        document.getElementById('manualLink').href = newURL;
 
-        // --- 3. Fallback Handler ---
-        function handleFallback() {
-            document.getElementById('loading-message').style.display = 'none';
-            document.getElementById('fallback-message').style.display = 'block';
-            
-            // OPTION A: Redirect to a local fallback file on GitHub Pages (e.g., the original page content)
-            // In this case, we just stop the redirect and let the user click a link 
-            // to the original URL structure on this same domain.
-            
-            const fallbackLink = document.getElementById('fallbackLink');
-            fallbackLink.href = fallbackPath;
-            document.getElementById('fallback-content').style.display = 'block';
-
-            // OPTION B (More complex): Programmatically load the original content
-            // If the original page was a single file like 'codeprep.html', you could 
-            // try to redirect the user to that file on the *current* domain:
-            // window.location.replace(fallbackPath);
-            
-            // For this general-purpose file, we let the user manually click the link.
-        }
-
-        // Start the check
-        checkAndRedirect();
+        window.location.replace(newURL);
 
     </script>
 </body>
