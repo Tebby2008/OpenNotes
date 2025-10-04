@@ -693,16 +693,24 @@
                     } else {
                         // Compare individual results
                         finalResults = tests.map((test, i) => {
-                            const actual = outputs[i];
-                            const expected = test.expectedOutput;
+                            const rawActual = outputs[i]; // This is the string captured after splitting and trimming by the delimiter
+                            const rawExpected = test.expectedOutput;
+                            const sanitize = (str) => {
+                                if (typeof str !== 'string') return '';
+                                str = str.replace(/\r\n/g, '\n');
+                                return str.trim();
+                            };
 
-                            let status = (actual === expected) ? 'PASSED' : 'FAILED_LOGIC';
+                            const actual = sanitize(rawActual);
+                            const expected = sanitize(rawExpected);
+
+                            let status = (actual === expected) ? 'PASSED' : 'FAILED_LOGIC';                            
                             if (status !== 'PASSED') { combinedStatus = 'FAILED_LOGIC'; }
 
                             return {
                                 input: test.input,
-                                expected: expected,
-                                actual: actual,
+                                expected: rawExpected, 
+                                actual: rawActual, 
                                 status: status
                             };
                         });
