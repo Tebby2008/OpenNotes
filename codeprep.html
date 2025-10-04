@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unassisted Java Compiler Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Source Code Pro', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+                    },
+                    colors: {
+                        'ios-blue': '#0A84FF',
+                        'ios-dark-bg': '#1C1C1E',
+                        'glass-surface': 'rgba(44, 44, 46, 0.85)', // Lighter surface for cards
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Ensuring Inter font is loaded and base styles */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap');
+        
+        body {
+            background: linear-gradient(135deg, #1f2937, #0f172a); /* Dark gradient background */
+            min-height: 100vh;
+            color: #E5E5E5;
+        }
+
+        /* Frosted Glass Effect Base */
+        .glass-card {
+            background-color: var(--tw-color-glass-surface);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        /* Custom scrollbar for better aesthetics */
+        textarea::-webkit-scrollbar, .scroll-area::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-thumb, .scroll-area::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-track, .scroll-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        /* Monospace for the compiler */
+        #code-editor {
+            caret-color: #0A84FF; /* iOS blue cursor */
+        }
+        
+        /* --- FILE TAB STYLING --- */
+        .file-tab {
+            margin-right: 0.5rem; 
+            padding: 0.5rem 1rem; 
+            font-size: 0.875rem; 
+            font-weight: 500; 
+            border-top-left-radius: 0.75rem; 
+            border-top-right-radius: 0.75rem; 
+            transition: all 150ms ease-in-out; 
+            cursor: pointer;
+            background-color: rgba(41, 44, 51, 0.8); 
+            color: #9ca3af; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-bottom: 2px solid #27272a; 
+        }
+        
+        .file-tab:not(.active):hover {
+            background-color: #374151; 
+            color: #ffffff; 
+        }
+        
+        .file-tab.active {
+            background-color: rgba(17, 24, 39, 0.6); 
+            color: #ffffff; 
+            font-weight: 600; 
+            border-bottom: 2px solid transparent; 
+        }
+        /* --- END FILE TAB STYLING --- */
+
+        /* --- MODAL TRANSITION STYLING --- */
+        /* Modal Content (The glass card itself) */
+        .modal-content-transition {
+            transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .modal-leave-active {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        
+        /* Modal Backdrop (The dark screen overlay) */
+        .backdrop-transition {
+            transition: opacity 0.3s ease-out;
+            opacity: 0;
+        }
+        .backdrop-active {
+            opacity: 1;
+        }
+        /* --- END MODAL TRANSITION STYLING --- */
+
+        /* CRITICAL FIX: Ensures AI explanations are scrollable */
+        .scrollable-content {
+            max-height: 50vh; /* Set maximum height */
+            overflow-y: auto; /* Enable vertical scrolling */
+            padding-right: 1rem; /* Adjust padding for scrollbar visibility */
+        }
+
+        /* Spinner for Loading State */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: #0A84FF;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="font-sans p-4 md:p-8">
+
+    <!-- Main Application Container -->
+    <div id="app" class="max-w-7xl mx-auto space-y-6">
+
+        <!-- Header/Title -->
+        <header class="text-center py-4">
+            <h1 class="text-3xl font-bold text-white tracking-tight">Unassisted Java Compiler Simulator</h1>
+            <p class="text-gray-400 mt-1 text-sm">Pure coding challenge. No guidance, no syntax check. Submit to see results.</p>
+        </header>
+
+        <!-- Main Workspace Grid -->
+        <div class="lg:grid lg:grid-cols-3 gap-6">
+
+            <!-- Problem Description Card (1/3 width) -->
+            <div class="lg:col-span-1 glass-card p-6 rounded-2xl shadow-xl h-full flex flex-col mb-6 lg:mb-0">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 id="current-problem-title" class="text-xl font-semibold text-ios-blue">Loading Problems...</h2>
+                    <span id="current-problem-difficulty" class="px-3 py-1 text-xs rounded-full font-medium" style="background-color: rgba(255, 255, 255, 0.1);"></span>
+                </div>
+                <div id="problem-description" class="text-gray-300 scroll-area overflow-y-auto flex-grow" style="max-height: 40vh;">
+                    Application initializing...
+                </div>
+            </div>
+
+            <!-- Code Editor & Results Card (2/3 width) -->
+            <div class="lg:col-span-2 glass-card p-6 rounded-2xl shadow-xl flex flex-col">
+                <h2 class="text-xl font-semibold mb-4 text-white">Your Solution (Java)</h2>
+                
+                <!-- File Tabs Container -->
+                <div id="file-manager" class="mb-[-2px] transition-all duration-300 overflow-x-auto whitespace-nowrap hidden">
+                    <div id="file-tabs" class="flex border-b border-gray-700/50">
+                        <!-- File Tabs populated by JS -->
+                    </div>
+                    <div class="flex space-x-2 mt-2 mb-2">
+                        <button onclick="addFile()" class="text-sm text-gray-400 hover:text-white transition-colors px-2 py-1 rounded-md bg-gray-700/50 hover:bg-gray-600/70">
+                            + Add Class
+                        </button>
+                        <button id="remove-file-btn" onclick="removeFile()" class="text-sm text-red-400 hover:text-red-300 transition-colors px-2 py-1 rounded-md bg-gray-700/50 hover:bg-gray-600/70">
+                            - Remove Class
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Code Editor Area -->
+                <textarea id="code-editor" class="font-mono text-sm w-full h-96 p-4 rounded-lg bg-gray-900/60 text-white outline-none resize-none border-2 border-transparent focus:border-ios-blue transition-colors shadow-inner" spellcheck="false" placeholder="Write your complete Java class here..."></textarea>
+                
+            </div>
+        </div>
+        
+        <!-- Controls and Action Buttons -->
+        <div class="glass-card p-4 rounded-2xl shadow-xl flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+            
+            <div class="flex space-x-3 w-full md:w-auto">
+                <button onclick="toggleProblemSelector(true)" class="bg-gray-700/80 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
+                    Problem Selector
+                </button>
+                <button id="random-problem-btn" onclick="loadRandomProblem()" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
+                    Random Problem
+                </button>
+            </div>
+            
+            <button id="check-code-btn" onclick="confirmSubmission()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-colors transform hover:scale-[1.01]">
+                Check (Submit Code)
+            </button>
+        </div>
+        
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Problem Selector Modal -->
+    <div id="problem-selector-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-transition" onclick="if(event.target.id === 'problem-selector-modal') toggleProblemSelector(false)">
+        <div id="problem-selector-content" class="glass-card w-full max-w-xl rounded-2xl p-6 shadow-2xl relative modal-content-transition modal-enter">
+            <h3 class="text-2xl font-bold mb-4 text-white">Select Challenge</h3>
+            
+            <!-- Difficulty Filters -->
+            <div class="mb-4">
+                <p class="text-sm text-gray-400 mb-2">Filter by Difficulty:</p>
+                <div id="difficulty-filters" class="flex space-x-3">
+                    <!-- Filters populated by JS -->
+                </div>
+            </div>
+
+            <!-- Problem List -->
+            <div id="problem-list" class="space-y-3 scroll-area overflow-y-auto max-h-72">
+                <!-- Problems populated by JS -->
+            </div>
+            
+            <button onclick="toggleProblemSelector(false)" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Submission Confirmation Modal -->
+    <div id="confirmation-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-transition" onclick="if(event.target.id === 'confirmation-modal') cancelSubmission()">
+        <div id="confirmation-content" class="glass-card w-full max-w-md rounded-2xl p-6 shadow-2xl relative modal-content-transition modal-enter">
+            <h3 class="text-2xl font-bold mb-4 text-red-500">Confirm Submission</h3>
+            <div id="confirmation-message" class="text-gray-300 space-y-4">
+                <p>⚠️ **Are you sure you want to submit your code?**</p>
+                <p class="text-sm text-yellow-400">This simulates a formal testing environment. Once submitted, your current attempt will be permanently graded. Review your code carefully before proceeding!</p>
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-4">
+                <button onclick="cancelSubmission()" class="bg-gray-700/80 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
+                    Cancel
+                </button>
+                <button onclick="handleConfirmedSubmission()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-xl shadow-lg transition-colors transform hover:scale-[1.01]">
+                    Submit Final Code
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error/Result Modal (Used for Check Result and Help) -->
+    <div id="result-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-transition" onclick="if(event.target.id === 'result-modal') hideResultModal()">
+        <div id="result-content" class="glass-card w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative modal-content-transition modal-enter">
+            <h3 id="result-modal-title" class="text-2xl font-bold mb-4 text-ios-blue"></h3>
+            
+            <!-- Added scrollable-content class for the scrolling fix -->
+            <div id="result-modal-content-area" class="text-gray-300 space-y-4 scrollable-content">
+                <p id="result-modal-message" class="text-gray-300"></p>
+                <pre id="result-modal-code" class="font-mono text-sm p-3 rounded-lg bg-gray-900/60 text-yellow-300 whitespace-pre-wrap"></pre>
+            </div>
+            
+            <div id="result-modal-actions" class="mt-6 flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-4">
+                <!-- Action buttons populated by JS -->
+            </div>
+            
+            <button onclick="hideResultModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Modal for AI Explanation -->
+    <div id="loading-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex flex-col items-center justify-center p-4 backdrop-transition">
+        <div class="glass-card p-8 rounded-2xl shadow-2xl flex flex-col items-center">
+            <div class="spinner mb-4"></div>
+            <p class="text-white text-lg font-medium">AI Tutor is Thinking...</p>
+            <p class="text-gray-400 text-sm mt-1">Analyzing your code for conceptual errors.</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+     <script>
+        const editor = document.getElementById('code-editor');
+        const titleEl = document.getElementById('current-problem-title');
+        const difficultyEl = document.getElementById('current-problem-difficulty');
+        const descriptionEl = document.getElementById('problem-description');
+        const problemListEl = document.getElementById('problem-list');
+        const filterContainerEl = document.getElementById('difficulty-filters');
+        const randomBtnEl = document.getElementById('random-problem-btn');
+        const checkCodeBtn = document.getElementById('check-code-btn');
+        const fileManagerEl = document.getElementById('file-manager');
+        const fileTabsEl = document.getElementById('file-tabs');
+        const resultModalMessageEl = document.getElementById('result-modal-message');
+
+        // --- NEW API CONFIGURATION ---
+        const WORKER_BASE_URL = 'https://java-compiler-worker.tebby2008-li.workers.dev'; 
+        const COMPILER_URL = `${WORKER_BASE_URL}/compile`;
+        const TUTOR_URL = `${WORKER_BASE_URL}/tutor`;
+        // Removed old const apiKey and const apiUrl
+        const MAX_RETRIES = 3;
+        const TRANSITION_DURATION = 300; 
+        
+        // Data is embedded directly for synchronous loading, avoiding fetch/HTTP requests.
+        const problemData = [
+            {
+                "id": 1,
+                "title": "Sum of Two Integers",
+                "difficulty": "Easy",
+                "description": "Write a **public** Java class named `Solution` with a public static method `sum` that takes two integers, `a` and `b`, and returns their sum.",
+                "requiredClasses": ["Solution.java"],
+                "solution": "public class Solution {\n    public static int sum(int a, int b) {\n        return a + b;\n    }\n}",
+                "tests": [
+                    { "input": "1, 2", "expectedOutput": "3" },
+                    { "input": "5, 5", "expectedOutput": "10" },
+                    { "input": "-10, 5", "expectedOutput": "-5" }
+                ]
+            },
+            {
+                "id": 2,
+                "title": "Factorial Calculation",
+                "difficulty": "Medium",
+                "description": "Write a public static method `factorial` that calculates the **factorial** of a non-negative integer `n`. The method should be inside a class named `Solution`. Assume input will not exceed 12.",
+                "requiredClasses": ["Solution.java"],
+                "solution": "public class Solution {\n    public static int factorial(int n) {\n        if (n < 0) return 0;\n        int result = 1;\n        for (int i = 2; i <= n; i++) {\n            result *= i;\n        }\n        return result;\n    }\n}",
+                "tests": [
+                    { "input": "0", "expectedOutput": "1" },
+                    { "input": "5", "expectedOutput": "120" },
+                    { "input": "3", "expectedOutput": "6" }
+                ]
+            },
+            {
+                "id": 3,
+                "title": "Reverse a String",
+                "difficulty": "Hard",
+                "description": "Implement a **public static method** `reverse` within the `Solution` class that takes a String and returns a new String with the characters in reverse order.",
+                "requiredClasses": ["Solution.java"],
+                "solution": "public class Solution {\n    public static String reverse(String s) {\n        return new StringBuilder(s).reverse().toString();\n    }\n}",
+                "tests": [
+                    { "input": "\"hello\"", "expectedOutput": "olleh" }, // Corrected expected output format
+                    { "input": "\"racecar\"", "expectedOutput": "racecar" },
+                    { "input": "\"a\"", "expectedOutput": "a" }
+                ]
+            },
+            {
+                "id": 4,
+                "title": "Snail Class Simulation",
+                "difficulty": "Hard",
+                "description": "Create two classes: a **`Snail`** class with private fields for its name and speed, a constructor, and a public `move` method. Then, create a **`Solution`** class containing a public static `simulateRace` method that instantiates and uses the `Snail` class. The compiler will run the `Solution` class. Ensure both classes are defined in the editor.",
+                "requiredClasses": ["Snail.java", "Solution.java"],
+                "solution": 
+                    "public class Snail {\n    private String name;\n    private int speed;\n    public Snail(String name, int speed) {\n        this.name = name;\n        this.speed = speed;\n    }\n    public int move() {\n        return speed;\n    }\n}\n" + 
+                    "public class Solution {\n    public static int simulateRace(int distance) {\n        Snail fastSnail = new Snail(\"Turbo\", 5);\n        Snail slowSnail = new Snail(\"Gary\", 2);\n        int totalDistance = fastSnail.move() + slowSnail.move();\n        return distance - totalDistance;\n    }\n}",
+                "tests": [
+                    { "input": "10", "expectedOutput": "3" }, // 10 - (5+2) = 3
+                    { "input": "100", "expectedOutput": "93" }
+                ]
+            }
+        ];
+
+        let problems = problemData; 
+        let currentProblem = null;
+        let activeFilters = {
+            'Easy': true,
+            'Medium': true,
+            'Hard': true
+        };
+        
+        let codeFiles = [];
+        let currentFileIndex = 0;
+        
+        // --- Modal Transition Handlers (UNCHANGED) ---
+        function showModalWithTransition(modalId, contentId) {
+            const modal = document.getElementById(modalId);
+            const content = contentId ? document.getElementById(contentId) : null;
+            
+            modal.classList.remove('hidden');
+            
+            setTimeout(() => {
+                modal.classList.add('backdrop-active');
+                if (content) {
+                    content.classList.remove('modal-enter');
+                    content.classList.add('modal-enter-active');
+                }
+            }, 10);
+        }
+
+        function hideModalWithTransition(modalId, contentId) {
+            const modal = document.getElementById(modalId);
+            const content = contentId ? document.getElementById(contentId) : null;
+            
+            modal.classList.remove('backdrop-active');
+            if (content) {
+                content.classList.remove('modal-enter-active');
+                content.classList.add('modal-leave-active');
+            }
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (content) {
+                    content.classList.remove('modal-leave-active');
+                    content.classList.add('modal-enter');
+                }
+            }, TRANSITION_DURATION); 
+        }
+
+        function showLoadingModal() {
+            showModalWithTransition('loading-modal', null); 
+        }
+
+        function hideLoadingModal() {
+            hideModalWithTransition('loading-modal', null);
+        }
+
+        // --- Utility Functions (UPDATED normalizeCode REMOVED as it's not needed for external compilation) ---
+
+        function convertMarkdownToHtml(text) {
+            if (!text) return '';
+            // Basic markdown to HTML conversion for text content
+            text = text.replace(/`([^`]+)`/g, '<code class="font-mono text-yellow-300 bg-gray-800 px-1 py-0.5 rounded">\$1</code>');
+            text = text.replace(/\*\*([^\*]+)\*\*/g, '<strong>\$1</strong>');
+            // Convert newlines to breaks for display in the message area
+            text = text.replace(/\n/g, '<br>');
+            return text;
+        }
+
+        // --- Editor and File Management (UNCHANGED) ---
+        editor.addEventListener('input', () => {
+            if (codeFiles.length > 0 && currentFileIndex >= 0) {
+                const currentContent = editor.value;
+                codeFiles[currentFileIndex].content = currentContent;
+
+                const classNameRegex = /(?:public|private|protected)\s+class\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/;
+                const match = currentContent.match(classNameRegex);
+                
+                let newName = codeFiles[currentFileIndex].name;
+                
+                if (match && match[1]) {
+                    newName = match[1] + '.java';
+                } else if (!codeFiles[currentFileIndex].name.startsWith('<unnamed_')) {
+                    newName = 'Class.java'; 
+                } else if (codeFiles[currentFileIndex].name.startsWith('<unnamed_')) {
+                    newName = codeFiles[currentFileIndex].name;
+                }
+                
+                if (codeFiles[currentFileIndex].name !== newName) {
+                    codeFiles[currentFileIndex].name = newName;
+                    renderFileTabs();
+                }
+            }
+        });
+        
+        function getDifficultyStyle(difficulty) {
+            switch (difficulty) {
+                case 'Easy':
+                    return { text: 'text-green-300', bg: 'bg-green-700/30' };
+                case 'Medium':
+                    return { text: 'text-yellow-300', bg: 'bg-yellow-700/30' };
+                case 'Hard':
+                    return { text: 'text-red-300', bg: 'bg-red-700/30' };
+                default:
+                    return { text: 'text-gray-300', bg: 'bg-gray-700/30' };
+            }
+        }
+
+        function loadProblem(problem) {
+            currentProblem = problem;
+            titleEl.textContent = problem.title;
+            descriptionEl.innerHTML = convertMarkdownToHtml(problem.description);
+            
+            codeFiles = problem.requiredClasses.map(name => ({
+                name: name,
+                content: ''
+            }));
+            currentFileIndex = 0;
+
+            const isMultiClass = problem.requiredClasses.length > 1;
+            fileManagerEl.classList.toggle('hidden', !isMultiClass);
+            
+            if (codeFiles.length > 0) {
+                editor.value = codeFiles[currentFileIndex].content;
+            } else {
+                editor.value = '';
+            }
+            
+            const style = getDifficultyStyle(problem.difficulty);
+            difficultyEl.textContent = problem.difficulty;
+            difficultyEl.className = `px-3 py-1 text-xs rounded-full font-medium ${style.text} ${style.bg}`;
+            
+            renderFileTabs();
+            hideResultModal();
+            toggleProblemSelector(false); 
+        }
+        
+        function renderFileTabs() {
+            fileTabsEl.innerHTML = '';
+            
+            document.getElementById('remove-file-btn').classList.toggle('opacity-50', codeFiles.length <= 1);
+            document.getElementById('remove-file-btn').disabled = codeFiles.length <= 1;
+
+            codeFiles.forEach((file, index) => {
+                const tab = document.createElement('div');
+                tab.textContent = file.name;
+                
+                const isActive = index === currentFileIndex;
+                tab.className = `file-tab ${isActive ? 'active' : ''}`;
+                
+                tab.onclick = () => switchFile(index);
+                fileTabsEl.appendChild(tab);
+            });
+        }
+        
+        function switchFile(index) {
+            if (index === currentFileIndex) return;
+
+            if (codeFiles.length > 0) {
+                codeFiles[currentFileIndex].content = editor.value; 
+            }
+
+            currentFileIndex = index;
+            editor.value = codeFiles[currentFileIndex].content;
+            renderFileTabs();
+        }
+
+        function addFile() {
+            const newFileName = `<unnamed_${Date.now()}>.java`;
+            codeFiles.push({ name: newFileName, content: '' });
+            switchFile(codeFiles.length - 1);
+        }
+
+        function removeFile() {
+            if (codeFiles.length > 1) {
+                codeFiles.splice(currentFileIndex, 1);
+                currentFileIndex = Math.max(0, currentFileIndex - 1); 
+                editor.value = codeFiles[currentFileIndex].content;
+                renderFileTabs();
+            }
+        }
+
+        // --- Main App Logic (UPDATED) ---
+
+        function loadRandomProblem() {
+            let filteredProblems = problems.filter(p => activeFilters[p.difficulty]);
+            
+            if (currentProblem) {
+                filteredProblems = filteredProblems.filter(p => p.id !== currentProblem.id);
+            }
+
+            if (filteredProblems.length === 0) {
+                const message = currentProblem 
+                    ? 'Only the current problem is available in the current filter settings.' 
+                    : 'No problems match the current filter. Please adjust the difficulty settings.';
+                showResultModal('No New Problems Available', message, 'error', null);
+                return;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * filteredProblems.length);
+            loadProblem(filteredProblems[randomIndex]);
+        }
+        
+        function confirmSubmission() {
+            if (!currentProblem) {
+                showResultModal('Error', 'Please select a problem before attempting to check code.', 'error', null);
+                return;
+            }
+            if (codeFiles.length > 0 && currentFileIndex >= 0) {
+                codeFiles[currentFileIndex].content = editor.value;
+            }
+            showModalWithTransition('confirmation-modal', 'confirmation-content');
+        }
+
+        function cancelSubmission() {
+            hideModalWithTransition('confirmation-modal', 'confirmation-content');
+        }
+
+        // --- NEW: Test Driver Generator ---
+        /**
+         * Creates the boilerplate Java code (the main method) to execute the user's solution
+         * with a specific test input, printing the result to stdout.
+         */
+        function createJavaTestDriver(test, problem) {
+            // Problem 1: Sum of Two Integers (Solution.sum(int a, int b))
+            if (problem.id === 1) {
+                // Input: "1, 2" -> Parts: ["1", "2"]
+                const parts = test.input.split(',').map(s => s.trim());
+                const a = parts[0];
+                const b = parts[1];
+                
+                return `
+    class TestDriver {
+        public static void main(String[] args) {
+            System.out.print(Solution.sum(${a}, ${b}));
+        }
+    }
+    `;
+            } 
+            
+            // Problem 2: Factorial Calculation (Solution.factorial(int n))
+            else if (problem.id === 2) {
+                // Input: "5"
+                const n = test.input.trim();
+                return `
+    class TestDriver {
+        public static void main(String[] args) {
+            System.out.print(Solution.factorial(${n}));
+        }
+    }
+    `;
+            } 
+            
+            // Problem 3: Reverse a String (Solution.reverse(String s))
+            else if (problem.id === 3) {
+                // Input: "\"hello\""
+                const s = test.input.trim(); 
+                return `
+    class TestDriver {
+        public static void main(String[] args) {
+            // The input string is already quoted: "hello"
+            System.out.print(Solution.reverse(${s}));
+        }
+    }
+    `;
+            } 
+            
+            // Problem 4: Snail Class Simulation (Solution.simulateRace(int distance))
+            else if (problem.id === 4) {
+                // Input: "10"
+                const distance = test.input.trim();
+                return `
+    class TestDriver {
+        public static void main(String[] args) {
+            System.out.print(Solution.simulateRace(${distance}));
+        }
+    }
+    `;
+            }
+            
+            return `// Test driver not implemented for this problem.`;
+        }
+
+        // --- NEW: External Compilation and Test Running Logic ---
+        async function handleConfirmedSubmission() {
+            cancelSubmission(); 
+            showLoadingModal(); // Show loading during external compilation
+
+            checkCodeBtn.textContent = 'Checking Code...';
+            checkCodeBtn.disabled = true;
+
+            // 1. Save all file contents back to codeFiles array
+            if (codeFiles.length > 0) {
+                codeFiles[currentFileIndex].content = editor.value;
+            }
+
+            const userCode = codeFiles.map(f => f.content).join('\n');
+            
+            if (userCode.trim() === "") {
+                hideLoadingModal();
+                showFailureResult([ { status: 'FAILED_COMPILATION', actual: 'Your editor is empty. The compiler requires a complete class definition to proceed.', input: '', expected: '' } ], userCode);
+                return;
+            }
+
+            const testResults = [];
+            let compilationFailed = false;
+
+            // 2. Loop through each test case
+            for (const test of currentProblem.tests) {
+                
+                // 3. Construct a full, runnable Java program (The Test Driver)
+                const driverCode = createJavaTestDriver(test, currentProblem);
+                const fullProgram = userCode + '\n' + driverCode;
+
+                try {
+                    // 4. Send the code to the Worker for compilation and execution
+                    const response = await fetch(COMPILER_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code: fullProgram })
+                    });
+
+                    const rawOutput = await response.text();
+                    let actualOutput = rawOutput.trim();
+                    let status = 'PASSED';
+                    
+                    // 5. Check the API response for errors
+                    if (rawOutput.startsWith('COMPILATION_ERROR:')) {
+                        actualOutput = rawOutput;
+                        status = 'FAILED_COMPILATION';
+                        compilationFailed = true;
+                    } else if (rawOutput.startsWith('RUNTIME_ERROR:')) {
+                        actualOutput = rawOutput;
+                        status = 'FAILED_RUNTIME';
+                        compilationFailed = true;
+                    } else {
+                        // Normalize output: Remove the last newline which can sometimes be added by the compiler stdout
+                        actualOutput = actualOutput.endsWith('\n') ? actualOutput.slice(0, -1) : actualOutput;
+                        
+                        // 6. Check the return value against the expected output
+                        if (actualOutput !== test.expectedOutput) {
+                            status = 'FAILED_LOGIC';
+                        }
+                    }
+
+                    testResults.push({
+                        input: test.input,
+                        expected: test.expectedOutput,
+                        actual: actualOutput,
+                        status: status
+                    });
+                    
+                    // Critical: Stop testing if compilation fails on any test
+                    if (compilationFailed) {
+                        break;
+                    }
+
+                } catch (error) {
+                    hideLoadingModal();
+                    showFailureResult([ { status: 'FAILED_NETWORK', actual: `Failed to reach the compiler service: ${error.message}.`, input: '', expected: '' } ], userCode);
+                    return;
+                }
+            }
+            
+            hideLoadingModal();
+
+            // 7. Process all test results
+            const firstFailure = testResults.find(r => r.status.startsWith('FAILED'));
+            if (firstFailure) {
+                showFailureResult(testResults, userCode);
+            } else {
+                showSuccessResult(testResults);
+            }
+        }
+
+
+        let lastFailedCode = ''; // Store the code that caused the failure
+        
+        // --- UPDATED: Success Result Handler ---
+        function showSuccessResult(testResults) {
+            
+            checkCodeBtn.textContent = 'Check (Submit Code)';
+            checkCodeBtn.disabled = false;
+
+            const passedCount = testResults.length;
+            
+            let testOutput = "Compilation Success! All tests passed.\n\n";
+            testResults.forEach((test, index) => {
+                testOutput += `[✅ PASSED] Test Case ${index + 1} (Input: ${test.input})\n`;
+                testOutput += `   - Expected Output: ${test.expected}\n`;
+                testOutput += `   - Actual Output: ${test.actual}\n\n`;
+            });
+
+            const message = `Congratulations! All ${passedCount}/${testResults.length} tests passed successfully. You have completed the challenge.`;
+            
+            const actions = document.getElementById('result-modal-actions');
+            actions.innerHTML = `
+                <button onclick="toggleProblemSelector(true); hideResultModal();" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-colors transform hover:scale-[1.01] w-full">
+                    Select Next Problem
+                </button>
+            `;
+
+            showResultModal('Challenge Complete', message, 'success', testOutput);
+        }
+
+        // --- NEW: Failure Result Handler ---
+        function showFailureResult(testResults, userCode) {
+            
+            lastFailedCode = userCode; // Store the code
+            
+            checkCodeBtn.textContent = 'Check (Submit Code)';
+            checkCodeBtn.disabled = false;
+            
+            const firstFailure = testResults.find(r => r.status.startsWith('FAILED'));
+            const isCompilationError = firstFailure.status.includes('COMPILATION');
+            const isRuntimeError = firstFailure.status.includes('RUNTIME');
+            
+            let title = 'Test Failed: Logic Error';
+            let message = 'Your code ran, but the output did not match expectations for one or more test cases. Review the detailed test results.';
+            let codeContent = '';
+            
+            let testOutput = '';
+            testResults.forEach((test, index) => {
+                const icon = test.status.startsWith('FAILED') ? '❌' : '✅';
+                const statusText = test.status.startsWith('FAILED') ? test.status.replace('FAILED_', '').padEnd(12) : 'PASSED';
+                testOutput += `[${icon} ${statusText}] Test Case ${index + 1} (Input: ${test.input})\n`;
+                if (test.status.startsWith('FAILED')) {
+                    testOutput += `   - Expected Output: ${test.expected || 'N/A'}\n`;
+                    testOutput += `   - Actual Output: ${test.actual}\n\n`;
+                } else {
+                    testOutput += `   - Actual Output: ${test.actual}\n\n`;
+                }
+            });
+
+            if (isCompilationError) {
+                title = 'Compilation Error';
+                message = `The Java compiler failed to build your code. This is typically due to a syntax error, incorrect class/method signature, or missing required classes. The compiler reported an error (see box below). Use the AI Tutor for a hint!`;
+                codeContent = firstFailure.actual;
+            } else if (isRuntimeError) {
+                title = 'Runtime Error';
+                message = `Your code compiled but crashed during execution (e.g., NullPointerException). The runtime reported an error (see box below). Use the AI Tutor for a hint!`;
+                codeContent = firstFailure.actual;
+            } else {
+                // Failed Logic
+                codeContent = testOutput;
+            }
+            
+            const actions = document.getElementById('result-modal-actions');
+            // Added Explain with AI button (purple)
+            actions.innerHTML = `
+                <button onclick="restartFromScratch()" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors transform hover:scale-[1.01] w-full md:w-auto">
+                    Restart From Scratch
+                </button>
+                <button onclick="hideResultModal()" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full md:w-auto">
+                    Retry with Current Code
+                </button>
+                <button onclick="explainWithAI()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full md:w-auto">
+                    🧠 Explain with AI Tutor
+                </button>
+                <button onclick="showHelp()" class="bg-gray-700/80 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full md:w-auto">
+                    Help (Show Solution)
+                </button>
+            `;
+
+            showResultModal(title, message, 'error', codeContent);
+        }
+
+        function showResultModal(title, message, type, codeContent) {
+            const modal = document.getElementById('result-modal');
+            document.getElementById('result-modal-title').textContent = title;
+            resultModalMessageEl.innerHTML = convertMarkdownToHtml(message);
+            const codeEl = document.getElementById('result-modal-code');
+
+            // Reset scroll position for the modal content area
+            document.getElementById('result-modal-content-area').scrollTop = 0;
+
+            if (codeContent) {
+                codeEl.textContent = codeContent;
+                codeEl.style.display = 'block';
+                document.getElementById('result-modal-title').classList.remove('text-ios-blue', 'text-green-500', 'text-red-500', 'text-yellow-300');
+                document.getElementById('result-modal-title').classList.add(type === 'success' ? 'text-green-500' : (type === 'error' ? 'text-red-500' : 'text-yellow-300'));
+            } else {
+                codeEl.style.display = 'none';
+                document.getElementById('result-modal-title').classList.remove('text-ios-blue', 'text-green-500', 'text-red-500', 'text-yellow-300');
+                document.getElementById('result-modal-title').classList.add(type === 'success' ? 'text-green-500' : (type === 'error' ? 'text-red-500' : 'text-ios-blue'));
+            }
+
+            showModalWithTransition('result-modal', 'result-content');
+        }
+
+        function hideResultModal() {
+            hideModalWithTransition('result-modal', 'result-content');
+        }
+
+        function restartFromScratch() {
+            codeFiles.forEach(file => file.content = '');
+            editor.value = '';
+            currentFileIndex = 0;
+            renderFileTabs();
+            
+            hideResultModal();
+        }
+
+        function showHelp() {
+            if (currentProblem) {
+                const message = "Here is the verified solution for the problem. Use this to compare against your attempt.";
+                const actions = document.getElementById('result-modal-actions');
+                
+                actions.innerHTML = `
+                    <button onclick="hideResultModal()" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full">
+                        Back to Editor
+                    </button>
+                `;
+                showResultModal('Solution Revealed', message, 'help', currentProblem.solution);
+            }
+        }
+
+        // --- UPDATED: AI TUTOR LOGIC (Using Worker's /tutor endpoint) ---
+
+        async function explainWithAI() {
+            hideResultModal();
+            showLoadingModal();
+            
+            if (!lastFailedCode || !currentProblem) {
+                hideLoadingModal();
+                showResultModal('Error', 'No failed code found or problem data is missing.', 'error', null);
+                return;
+            }
+
+            const userQuestion = "Please review my failing code and identify the most critical flaw (e.g., incorrect loop structure, wrong return type, missing keyword, or conceptual mistake) compared to the correct solution. Do NOT provide the correct code or method signature. Guide me towards the fix.";
+
+            const problemDescription = `The problem title is: "${currentProblem.title}". The problem requires: ${currentProblem.description}. For your internal comparison, the correct solution is: \n\n\`\`\`java\n${currentProblem.solution}\n\`\`\n`;
+
+            let generatedText = "Apologies, the **AI Tutor is currently unavailable**. This may be due to a network connection issue or an error in the service. Please try again later or use the 'Help (Show Solution)' button.";
+            
+            // API Call to the Worker's Tutor Endpoint
+            try {
+                const payload = {
+                    question: userQuestion,
+                    code: lastFailedCode,
+                    problemDescription: problemDescription
+                };
+
+                const response = await fetch(TUTOR_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    generatedText = `The AI Tutor service returned an error (Status: ${response.status}).`;
+                    // Check for 403 response, which implies a security or API key issue
+                    if (response.status === 403) {
+                        generatedText = "The AI Tutor failed due to a **403 Forbidden Error**. This is usually because a browser security setting (like an extension) is blocking the required authentication process, or the Worker's CORS settings are incorrect.";
+                    }
+                    throw new Error(`Worker API HTTP error! status: ${response.status}`);
+                }
+
+                generatedText = await response.text();
+                
+            } catch (error) {
+                console.error("AI Tutor Fetch Error:", error);
+            }
+
+            hideLoadingModal();
+            
+            // Prepare the action button to let the user return to the retry modal
+            const actions = document.getElementById('result-modal-actions');
+            actions.innerHTML = `
+                <button onclick="showFailureResult(null, lastFailedCode)" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full">
+                    Back to Retry Options
+                </button>
+            `;
+            
+            showResultModal(
+                'AI Tutor Analysis', 
+                convertMarkdownToHtml(generatedText), 
+                'help', 
+                null
+            );
+        }
+
+        // --- Problem Selector and Filter Logic (UNCHANGED) ---
+
+        function toggleProblemSelector(show = true) {
+            if (show) {
+                renderProblemList();
+                showModalWithTransition('problem-selector-modal', 'problem-selector-content');
+            } else {
+                hideModalWithTransition('problem-selector-modal', 'problem-selector-content');
+            }
+        }
+
+        function renderProblemList() {
+            problemListEl.innerHTML = '';
+            
+            const filteredProblems = problems.filter(p => activeFilters[p.difficulty]);
+            
+            if (filteredProblems.length === 0) {
+                problemListEl.innerHTML = '<p class="text-center text-gray-500 p-4">No problems match the current filter. Try selecting more difficulties.</p>';
+                randomBtnEl.textContent = 'Random Problem (None)';
+                randomBtnEl.disabled = true;
+                randomBtnEl.classList.add('opacity-50');
+                return;
+            }
+
+            filteredProblems.forEach(p => {
+                const style = getDifficultyStyle(p.difficulty);
+                const problemItem = document.createElement('div');
+                problemItem.className = 'p-3 rounded-xl bg-gray-900/50 hover:bg-gray-700/70 transition-colors cursor-pointer flex justify-between items-center';
+                problemItem.onclick = () => loadProblem(p);
+                
+                problemItem.innerHTML = `
+                    <span class="font-medium text-white">${p.title}</span>
+                    <span class="px-3 py-1 text-xs rounded-full font-medium ${style.text} ${style.bg}">${p.difficulty}</span>
+                `;
+                problemListEl.appendChild(problemItem);
+            });
+            
+            randomBtnEl.textContent = `Random Problem (${filteredProblems.length})`;
+            randomBtnEl.disabled = false;
+            randomBtnEl.classList.remove('opacity-50');
+        }
+
+        function renderFilters() {
+            const difficulties = ['Easy', 'Medium', 'Hard'];
+            filterContainerEl.innerHTML = '';
+
+            difficulties.forEach(diff => {
+                const style = getDifficultyStyle(diff);
+                const isChecked = activeFilters[diff];
+                
+                const button = document.createElement('button');
+                button.textContent = diff;
+                button.className = `py-1 px-3 rounded-full text-sm font-medium transition-all ${style.text} ${style.bg} ${isChecked ? 'ring-2 ring-offset-2 ring-offset-glass-card ring-ios-blue' : 'opacity-70 hover:opacity-100'}`;
+                button.onclick = () => toggleFilter(diff);
+                filterContainerEl.appendChild(button);
+            });
+            renderProblemList();
+        }
+
+        function toggleFilter(difficulty) {
+            activeFilters[difficulty] = !activeFilters[difficulty];
+            renderFilters();
+        }
+
+        // Initialize the app - Now synchronous
+        window.onload = () => {
+            titleEl.textContent = "Select a Problem";
+            descriptionEl.innerHTML = convertMarkdownToHtml("Problems loaded! Please open the **Problem Selector** to choose a challenge, or click **Random Problem** to get started immediately.");
+
+            if (problems.length > 0) {
+                loadProblem(problems[0]);
+            }
+            renderFilters();
+        };
+
+    </script>
+    </body>
+</html>
