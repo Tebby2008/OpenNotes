@@ -765,7 +765,7 @@
         "solution": "class Student {\n    private String name;\n    public Student(String name) {\n        this.name = name;\n    }\n    public String getName() {\n        return name;\n    }\n}\n\npublic class Solution {\n    public static void main(String[] args) {\n        Student s = new Student(\"Alice\");\n        System.out.println(\"Hello, \" + s.getName() + \"!\");\n    }\n}",
         "tests": [
             {
-                "input": "",
+                "input": "\n",
                 "expectedOutput": "Hello, Alice!\n"
             }
         ],
@@ -783,7 +783,7 @@
         "solution": "import java.util.Random;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Random rand = new Random(100);\n        int roll = rand.nextInt(6) + 1;\n        System.out.println(roll);\n    }\n}",
         "tests": [
             {
-                "input": "",
+                "input": "\n",
                 "expectedOutput": "##__Randint_1_6__##\n"
             }
         ],
@@ -866,7 +866,7 @@
         "solution": "class Item {\n    private String name;\n    private double price;\n\n    public Item(String name, double price) {\n        this.name = name;\n        this.price = price;\n    }\n\n    public double getSalePrice() {\n        // 10% discount\n        return price * 0.9;\n    }\n}\n\npublic class Solution {\n    public static void main(String[] args) {\n        Item item = new Item(\"Book\", 20.0);\n        System.out.println(item.getSalePrice());\n    }\n}",
         "tests": [
             {
-                "input": "",
+                "input": "\n",
                 "expectedOutput": "18.0\n"
             }
         ],
@@ -999,7 +999,7 @@
         "solution": "class Point {\n    public int x;\n    public Point(int x) {\n        this.x = x;\n    }\n    public String toString() {\n        return \"Point(x=\" + x + \")\";\n    }\n}\n\npublic class Solution {\n    public static void main(String[] args) {\n        Point[] arr = new Point[2];\n        arr[0] = new Point(1);\n        arr[1] = new Point(2);\n        String result = \"[\" + arr[0] + \", \" + arr[1] + \"]\";\n        System.out.println(result);\n    }\n}",
         "tests": [
             {
-                "input": "",
+                "input": "\n",
                 "expectedOutput": "[Point(x=1), Point(x=2)]\n"
             }
         ],
@@ -1029,7 +1029,7 @@
                 "expectedOutput": "a\n"
             },
             {
-                "input": "",
+                "input": "\n",
                 "expectedOutput": "\n"
             },
             {
@@ -1097,7 +1097,7 @@
                 "expectedOutput": "1\n"
             },
             {
-                "input": "",
+                "input": "\n",
                 "expectedOutput": "0\n"
             },
             {
@@ -1207,7 +1207,7 @@
                 "expectedOutput": "[test]\n"
             },
             {
-                "input": "",
+                "input": "\n",
                 "expectedOutput": "[]\n"
             },
             {
