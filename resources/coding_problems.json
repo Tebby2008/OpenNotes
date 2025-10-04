@@ -3,7 +3,7 @@
         "id": 1,
         "title": "Sum of Two Integers",
         "difficulty": "Easy",
-        "description": "Write a **public** Java class named `Solution` with a public static method `sum` that takes two integers, `a` and `b`, and returns their sum. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `1, 2` | Output: `3`\n- Input: `10, -5` | Output: `5`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `sum` that takes two integers, `a` and `b`, and returns their sum. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `1, 2` | Output: `3`\n- Input: `10, -5` | Output: `5`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -41,7 +41,7 @@
         "id": 2,
         "title": "Check Leap Year",
         "difficulty": "Easy",
-        "description": "Write a public static method `isLeap` that takes an integer `year` and returns `true` if it is a leap year, and `false` otherwise. (A year is a leap year if it is divisible by 4, unless it is divisible by 100 but not by 400). *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `2000` | Output: `true`\n- Input: `1900` | Output: `false`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `isLeap` that takes an integer `year` and returns `true` if it is a leap year, and `false` otherwise. (A year is a leap year if it is divisible by 4, unless it is divisible by 100 but not by 400). **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `2000` | Output: `true`\n- Input: `1900` | Output: `false`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -83,7 +83,7 @@
         "id": 3,
         "title": "Count Vowels in a String",
         "difficulty": "Easy",
-        "description": "Write a public static method `countVowels` that takes a `String` and returns the count of vowels (`a`, `e`, `i`, `o`, `u`, case-insensitive). *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"hello\"` | Output: `2`\n- Input: `\"Rhythm\"` | Output: `0`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `countVowels` that takes a `String` and returns the count of vowels (`a`, `e`, `i`, `o`, `u`, case-insensitive). **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `\"hello\"` | Output: `2`\n- Input: `\"Rhythm\"` | Output: `0`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -121,7 +121,7 @@
         "id": 4,
         "title": "Find Maximum of Three",
         "difficulty": "Easy",
-        "description": "Write a public static method `maxOfThree` that takes three integers, `a`, `b`, and `c`, and returns the largest among them. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `10, 5, 20` | Output: `20`\n- Input: `7, 7, 3` | Output: `7`",
+        "description": "Write a **public** Java class named `Solution` with Write a public static method `maxOfThree` that takes three integers, `a`, `b`, and `c`, and returns the largest among them. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `10, 5, 20` | Output: `20`\n- Input: `7, 7, 3` | Output: `7`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -163,7 +163,7 @@
         "id": 5,
         "title": "Sum of Digits",
         "difficulty": "Easy",
-        "description": "Write a public static method `sumDigits` that takes a non-negative integer and returns the sum of its individual digits. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `123` | Output: `6`\n- Input: `5` | Output: `5`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `sumDigits` that takes a non-negative integer and returns the sum of its individual digits. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `123` | Output: `6`\n- Input: `5` | Output: `5`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -205,7 +205,7 @@
         "id": 6,
         "title": "String Starts With 'Hello'",
         "difficulty": "Easy",
-        "description": "Write a public static method `startsWithHello` that takes a `String` and returns `true` if the string starts with the case-insensitive word 'Hello', otherwise returns `false`. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"Hello World\"` | Output: `true`\n- Input: `\"Hi there\"` | Output: `false`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `startsWithHello` that takes a `String` and returns `true` if the string starts with the case-insensitive word 'Hello', otherwise returns `false`. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `\"Hello World\"` | Output: `true`\n- Input: `\"Hi there\"` | Output: `false`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -247,7 +247,7 @@
         "id": 7,
         "title": "Check Point Quadrant",
         "difficulty": "Easy",
-        "description": "Write a public static method `getQuadrant` that takes two integers, `x` and `y`, representing coordinates. Return 1, 2, 3, or 4 for the quadrant, or 0 if the point is on an axis (x=0 or y=0). *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `1, 1` | Output: `1`\n- Input: `0, 5` | Output: `0`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `getQuadrant` that takes two integers, `x` and `y`, representing coordinates. Return 1, 2, 3, or 4 for the quadrant, or 0 if the point is on an axis (x=0 or y=0). **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `1, 1` | Output: `1`\n- Input: `0, 5` | Output: `0`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -289,7 +289,7 @@
         "id": 8,
         "title": "Convert Fahrenheit to Celsius",
         "difficulty": "Easy",
-        "description": "Write a public static method `fToC` that takes a double `fahrenheit` and returns the Celsius equivalent. Formula: `C = (F - 32) * 5 / 9`. Return the result rounded to one decimal place. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `32.0` | Output: `0.0`\n- Input: `212.0` | Output: `100.0`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `fToC` that takes a double `fahrenheit` and returns the Celsius equivalent. Formula: `C = (F - 32) * 5 / 9`. Return the result rounded to one decimal place. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `32.0` | Output: `0.0`\n- Input: `212.0` | Output: `100.0`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -327,7 +327,7 @@
         "id": 9,
         "title": "Calculate Hypotenuse",
         "difficulty": "Easy",
-        "description": "Write a public static method `getHypotenuse` that takes two double-precision integers, `a` and `b`, representing the legs of a right triangle, and returns the length of the hypotenuse using the Pythagorean theorem. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `3.0, 4.0` | Output: `5.0`\n- Input: `5.0, 12.0` | Output: `13.0`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `getHypotenuse` that takes two double-precision integers, `a` and `b`, representing the legs of a right triangle, and returns the length of the hypotenuse using the Pythagorean theorem. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `3.0, 4.0` | Output: `5.0`\n- Input: `5.0, 12.0` | Output: `13.0`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -365,7 +365,7 @@
         "id": 10,
         "title": "Swap First and Last Characters",
         "difficulty": "Easy",
-        "description": "Write a public static method `swapEnds` that takes a `String` and returns a new string where the first and last characters are swapped. If the string length is less than 2, return the original string. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"abcd\"` | Output: `\"dbca\"`\n- Input: `\"a\"` | Output: `\"a\"`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `swapEnds` that takes a `String` and returns a new string where the first and last characters are swapped. If the string length is less than 2, return the original string. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `\"abcd\"` | Output: `\"dbca\"`\n- Input: `\"a\"` | Output: `\"a\"`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -403,7 +403,7 @@
         "id": 11,
         "title": "String contains 'x' and 'y'",
         "difficulty": "Easy",
-        "description": "Write a public static method `hasXandY` that takes a `String` and returns `true` if it contains both the character 'x' AND the character 'y' (case-insensitive), otherwise `false`. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"Xylophone\"` | Output: `true`\n- Input: `\"Xerox\"` | Output: `false`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `hasXandY` that takes a `String` and returns `true` if it contains both the character 'x' AND the character 'y' (case-insensitive), otherwise `false`. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `\"Xylophone\"` | Output: `true`\n- Input: `\"Xerox\"` | Output: `false`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -445,7 +445,7 @@
         "id": 12,
         "title": "Check Password Length",
         "difficulty": "Easy",
-        "description": "Write a public static method `isValidLength` that takes a `String` representing a password. The password is valid if its length is between 8 and 12 characters (inclusive). Return `true` or `false`. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"P@ssword1\"` | Output: `true`\n- Input: `\"short\"` | Output: `false`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `isValidLength` that takes a `String` representing a password. The password is valid if its length is between 8 and 12 characters (inclusive). Return `true` or `false`. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `\"P@ssword1\"` | Output: `true`\n- Input: `\"short\"` | Output: `false`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -483,7 +483,7 @@
         "id": 13,
         "title": "Area of a Circle",
         "difficulty": "Easy",
-        "description": "Write a public static method `circleArea` that takes a double `radius` and returns the area of the circle. Use `Math.PI` for pi. Return the result rounded to two decimal places. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `1.0` | Output: `3.14`\n- Input: `2.5` | Output: `19.63`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `circleArea` that takes a double `radius` and returns the area of the circle. Use `Math.PI` for pi. Return the result rounded to two decimal places. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `1.0` | Output: `3.14`\n- Input: `2.5` | Output: `19.63`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -521,7 +521,7 @@
         "id": 14,
         "title": "Repeat Character 'n' Times",
         "difficulty": "Easy",
-        "description": "Write a public static method `repeatChar` that takes a character `c` (represented by a String of length 1 for testing) and an integer `n`, and returns a String consisting of `c` repeated `n` times. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `'a', 3` | Output: `\"aaa\"`\n- Input: `'b', 0` | Output: `\"\"`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `repeatChar` that takes a character `c` (represented by a String of length 1 for testing) and an integer `n`, and returns a String consisting of `c` repeated `n` times. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `'a', 3` | Output: `\"aaa\"`\n- Input: `'b', 0` | Output: `\"\"`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -559,7 +559,7 @@
         "id": 15,
         "title": "Check if Number is Even",
         "difficulty": "Easy",
-        "description": "Write a public static method `isEven` that takes an integer `n` and returns `true` if the number is even, and `false` otherwise. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `4` | Output: `true`\n- Input: `7` | Output: `false`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `isEven` that takes an integer `n` and returns `true` if the number is even, and `false` otherwise. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `4` | Output: `true`\n- Input: `7` | Output: `false`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -639,7 +639,7 @@
         "id": 17,
         "title": "Find Average in Array",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read the array size `n`, followed by `n` integers. Calculate the average (as a double) of all elements and print it, rounded to one decimal place, followed by a newline.\n\n**Example Test Cases:**\n- Input: `3\n10 20 30` | Output: `20.0\n`\n- Input: `2\n5 10` | Output: `7.5\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read the array size `n`, followed by `n` integers. Calculate the average (as a double) of all elements and print it, rounded to one decimal place, followed by a newline.\n\n**Example Test Cases:**\n- Input: `3\n10 20 30` | Output: `20.0\n`\n- Input: `2\n5 10` | Output: `7.5\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -681,7 +681,7 @@
         "id": 18,
         "title": "Reverse Array and Print",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read the array size `n`, followed by `n` integers. Print the elements of the array in reverse order, separated by a single space, followed by a newline.\n\n**Example Test Cases:**\n- Input: `4\n1 2 3 4` | Output: `4 3 2 1\n`\n- Input: `1\n99` | Output: `99\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read the array size `n`, followed by `n` integers. Print the elements of the array in reverse order, separated by a single space, followed by a newline.\n\n**Example Test Cases:**\n- Input: `4\n1 2 3 4` | Output: `4 3 2 1\n`\n- Input: `1\n99` | Output: `99\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -719,7 +719,7 @@
         "id": 19,
         "title": "Count Negative Numbers in Array",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read the array size `n`, followed by `n` integers. Count how many of these numbers are negative and print the count followed by a newline.\n\n**Example Test Cases:**\n- Input: `5\n-1 2 -3 4 -5` | Output: `3\n`\n- Input: `3\n1 2 3` | Output: `0\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read the array size `n`, followed by `n` integers. Count how many of these numbers are negative and print the count followed by a newline.\n\n**Example Test Cases:**\n- Input: `5\n-1 2 -3 4 -5` | Output: `3\n`\n- Input: `3\n1 2 3` | Output: `0\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -757,7 +757,7 @@
         "id": 20,
         "title": "Simple Student Class and Object Creation",
         "difficulty": "Medium",
-        "description": "Create a class `Student` with a private String `name` and a public constructor that initializes the name. Create a **`main` method** in `Solution` that creates a `Student` object named 'Alice' and prints a greeting: `Hello, Alice!` followed by a newline.\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `Hello, Alice!\n`",
+        "description": "Create a class `Student` with a private String `name` and a public constructor that initializes the name. Create a **`main` method** in a public class named `Solution` that creates a `Student` object named 'Alice' and prints a greeting: `Hello, Alice!` followed by a newline.\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `Hello, Alice!\n`",
         "requiredClasses": [
             "Solution.java",
             "Student.java"
@@ -776,7 +776,7 @@
         "id": 21,
         "title": "Simulate Dice Roll",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** that uses `java.util.Random` to simulate rolling a standard 6-sided die. Print the result of a single roll (an integer between 1 and 6, inclusive) followed by a newline. *Note: For testing, the output will be checked against the range 1-6.*\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `(Any integer from 1 to 6)\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** that uses `java.util.Random` to simulate rolling a standard 6-sided die. Print the result of a single roll (an integer between 1 and 6, inclusive) followed by a newline. *Note: For testing, the output will be checked against the range 1-6.*\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `(Any integer from 1 to 6)\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -794,7 +794,7 @@
         "id": 22,
         "title": "Print Stars Pyramid",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read an integer `n` (the number of rows) using `Scanner`. Use nested loops to print a right-aligned triangle of stars, where the `k`-th row has `k` stars, followed by a newline. The pyramid should be aligned such that the base is on the left.\n\n**Example Test Cases:**\n- Input: `3` | Output: `*\n**\n***\n`\n- Input: `1` | Output: `*\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read an integer `n` (the number of rows) using `Scanner`. Use nested loops to print a right-aligned triangle of stars, where the `k`-th row has `k` stars, followed by a newline. The pyramid should be aligned such that the base is on the left.\n\n**Example Test Cases:**\n- Input: `3` | Output: `*\n**\n***\n`\n- Input: `1` | Output: `*\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -824,7 +824,7 @@
         "id": 23,
         "title": "Filter ArrayList for Positive Numbers",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read an integer `n` followed by `n` integers. Store them in an `ArrayList<Integer>`. Remove all negative numbers from the list and then print the list (in standard `[e1, e2, ...]` format) followed by a newline.\n\n**Example Test Cases:**\n- Input: `5\n10 -5 20 -1 30` | Output: `[10, 20, 30]\n`\n- Input: `3\n-1 -2 -3` | Output: `[]\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read an integer `n` followed by `n` integers. Store them in an `ArrayList<Integer>`. Remove all negative numbers from the list and then print the list (in standard `[e1, e2, ...]` format) followed by a newline.\n\n**Example Test Cases:**\n- Input: `5\n10 -5 20 -1 30` | Output: `[10, 20, 30]\n`\n- Input: `3\n-1 -2 -3` | Output: `[]\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -858,7 +858,7 @@
         "id": 24,
         "title": "Simple Inventory Class",
         "difficulty": "Medium",
-        "description": "Create a class `Item` with private fields `name` (String) and `price` (double). Include a constructor and a public method `getSalePrice()` which returns the price discounted by 10%. Write a **`main` method** that creates an `Item` named 'Book' with price 20.00 and prints its sale price (e.g., `18.0`) followed by a newline.\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `18.0\n`",
+        "description": "Create a class `Item` with private fields `name` (String) and `price` (double). Include a constructor and a public method `getSalePrice()` which returns the price discounted by 10%. Write a **public** Java class named `Solution` with a **`main` method** that creates an `Item` named 'Book' with price 20.00 and prints its sale price (e.g., `18.0`) followed by a newline.\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `18.0\n`",
         "requiredClasses": [
             "Solution.java",
             "Item.java"
@@ -877,7 +877,7 @@
         "id": 25,
         "title": "Fibonacci Sequence Iterative",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** that reads an integer `n` using `Scanner` and prints the `n`-th Fibonacci number (where F(0) = 0 and F(1) = 1) followed by a newline. Use an iterative approach (loops, not recursion).\n\n**Example Test Cases:**\n- Input: `8` | Output: `21\n`\n- Input: `2` | Output: `1\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** that reads an integer `n` using `Scanner` and prints the `n`-th Fibonacci number (where F(0) = 0 and F(1) = 1) followed by a newline. Use an iterative approach (loops, not recursion).\n\n**Example Test Cases:**\n- Input: `8` | Output: `21\n`\n- Input: `2` | Output: `1\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -915,7 +915,7 @@
         "id": 26,
         "title": "Check Palindrome String (Main)",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read a single `String` using `Scanner`. Determine if the string is a palindrome (reads the same forwards and backwards, case-sensitive). Print `true` or `false` followed by a newline.\n\n**Example Test Cases:**\n- Input: `racecar` | Output: `true\n`\n- Input: `java` | Output: `false\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read a single `String` using `Scanner`. Determine if the string is a palindrome (reads the same forwards and backwards, case-sensitive). Print `true` or `false` followed by a newline.\n\n**Example Test Cases:**\n- Input: `racecar` | Output: `true\n`\n- Input: `java` | Output: `false\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -957,7 +957,7 @@
         "id": 27,
         "title": "2D Array Max Value",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read the number of rows `R` and columns `C`, followed by R*C integers for a 2D array. Find and print the single largest integer in the 2D array, followed by a newline.\n\n**Example Test Cases:**\n- Input: `2 3\n1 5 3\n9 2 6` | Output: `9\n`\n- Input: `1 1\n42` | Output: `42\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read the number of rows `R` and columns `C`, followed by R*C integers for a 2D array. Find and print the single largest integer in the 2D array, followed by a newline.\n\n**Example Test Cases:**\n- Input: `2 3\n1 5 3\n9 2 6` | Output: `9\n`\n- Input: `1 1\n42` | Output: `42\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -991,7 +991,7 @@
         "id": 28,
         "title": "Simple Object Array Print",
         "difficulty": "Medium",
-        "description": "Create a class `Point` with an `x` field (int) and a constructor. Write a **`main` method** in `Solution` to create an array of `Point` objects: Point(1) and Point(2). Print the array in the format: `[Point(x=1), Point(x=2)]` followed by a newline.\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `[Point(x=1), Point(x=2)]\n`",
+        "description": "Create a class `Point` with an `x` field (int) and a constructor. Write a **`main` method** in a public class named `Solution` to create an array of `Point` objects: Point(1) and Point(2). Print the array in the format: `[Point(x=1), Point(x=2)]` followed by a newline.\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `[Point(x=1), Point(x=2)]\n`",
         "requiredClasses": [
             "Solution.java",
             "Point.java"
@@ -1010,7 +1010,7 @@
         "id": 29,
         "title": "String Reversal (Main)",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read a single `String` from `Scanner`. Print the reversed version of that string, followed by a newline.\n\n**Example Test Cases:**\n- Input: `zebra` | Output: `arbez\n`\n- Input: `level` | Output: `level\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read a single `String` from `Scanner`. Print the reversed version of that string, followed by a newline.\n\n**Example Test Cases:**\n- Input: `zebra` | Output: `arbez\n`\n- Input: `level` | Output: `level\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1044,7 +1044,7 @@
         "id": 30,
         "title": "Input Validation Loop",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to continuously read integers from `Scanner` until a number between 1 and 100 (inclusive) is entered. Once a valid number is entered, print that number followed by ` is valid.\n` and then terminate.\n\n**Example Test Cases:**\n- Input: `-5\n0\n10` | Output: `10 is valid.\n`\n- Input: `101\n50` | Output: `50 is valid.\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to continuously read integers from `Scanner` until a number between 1 and 100 (inclusive) is entered. Once a valid number is entered, print that number followed by ` is valid.\n` and then terminate.\n\n**Example Test Cases:**\n- Input: `-5\n0\n10` | Output: `10 is valid.\n`\n- Input: `101\n50` | Output: `50 is valid.\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1078,7 +1078,7 @@
         "id": 31,
         "title": "Count Words in a String",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read a line of text using `Scanner.nextLine()`. Count the number of words (assume words are separated by a single space and there are no leading/trailing spaces). Print the count followed by a newline.\n\n**Example Test Cases:**\n- Input: `Hello world` | Output: `2\n`\n- Input: `one two three four five` | Output: `5\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read a line of text using `Scanner.nextLine()`. Count the number of words (assume words are separated by a single space and there are no leading/trailing spaces). Print the count followed by a newline.\n\n**Example Test Cases:**\n- Input: `Hello world` | Output: `2\n`\n- Input: `one two three four five` | Output: `5\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1116,7 +1116,7 @@
         "id": 32,
         "title": "Swap Max and Min in Array",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read the array size `n`, followed by `n` integers. Find the maximum and minimum values in the array, then swap their positions. Print the modified array elements separated by spaces, followed by a newline. If there are duplicates, use the first occurrence.\n\n**Example Test Cases:**\n- Input: `5\n1 5 3 2 4` | Output: `5 1 3 2 4\n`\n- Input: `3\n10 1 10` | Output: `1 10 10\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read the array size `n`, followed by `n` integers. Find the maximum and minimum values in the array, then swap their positions. Print the modified array elements separated by spaces, followed by a newline. If there are duplicates, use the first occurrence.\n\n**Example Test Cases:**\n- Input: `5\n1 5 3 2 4` | Output: `5 1 3 2 4\n`\n- Input: `3\n10 1 10` | Output: `1 10 10\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1150,7 +1150,7 @@
         "id": 33,
         "title": "Check Array for Sorted Order",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read the array size `n`, followed by `n` integers. Determine if the array is sorted in non-decreasing (ascending) order. Print `true` or `false` followed by a newline.\n\n**Example Test Cases:**\n- Input: `4\n1 2 3 4` | Output: `true\n`\n- Input: `4\n4 2 3 1` | Output: `false\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read the array size `n`, followed by `n` integers. Determine if the array is sorted in non-decreasing (ascending) order. Print `true` or `false` followed by a newline.\n\n**Example Test Cases:**\n- Input: `4\n1 2 3 4` | Output: `true\n`\n- Input: `4\n4 2 3 1` | Output: `false\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1188,7 +1188,7 @@
         "id": 34,
         "title": "ArrayList Remove Duplicates",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read a line of space-separated strings. Store them in an `ArrayList<String>`. Remove all duplicate entries, keeping the first occurrence. Print the resulting list (in standard `[e1, e2, ...]` format) followed by a newline.\n\n**Example Test Cases:**\n- Input: `a b c a b` | Output: `[a, b, c]\n`\n- Input: `one two one two` | Output: `[one, two]\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read a line of space-separated strings. Store them in an `ArrayList<String>`. Remove all duplicate entries, keeping the first occurrence. Print the resulting list (in standard `[e1, e2, ...]` format) followed by a newline.\n\n**Example Test Cases:**\n- Input: `a b c a b` | Output: `[a, b, c]\n`\n- Input: `one two one two` | Output: `[one, two]\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1226,7 +1226,7 @@
         "id": 35,
         "title": "Count Occurrences in 2D Array",
         "difficulty": "Medium",
-        "description": "Write a **`main` method** to read the number of rows `R`, columns `C`, and a target integer `T`. Then read R*C integers for a 2D array. Count how many times `T` appears in the array and print the count followed by a newline.\n\n**Example Test Cases:**\n- Input: `2 2\n5\n1 5\n5 1` | Output: `2\n`\n- Input: `1 3\n10\n1 2 3` | Output: `0\n`",
+        "description": "Write a **public** Java class named `Solution` with a **`main` method** to read the number of rows `R`, columns `C`, and a target integer `T`. Then read R*C integers for a 2D array. Count how many times `T` appears in the array and print the count followed by a newline.\n\n**Example Test Cases:**\n- Input: `2 2\n5\n1 5\n5 1` | Output: `2\n`\n- Input: `1 3\n10\n1 2 3` | Output: `0\n`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1260,7 +1260,7 @@
         "id": 36,
         "title": "Recursive Sum of an Array",
         "difficulty": "Hard",
-        "description": "Write a public static method `recursiveSum` that takes an array of integers and returns the sum of all elements using **recursion**. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `{1, 2, 3}` | Output: `6`\n- Input: `{5}` | Output: `5`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `recursiveSum` that takes an array of integers and returns the sum of all elements using **recursion**. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `{1, 2, 3}` | Output: `6`\n- Input: `{5}` | Output: `5`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1298,7 +1298,7 @@
         "id": 37,
         "title": "Insertion Sort - Single Pass",
         "difficulty": "Hard",
-        "description": "Write a public static method `insertionSortPass` that takes an integer array and an integer `k` (the index of the element to be inserted). Perform a single pass of the Insertion Sort algorithm to place the element at index `k` into its correct sorted position within the subarray from index 0 to `k`. Return the modified array as a String (e.g., `[1, 5, 4, 2, 8]`). *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `{5, 1, 4, 2, 8}, 1` | Output: `[1, 5, 4, 2, 8]`\n- Input: `{1, 5, 4, 2, 8}, 2` | Output: `[1, 4, 5, 2, 8]`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `insertionSortPass` that takes an integer array and an integer `k` (the index of the element to be inserted). Perform a single pass of the Insertion Sort algorithm to place the element at index `k` into its correct sorted position within the subarray from index 0 to `k`. Return the modified array as a String (e.g., `[1, 5, 4, 2, 8]`). **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `{5, 1, 4, 2, 8}, 1` | Output: `[1, 5, 4, 2, 8]`\n- Input: `{1, 5, 4, 2, 8}, 2` | Output: `[1, 4, 5, 2, 8]`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1336,7 +1336,7 @@
         "id": 38,
         "title": "Polymorphic Greeting",
         "difficulty": "Hard",
-        "description": "Create an abstract class `Animal` with an abstract method `speak()`. Create two subclasses, `Dog` and `Cat`, that implement `speak()` to return \"Woof\" and \"Meow\", respectively. Write a public static method `getAnimalSound` that takes an `Animal` object and returns its sound. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `new Dog()` | Output: `Woof`\n- Input: `new Cat()` | Output: `Meow`",
+        "description": "Create an abstract class `Animal` with an abstract method `speak()`. Create two subclasses, `Dog` and `Cat`, that implement `speak()` to return \"Woof\" and \"Meow\", respectively. Write a public static method `getAnimalSound` in a public class named `Solution` that takes an `Animal` object and returns its sound. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `new Dog()` | Output: `Woof`\n- Input: `new Cat()` | Output: `Meow`",
         "requiredClasses": [
             "Solution.java",
             "Animal.java",
@@ -1361,7 +1361,7 @@
         "id": 39,
         "title": "ArrayList Remove All Occurrences",
         "difficulty": "Hard",
-        "description": "Write a public static method `removeAll` that takes an `ArrayList<String>` and a `String` target. Remove *all* instances of the target string from the list. Return the modified list as a String (in `[e1, e2, ...]` format). *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `[\"a\", \"b\", \"a\", \"c\"], \"a\"` | Output: `[b, c]`\n- Input: `[\"x\", \"y\", \"z\"], \"w\"` | Output: `[x, y, z]`",
+        "description": "Write a public static method `removeAll` that takes an `ArrayList<String>` and a `String` target. Remove *all* instances of the target string from the list. Return the modified list as a String (in `[e1, e2, ...]` format). **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `[\"a\", \"b\", \"a\", \"c\"], \"a\"` | Output: `[b, c]`\n- Input: `[\"x\", \"y\", \"z\"], \"w\"` | Output: `[x, y, z]`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1395,7 +1395,7 @@
         "id": 40,
         "title": "Reverse Words in a String",
         "difficulty": "Hard",
-        "description": "Write a public static method `reverseWords` that takes a `String` containing words separated by single spaces. The method should return a new string where the order of the words is reversed, but the words themselves are not. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"hello world\"` | Output: `\"world hello\"`\n- Input: `\"a b c\"` | Output: `\"c b a\"`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `reverseWords` that takes a `String` containing words separated by single spaces. The method should return a new string where the order of the words is reversed, but the words themselves are not. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `\"hello world\"` | Output: `\"world hello\"`\n- Input: `\"a b c\"` | Output: `\"c b a\"`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1429,7 +1429,7 @@
         "id": 41,
         "title": "Scrabble Word Score",
         "difficulty": "Hard",
-        "description": "Write a public static method `getScore` that takes a word (`String`) and returns its Scrabble score. Use the following point values: A, E, I, O, U, L, N, S, T, R (1 point); D, G (2 points); B, C, M, P (3 points); F, H, V, W, Y (4 points); K (5 points); J, X (8 points); Q, Z (10 points). The input will be uppercase. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"JAZZ\"` | Output: `29` (J=8, A=1, Z=10, Z=10)\n- Input: `\"A\"` | Output: `1`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `getScore` that takes a word (`String`) and returns its Scrabble score. Use the following point values: A, E, I, O, U, L, N, S, T, R (1 point); D, G (2 points); B, C, M, P (3 points); F, H, V, W, Y (4 points); K (5 points); J, X (8 points); Q, Z (10 points). The input will be uppercase. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `\"JAZZ\"` | Output: `29` (J=8, A=1, Z=10, Z=10)\n- Input: `\"A\"` | Output: `1`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1467,7 +1467,7 @@
         "id": 42,
         "title": "2D Array - Column Sum",
         "difficulty": "Hard",
-        "description": "Write a public static method `columnSum` that takes a 2D integer array (`int[][]`) and a column index (`int col`). Return the sum of all elements in that specific column. Assume the array is non-empty and rectangular. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `{{1, 2, 3}, {4, 5, 6}}, 1` | Output: `7` (2 + 5)\n- Input: `{{10}, {20}, {30}}, 0` | Output: `60` (10 + 20 + 30)",
+        "description": "Write a **public** Java class named `Solution` with a public static method `columnSum` that takes a 2D integer array (`int[][]`) and a column index (`int col`). Return the sum of all elements in that specific column. Assume the array is non-empty and rectangular. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `{{1, 2, 3}, {4, 5, 6}}, 1` | Output: `7` (2 + 5)\n- Input: `{{10}, {20}, {30}}, 0` | Output: `60` (10 + 20 + 30)",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1501,7 +1501,7 @@
         "id": 43,
         "title": "Count 'Code' Substring",
         "difficulty": "Hard",
-        "description": "Write a public static method `countCode` that takes a `String` and returns the number of times the substring \"code\" appears. We will allow any character in place of the 'd', so \"cope\" and \"cooe\" count. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"aaacodebbb\"` | Output: `1`\n- Input: `\"cozexxcope\"` | Output: `2`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `countCode` that takes a `String` and returns the number of times the substring \"code\" appears. We will allow any character in place of the 'd', so \"cope\" and \"cooe\" count. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `\"aaacodebbb\"` | Output: `1`\n- Input: `\"cozexxcope\"` | Output: `2`",
         "requiredClasses": [
             "Solution.java"
         ],
@@ -1539,7 +1539,7 @@
         "id": 44,
         "title": "Abstract Class Shape Area",
         "difficulty": "Hard",
-        "description": "Create an abstract class `Shape` with an abstract method `getArea()`. Create a subclass `Rectangle` with a constructor that takes length and width. Write a public static method `getTotalArea` that takes a `Rectangle` object and returns its area. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `new Rectangle(2, 3)` | Output: `6.0`\n- Input: `new Rectangle(10, 5)` | Output: `50.0`",
+        "description": "Create an abstract class `Shape` with an abstract method `getArea()`. Create a subclass `Rectangle` with a constructor that takes length and width. Write a public static method `getTotalArea` in a public class named `Solution` that takes a `Rectangle` object and returns its area. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `new Rectangle(2, 3)` | Output: `6.0`\n- Input: `new Rectangle(10, 5)` | Output: `50.0`",
         "requiredClasses": [
             "Solution.java",
             "Shape.java",
@@ -1571,7 +1571,7 @@
         "id": 45,
         "title": "Binary Search Implementation",
         "difficulty": "Hard",
-        "description": "Write a public static method `binarySearch` that takes a sorted array of integers (`int[]`) and a target value (`int target`). The method should return the index of the target in the array, or `-1` if the target is not present. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `{2, 4, 6, 8, 10}, 8` | Output: `3`\n- Input: `{1, 3, 5, 7, 9}, 4` | Output: `-1`",
+        "description": "Write a **public** Java class named `Solution` with a public static method `binarySearch` that takes a sorted array of integers (`int[]`) and a target value (`int target`). The method should return the index of the target in the array, or `-1` if the target is not present. **Do not write a main method.**\n\n**Example Test Cases:**\n- Input: `{2, 4, 6, 8, 10}, 8` | Output: `3`\n- Input: `{1, 3, 5, 7, 9}, 4` | Output: `-1`",
         "requiredClasses": [
             "Solution.java"
         ],
