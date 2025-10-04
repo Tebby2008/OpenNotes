@@ -118,22 +118,26 @@
     .controls-container {
       position: sticky; top: 16px; z-index: 100;
       padding-bottom: 2rem;
-
     }
     .controls {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      display: flex; flex-wrap:wrap; align-items: center; justify-content: space-between; gap: 8px;
       background: var(--panel-glass);
       backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.5);
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
       border-radius: 999px;
-      padding: 8px;
+      padding: 8px; /* Default padding for large screens */
       width: max-content;
       max-width: calc(100vw - 20px);
       margin: 0 auto;
     }
     .dark-mode .controls { border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
-    .controls .left, .controls .right { display: flex; align-items: center; gap: 4px; }
+    .controls .left, .controls .right { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+
+    /* New CSS rule to hide mobile-only toggle on desktop */
+    .mobile-only-toggle {
+        display: none !important; 
+    }
 
     .btn {
       background: transparent; color: var(--text); border: none;
@@ -150,7 +154,8 @@
     .dark-mode .btn.active { box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
     .btn.active-ai { background: var(--panel); box-shadow: 0 0 0 2px var(--gold-glow) inset; color: #b38600; }
     .dark-mode .btn.active-ai { color: var(--gold); }
-    #aiToggleBtn.active-ai .material-symbols-outlined { color: var(--gold); font-variation-settings: 'FILL' 1; }
+    #aiToggleBtn .material-symbols-outlined { font-variation-settings: 'FILL' 1; }
+    #aiToggleBtn.active-ai .material-symbols-outlined { color: var(--gold); }
     .btn.active-sort { background: var(--accent-light); color: var(--accent); }
     .dark-mode .btn.active-sort { background: var(--accent); color: white; }
 
@@ -431,6 +436,30 @@
         align-items: center;
         gap: 6px;
     }
+    @media (max-width: 768px) {
+        .controls {
+            padding: 12px 1.5rem; /* Use the desired mobile padding here */
+        }
+        #typeBtn, #aiToggleBtn {
+            display: none;
+        }
+        /* Grid/List View Mobile Toggle Optimization */
+        .toggle {
+            display: none !important; /* Hide the desktop grid/list buttons */
+        }
+        .mobile-only-toggle {
+            display: flex !important; /* Show the single mobile toggle button */
+        }
+        #searchInput {
+            width:0px;
+        }
+        .search input {
+           padding: 0 2px 0 8px;
+        }
+        .search:focus-within #searchInput {
+            width: 100px;
+        }
+    }
   </style>
 </head>
 <body>
@@ -443,11 +472,9 @@
           <img draggable = false src="resources/ingenium.png" alt="Ingenium Logo" />
         </a>
       </p>
-      <a href="https://tebby2008.github.io/OpenNotes/codeprep.html" target="_blank" rel="noopener" class="github-link" style="text-decoration: none;"">
-        <button class="btn"><em>Visit CodePrep - Your user-friendly coding practice platform</em></button>
-      </a>
   </header>
 
+  
   <div class="controls-container">
     <div class="controls">
       <div class="left">
@@ -466,7 +493,7 @@
         <button id="typeBtn" class="btn"><b>ALL</b></button>
         <button id="aiToggleBtn" class="btn active-ai" title="Toggle AI Content">
           <span class="material-symbols-outlined">auto_awesome</span>
-          <b>Show AI</b>
+          <b>AI</b>
         </button>
       </div>
       <div class="right">
@@ -474,8 +501,17 @@
           <span class="material-symbols-outlined">search</span>
           <input id="searchInput" type="text" placeholder="Search notes..." aria-label="Search notes" />
         </div>
+
+        <a href="https://tebby2008.github.io/OpenNotes/codeprep.html" target="_blank" rel="noopener" class="btn controls-promo-btn" title="CodePrep">
+          <span class="material-symbols-outlined">code</span>
+        </a>
+
         <button id="uploadBtn" class="btn icon-only" title="How to Upload" data-md="resources/upload.md">
           <span class="material-symbols-outlined">upload</span>
+        </button>
+        
+        <button id="viewToggleMobile" class="btn icon-only mobile-only-toggle" title="Switch View Mode">
+          <span class="material-symbols-outlined">view_list</span> 
         </button>
         <div class="toggle" role="tablist" aria-label="View mode">
           <button id="gridBtn" class="btn active icon-only" aria-pressed="true" title="Grid view">
@@ -607,6 +643,9 @@
       const darkModeToggle = document.getElementById("darkModeToggle");
       const darkModeIcon = darkModeToggle.querySelector('.material-symbols-outlined');
       const popupNotification = document.getElementById('popupNotification');
+      const searchIcon = document.querySelector('.search .material-symbols-outlined');
+      // NEW MOBILE TOGGLE VARIABLE
+      const viewToggleMobile = document.getElementById('viewToggleMobile');
 
       const isDarkMode = localStorage.getItem('openNotesDarkMode') === 'true';
       if (isDarkMode) {
@@ -629,6 +668,12 @@
       } else {
         listBtn.classList.add("active"); listBtn.setAttribute("aria-pressed", "true");
         gridBtn.classList.remove("active"); gridBtn.setAttribute("aria-pressed", "false");
+      }
+      if (searchIcon)
+      {
+         searchIcon.addEventListener("click", () => {
+             searchInput.focus(); // Programmatically focus the input field
+          });
       }
 
       const fmtDate = (iso) => !iso ? "—" : new Date(iso).toLocaleDateString('en-GB');
@@ -846,10 +891,32 @@
         gridBtn.classList.remove("active"); gridBtn.setAttribute("aria-pressed", "false");
         render();
       });
+      
+      // NEW MOBILE VIEW TOGGLE LOGIC
+      if (viewToggleMobile) {
+        viewToggleMobile.addEventListener("click", () => {
+          // Toggle viewMode: grid -> list, list -> grid
+          viewMode = viewMode === "grid" ? "list" : "grid"; 
+          localStorage.setItem('openNotesViewMode', viewMode);
+          
+          // Update the icon to show the NEXT view mode (if current is grid, show list icon, and vice versa)
+          const icon = viewToggleMobile.querySelector('.material-symbols-outlined');
+          icon.textContent = viewMode === "grid" ? "view_list" : "grid_view";
+
+          // Sync desktop buttons' state for robustness (though they are hidden)
+          if (viewMode === 'grid') {
+            gridBtn.classList.add("active"); listBtn.classList.remove("active");
+          } else {
+            listBtn.classList.add("active"); gridBtn.classList.remove("active");
+          }
+          
+          render();
+        });
+      }
+      
       aiToggleBtn.addEventListener("click", () => {
         showAI = !showAI;
         aiToggleBtn.classList.toggle("active-ai");
-        aiToggleBtn.querySelector('b').textContent = showAI ? 'Show AI' : 'Hide AI';
         render();
       });
       const types = ["ALL", "PDF", "DOCX"]; let idx = 0;
@@ -958,6 +1025,14 @@
           }
           const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
           if(res.ok) websiteViewsEl.textContent = (await res.json()).views;
+          
+          // NEW: Initialize the mobile toggle icon
+          if (viewToggleMobile) {
+            const icon = viewToggleMobile.querySelector('.material-symbols-outlined');
+            // If the current mode is grid, the toggle should show the list icon (the one it switches to)
+            icon.textContent = viewMode === "grid" ? "view_list" : "grid_view";
+          }
+          
           render();
           add3dInteraction();
           handleUrlState();
