@@ -695,16 +695,45 @@
                         finalResults = tests.map((test, i) => {
                             const rawActual = outputs[i]; // This is the string captured after splitting and trimming by the delimiter
                             const rawExpected = test.expectedOutput;
+                            
                             const sanitize = (str) => {
                                 if (typeof str !== 'string') return '';
                                 str = str.replace(/\r\n/g, '\n');
                                 return str.trim();
                             };
 
-                            const actual = sanitize(rawActual);
-                            const expected = sanitize(rawExpected);
+                            // NEW: Helper function to check for the random integer match
+                            const isRandomIntMatch = (expected, actual) => {
+                                // Regex to find ##__Randint_A_B__##, supporting negative numbers for A and B
+                                const randomIntRegex = /^##__Randint_(-?\d+)_(-?\d+)__##$/; 
+                                const match = expected.trim().match(randomIntRegex);
 
-                            let status = (actual === expected) ? 'PASSED' : 'FAILED_LOGIC';                            
+                                if (match) {
+                                    // Random Integer Range Check
+                                    const min = parseInt(match[1], 10);
+                                    const max = parseInt(match[2], 10);
+                                    
+                                    // Check if actual is an integer string (e.g., '5', not '5.0')
+                                    const actualInt = parseInt(actual, 10);
+                                    
+                                    // Validation: 
+                                    // 1. actual must strictly match its integer representation (e.g., avoids matching floating points)
+                                    // 2. Must be a valid number and within the inclusive range
+                                    if (actual === String(actualInt) && !isNaN(actualInt) && actualInt >= min && actualInt <= max) {
+                                        return true;
+                                    }
+                                    return false;
+                                } else {
+                                    // Standard comparison: Compare sanitized actual to sanitized expected
+                                    return actual === sanitize(expected);
+                                }
+                            };
+                            
+                            // Sanitize actual output once
+                            const actual = sanitize(rawActual);
+
+                            // Use the new function for comparison
+                            let status = isRandomIntMatch(rawExpected, actual) ? 'PASSED' : 'FAILED_LOGIC';                            
                             if (status !== 'PASSED') { combinedStatus = 'FAILED_LOGIC'; }
 
                             return {
