@@ -784,7 +784,7 @@
         "tests": [
             {
                 "input": "",
-                "expectedOutput": "4\n"
+                "expectedOutput": "##__Randint_1_6__##\n"
             }
         ],
         "runAsMain": true,
