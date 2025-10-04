@@ -293,7 +293,7 @@
     </footer>
 
 
-<script>
+    <script>
         const editor = document.getElementById('code-editor');
         const titleEl = document.getElementById('current-problem-title');
         const difficultyEl = document.getElementById('current-problem-difficulty');
@@ -305,15 +305,11 @@
         const fileManagerEl = document.getElementById('file-manager');
         const fileTabsEl = document.getElementById('file-tabs');
         const resultModalMessageEl = document.getElementById('result-modal-message');
-        const mainContentGrid = document.querySelector('.lg\\:grid-cols-3'); // Select the main layout grid
-        const codeEditorContainer = document.querySelector('.lg\\:col-span-2'); // Select the container holding the editor
 
         // --- API CONFIGURATION ---
         const WORKER_BASE_URL = 'https://java-compiler-worker.tebby2008-li.workers.dev'; 
         const COMPILER_URL = `${WORKER_BASE_URL}/compile`;
         const TUTOR_URL = `${WORKER_BASE_URL}/tutor`;
-        // NEW AP Scoring URL
-        const AP_SCORER_URL = `${WORKER_BASE_URL}/score_ap`;
         const PROBLEM_DATA_URL = 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/coding_problems.json'; // URL for the JSON file
         const TRANSITION_DURATION = 300; 
         
@@ -326,16 +322,11 @@
         let activeFilters = {
             'Easy': true,
             'Medium': true,
-            'Hard': true,
-            'AP': true // NEW: Include AP in filters
+            'Hard': true
         };
         
         let codeFiles = [];
         let currentFileIndex = 0;
-        
-        // --- NEW AP State Management ---
-        let isAPProblem = false;
-        let currentSubQuestionIndex = 0;
         
         // --- Modal Transition Handlers (UNCHANGED) ---
         function showModalWithTransition(modalId, contentId) {
@@ -380,7 +371,7 @@
             hideModalWithTransition('loading-modal', null);
         }
 
-        // --- Utility Functions (UPDATED to include AP table rendering) ---
+        // --- Utility Functions (UNCHANGED) ---
 
         function convertMarkdownToHtml(text) {
             if (!text) return '';
@@ -390,21 +381,6 @@
             // Convert newlines to breaks for display in the message area
             text = text.replace(/\n/g, '<br>');
             return text;
-        }
-
-        /**
-         * NEW: Renders an HTML table with basic styling.
-         * @param {string} tableHtml - The raw HTML string for the table.
-         * @returns {string} Styled HTML table.
-         */
-        function renderAPTable(tableHtml) {
-            if (!tableHtml) return '';
-            // Apply Tailwind classes for a dark, styled table
-            const styledTable = tableHtml
-                .replace(/<table/g, '<table class="w-full mt-4 mb-4 border-collapse text-gray-300 bg-gray-900/50 rounded-lg overflow-hidden"')
-                .replace(/<th/g, '<th class="py-2 px-4 border border-gray-700/50 bg-gray-800/70 text-white font-semibold text-left"')
-                .replace(/<td/g, '<td class="py-2 px-4 border border-gray-700/50 text-left"');
-            return styledTable;
         }
 
         // --- Editor and File Management (UNCHANGED) ---
@@ -433,17 +409,22 @@
             }
         });
         
-        // --- Code Editor Enhancements (Tab Key Handling - UNCHANGED) ---
+        // --- Code Editor Enhancements (Tab Key Handling) ---
         editor.addEventListener('keydown', function(e) {
+            // 1. Tab Key Handling: Insert 4 spaces instead of changing focus
             if (e.key === 'Tab') {
                 e.preventDefault();
                 const start = this.selectionStart;
                 const end = this.selectionEnd;
-                const fourSpaces = '    '; 
+                const fourSpaces = '    '; // Four spaces for indentation
 
+                // Insert four spaces at the cursor position
                 this.value = this.value.substring(0, start) + fourSpaces + this.value.substring(end);
 
+                // Move the cursor right after the inserted spaces
                 this.selectionStart = this.selectionEnd = start + fourSpaces.length;
+                
+                // e.preventDefault() handles stopping the default focus change.
             }
         });
 
@@ -455,8 +436,6 @@
                     return { text: 'text-yellow-300', bg: 'bg-yellow-700/30' };
                 case 'Hard':
                     return { text: 'text-red-300', bg: 'bg-red-700/30' };
-                case 'AP': // NEW: AP Style
-                    return { text: 'text-purple-300', bg: 'bg-purple-700/30' };
                 default:
                     return { text: 'text-gray-300', bg: 'bg-gray-700/30' };
             }
@@ -465,45 +444,24 @@
         function loadProblem(problem) {
             currentProblem = problem;
             titleEl.textContent = problem.title;
+            descriptionEl.innerHTML = convertMarkdownToHtml(problem.description);
             
-            isAPProblem = problem.type === 'AP';
-            currentSubQuestionIndex = 0; // Always reset
+            // CRITICAL: Initialize codeFiles with EMPTY content, as requested.
+            codeFiles = problem.requiredClasses.map(name => ({
+                name: name,
+                content: ''
+            }));
+            currentFileIndex = 0;
 
-            if (isAPProblem) {
-                // AP: Show only the main problem description initially
-                descriptionEl.innerHTML = convertMarkdownToHtml(problem.description);
-                // CRITICAL: Initialize codeFiles for AP to store solutions for all parts
-                codeFiles = problem.subQuestions.map((q, index) => ({
-                    name: `Part ${q.id}.java`,
-                    content: ''
-                }));
-                // Show initial AP view (full-width description, no editor, navigation change)
-                updateAPLayout(false);
-                updateAPNavigationButtons();
-
+            const isMultiClass = problem.requiredClasses.length > 1;
+            fileManagerEl.classList.toggle('hidden', !isMultiClass);
+            
+            if (codeFiles.length > 0) {
+                editor.value = codeFiles[currentFileIndex].content;
             } else {
-                // Standard Problem: Set up code editor immediately
-                descriptionEl.innerHTML = convertMarkdownToHtml(problem.description);
-                codeFiles = problem.requiredClasses.map(name => ({
-                    name: name,
-                    content: ''
-                }));
-                currentFileIndex = 0;
-                
-                // Show standard view
-                updateAPLayout(true);
-                updateStandardNavigationButton();
-                
-                const isMultiClass = problem.requiredClasses.length > 1;
-                fileManagerEl.classList.toggle('hidden', !isMultiClass);
-                
-                if (codeFiles.length > 0) {
-                    editor.value = codeFiles[currentFileIndex].content;
-                } else {
-                    editor.value = '';
-                }
+                editor.value = '';
             }
-
+            
             const style = getDifficultyStyle(problem.difficulty);
             difficultyEl.textContent = problem.difficulty;
             difficultyEl.className = `px-3 py-1 text-xs rounded-full font-medium ${style.text} ${style.bg}`;
@@ -513,237 +471,26 @@
             toggleProblemSelector(false); 
         }
         
-        // --- NEW: AP Layout and Navigation Functions ---
-
-        /**
-         * Updates the main layout grid to hide or show the code editor container.
-         * @param {boolean} showCodeEditor - True to show editor (original 1/3, 2/3 split), False to hide (full-width description).
-         */
-        function updateAPLayout(showCodeEditor) {
-            // Toggle the grid layout to change the description container's width
-            mainContentGrid.classList.toggle('lg:grid-cols-3', showCodeEditor);
-            
-            // Toggle the description container's column span
-            const descriptionContainer = descriptionEl.closest('.glass-card');
-            if (descriptionContainer) {
-                descriptionContainer.classList.toggle('lg:col-span-1', showCodeEditor);
-                descriptionContainer.classList.toggle('lg:col-span-3', !showCodeEditor);
-                // Ensure max-height for scrollable description is correct
-                descriptionEl.style.maxHeight = showCodeEditor ? '100vh' : 'calc(100vh - 200px)';
-            }
-
-            // Toggle visibility of the editor container
-            codeEditorContainer.classList.toggle('hidden', !showCodeEditor);
-            // Hide/show the main submit/navigation button bar for non-AP/AP
-            document.querySelector('.glass-card.p-4.rounded-2xl').classList.toggle('hidden', isAPProblem && !showCodeEditor); 
-        }
-
-        /**
-         * Updates the navigation buttons for the AP problem workflow.
-         */
-        function updateAPNavigationButtons() {
-            const buttonBar = document.querySelector('.glass-card.p-4.rounded-2xl > .flex');
-            
-            // Remove existing buttons from the bar
-            const actionContainer = document.querySelector('.glass-card.p-4.rounded-2xl');
-            let actionButtons = actionContainer.querySelector('.flex.space-x-3.w-full.md\\:w-auto')
-            if (actionButtons) actionButtons.remove();
-            
-            // Clear and prepare action container
-            actionContainer.innerHTML = '';
-            
-            if (!isAPProblem) {
-                // If somehow called for non-AP, revert to standard buttons
-                updateStandardNavigationButton();
-                return;
-            }
-
-            // --- Determine which buttons to show ---
-            const isAtTopLevel = currentSubQuestionIndex === 0 && !codeEditorContainer.classList.contains('hidden');
-            const isAtFirstPart = currentSubQuestionIndex === 1;
-            const isAtLastPart = currentSubQuestionIndex === currentProblem.subQuestions.length;
-
-            if (!codeEditorContainer.classList.contains('hidden')) { // We are in a sub-question view
-
-                const backBtn = `<button onclick="handleAPNavigation('back')" class="bg-gray-700/80 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full md:w-auto">
-                    ← Back to Part ${currentSubQuestionIndex - 1 || 'Description'}
-                </button>`;
-
-                let nextBtn;
-                if (isAtLastPart) {
-                    // Last sub-question shows the final submit button
-                    nextBtn = `<button id="check-code-btn" onclick="confirmAPSubmission()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-colors transform hover:scale-[1.01]">
-                        Submit AP Code
-                    </button>`;
-                } else {
-                    // Intermediate sub-questions show a continue button
-                    nextBtn = `<button onclick="handleAPNavigation('continue')" class="w-full md:w-auto bg-ios-blue hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-colors transform hover:scale-[1.01]">
-                        Continue to Part ${currentSubQuestionIndex + 1} →
-                    </button>`;
-                }
-                
-                // Add the problem selector and random buttons back on the left
-                const leftButtons = `
-                    <div class="flex space-x-3 w-full md:w-auto">
-                        <button onclick="toggleProblemSelector(true)" class="bg-gray-700/80 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
-                            Problem Selector
-                        </button>
-                        <button id="random-problem-btn" onclick="loadRandomProblem()" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
-                            Random Problem
-                        </button>
-                    </div>`;
-
-                actionContainer.innerHTML = leftButtons + backBtn + nextBtn;
-                actionContainer.classList.add('flex-col', 'md:flex-row', 'justify-between', 'items-center', 'space-y-4', 'md:space-y-0', 'md:space-x-4');
-                actionContainer.classList.remove('hidden');
-
-
-            } else { // We are in the top-level description view
-                
-                const continueBtn = `<button onclick="handleAPNavigation('continue')" class="w-full md:w-auto bg-ios-blue hover:bg-blue-600 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-colors transform hover:scale-[1.01]">
-                    Start Challenge (Part ${currentProblem.subQuestions[0].id}) →
-                </button>`;
-                
-                // Add the problem selector and random buttons back on the left
-                const leftButtons = `
-                    <div class="flex space-x-3 w-full md:w-auto">
-                        <button onclick="toggleProblemSelector(true)" class="bg-gray-700/80 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
-                            Problem Selector
-                        </button>
-                        <button id="random-problem-btn" onclick="loadRandomProblem()" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
-                            Random Problem
-                        </button>
-                    </div>`;
-                
-                actionContainer.innerHTML = leftButtons + continueBtn;
-                actionContainer.classList.add('flex-col', 'md:flex-row', 'justify-between', 'items-center', 'space-y-4', 'md:space-y-0', 'md:space-x-4');
-                actionContainer.classList.remove('hidden');
-
-            }
-
-            // Re-call random button logic to update text if needed
-            renderProblemList();
-        }
-
-        /**
-         * Handles forward/backward navigation for AP sub-questions.
-         * @param {'continue'|'back'} direction
-         */
-        function handleAPNavigation(direction) {
-            if (!currentProblem || !isAPProblem) return;
-
-            // 1. Save current state (only for code-writing parts)
-            if (!codeEditorContainer.classList.contains('hidden')) {
-                // Save the code for the current sub-question file (Part X.java)
-                codeFiles[currentSubQuestionIndex - 1].content = editor.value; 
-            }
-
-            if (direction === 'continue') {
-                if (codeEditorContainer.classList.contains('hidden')) {
-                    // Transition from main description to first sub-question
-                    currentSubQuestionIndex = 1;
-                    updateAPLayout(true); // Show editor
-                } else if (currentSubQuestionIndex < currentProblem.subQuestions.length) {
-                    // Move to the next sub-question
-                    currentSubQuestionIndex++;
-                }
-            } else if (direction === 'back') {
-                if (currentSubQuestionIndex === 1) {
-                    // Transition back to main description
-                    currentSubQuestionIndex = 0;
-                    updateAPLayout(false); // Hide editor
-                } else if (currentSubQuestionIndex > 1) {
-                    // Move to the previous sub-question
-                    currentSubQuestionIndex--;
-                }
-            }
-
-            // 2. Load new content based on new index
-            if (currentSubQuestionIndex === 0) {
-                // Back to top-level description
-                titleEl.textContent = currentProblem.title;
-                descriptionEl.innerHTML = convertMarkdownToHtml(currentProblem.description);
-                // The layout change already happened in step 1
-            } else {
-                // Load a sub-question
-                const subQuestion = currentProblem.subQuestions[currentSubQuestionIndex - 1];
-                const partTitle = `${currentProblem.title} - Part ${subQuestion.id}`;
-                titleEl.textContent = partTitle;
-                
-                let content = convertMarkdownToHtml(subQuestion.prompt);
-                if (subQuestion.tableHtml) {
-                    content += renderAPTable(subQuestion.tableHtml);
-                }
-                
-                // Display required class in description as a hint
-                content += `<p class="mt-4 text-sm text-yellow-400">**Task:** Complete the method(s) in the class: \`${currentProblem.requiredClasses[currentSubQuestionIndex - 1]}\`</p>`;
-
-                descriptionEl.innerHTML = content;
-                
-                // Load code for the new sub-question
-                currentFileIndex = currentSubQuestionIndex - 1;
-                editor.value = codeFiles[currentFileIndex].content;
-                renderFileTabs();
-                
-                // Ensure code editor is visible (already done in step 1 on first entry)
-            }
-
-            // 3. Update navigation buttons for the new state
-            updateAPNavigationButtons();
-        }
-
-        function updateStandardNavigationButton() {
-            const actionContainer = document.querySelector('.glass-card.p-4.rounded-2xl');
-            actionContainer.innerHTML = '';
-            actionContainer.classList.remove('hidden');
-
-            actionContainer.innerHTML = `
-                <div class="flex space-x-3 w-full md:w-auto">
-                    <button onclick="toggleProblemSelector(true)" class="bg-gray-700/80 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
-                        Problem Selector
-                    </button>
-                    <button id="random-problem-btn" onclick="loadRandomProblem()" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
-                        Random Problem
-                    </button>
-                </div>
-                <button id="check-code-btn" onclick="confirmSubmission()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-colors transform hover:scale-[1.01]">
-                    Check (Submit Code)
-                </button>
-            `;
-            actionContainer.classList.add('flex-col', 'md:flex-row', 'justify-between', 'items-center', 'space-y-4', 'md:space-y-0', 'md:space-x-4');
-            renderProblemList(); // Update random button text
-        }
-        
         function renderFileTabs() {
             fileTabsEl.innerHTML = '';
             
-            // For AP problems, the file tabs are tied to the sub-questions and shouldn't be added/removed
-            const shouldHideFileControls = isAPProblem || codeFiles.length <= 1;
-            document.getElementById('remove-file-btn').classList.toggle('opacity-50', shouldHideFileControls);
-            document.getElementById('remove-file-btn').disabled = shouldHideFileControls;
-            document.querySelector('[onclick="addFile()"]').classList.toggle('hidden', isAPProblem);
-            document.querySelector('[onclick="removeFile()"]').classList.toggle('hidden', isAPProblem);
-            fileManagerEl.classList.toggle('hidden', shouldHideFileControls);
+            document.getElementById('remove-file-btn').classList.toggle('opacity-50', codeFiles.length <= 1);
+            document.getElementById('remove-file-btn').disabled = codeFiles.length <= 1;
 
             codeFiles.forEach((file, index) => {
                 const tab = document.createElement('div');
-                tab.textContent = isAPProblem ? `Part ${currentProblem.subQuestions[index].id}` : file.name;
+                tab.textContent = file.name;
                 
-                // CRITICAL: For AP, only the *current* sub-question file should be active.
-                const isActive = isAPProblem ? (index === currentSubQuestionIndex - 1) : (index === currentFileIndex);
-                tab.className = `file-tab ${isActive ? 'active' : ''} ${isAPProblem ? 'cursor-default' : ''}`;
+                const isActive = index === currentFileIndex;
+                tab.className = `file-tab ${isActive ? 'active' : ''}`;
                 
-                // Disable file switching for AP problems, as navigation buttons handle it
-                if (!isAPProblem) {
-                    tab.onclick = () => switchFile(index);
-                }
+                tab.onclick = () => switchFile(index);
                 fileTabsEl.appendChild(tab);
             });
         }
         
         function switchFile(index) {
             if (index === currentFileIndex) return;
-            if (isAPProblem) return; // AP switching is handled by navigation
 
             if (codeFiles.length > 0) {
                 codeFiles[currentFileIndex].content = editor.value; 
@@ -755,14 +502,12 @@
         }
 
         function addFile() {
-            if (isAPProblem) return;
             const newFileName = `<unnamed_${Date.now()}>.java`;
             codeFiles.push({ name: newFileName, content: '' });
             switchFile(codeFiles.length - 1);
         }
 
         function removeFile() {
-            if (isAPProblem) return;
             if (codeFiles.length > 1) {
                 codeFiles.splice(currentFileIndex, 1);
                 currentFileIndex = Math.max(0, currentFileIndex - 1); 
@@ -771,10 +516,10 @@
             }
         }
 
-        // --- Main App Logic (COMPILATION/TUTOR LOGIC) ---
+        // --- Main App Logic (COMPILATION/TUTOR LOGIC UNCHANGED) ---
 
         function loadRandomProblem() {
-            let filteredProblems = problems.filter(p => activeFilters[p.difficulty] || activeFilters[p.type]); // Filter by type too
+            let filteredProblems = problems.filter(p => activeFilters[p.difficulty]);
             
             if (currentProblem) {
                 filteredProblems = filteredProblems.filter(p => p.id !== currentProblem.id);
@@ -793,17 +538,10 @@
         }
         
         function confirmSubmission() {
-            if (isAPProblem) {
-                // Redirect standard submission to AP submission if state is corrupted
-                confirmAPSubmission(); 
-                return;
-            }
-
             if (!currentProblem) {
                 showResultModal('Error', 'Please select a problem before attempting to check code.', 'error', null);
                 return;
             }
-            // Save the current code before confirming submission
             if (codeFiles.length > 0 && currentFileIndex >= 0) {
                 codeFiles[currentFileIndex].content = editor.value;
             }
@@ -814,70 +552,11 @@
             hideModalWithTransition('confirmation-modal', 'confirmation-content');
         }
 
-        // --- NEW: AP Submission Logic ---
-        async function confirmAPSubmission() {
-            if (!currentProblem || !isAPProblem) return;
-
-            // 1. Save the code for the last sub-question
-            codeFiles[currentSubQuestionIndex - 1].content = editor.value;
-            
-            // 2. Combine all code from all sub-questions into a single submission string
-            // We assume the requiredClasses array matches the order of the subQuestions
-            let apCodeSubmission = '';
-            for (let i = 0; i < currentProblem.subQuestions.length; i++) {
-                // Prepend the required class name for context and file matching
-                const requiredClass = currentProblem.requiredClasses[i];
-                const subQuestionCode = codeFiles[i].content.trim();
-                
-                // Wrap code only if it's not empty, otherwise use a placeholder to avoid compilation issues on empty files
-                if (subQuestionCode) {
-                    apCodeSubmission += `// --- ${requiredClass} Code ---\n${subQuestionCode}\n\n`;
-                } else {
-                     apCodeSubmission += `// --- ${requiredClass} Code ---\npublic class ${requiredClass} {} // Placeholder for missing code\n\n`;
-                }
-            }
-
-            cancelSubmission(); // Hide confirmation modal
-            showLoadingModal();
-
-            checkCodeBtn.textContent = 'Scoring AP Code...';
-            checkCodeBtn.disabled = true;
-
-            const currentSubQuestion = currentProblem.subQuestions[currentSubQuestionIndex - 1]; // The part being scored
-            const problemDescription = `The full problem is: ${currentProblem.description}. The student is submitting code for Part ${currentSubQuestion.id} which requires completing the class ${currentProblem.requiredClasses[currentSubQuestionIndex - 1]}. Prompt: ${currentSubQuestion.prompt}`;
-            
-            try {
-                const response = await fetch(AP_SCORER_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        code: apCodeSubmission,
-                        problemDescription: problemDescription,
-                        scoringGuidelines: currentSubQuestion.rubric // Pass the specific rubric
-                    })
-                });
-
-                const rawOutput = await response.text();
-
-                if (!response.ok) {
-                    throw new Error(rawOutput || `Server returned status ${response.status}`);
-                }
-
-                hideLoadingModal();
-                showAPResult(rawOutput, apCodeSubmission);
-                
-            } catch (error) {
-                hideLoadingModal();
-                // Treat any error as a failed scoring attempt
-                const errorContent = `Failed to connect to the AP scoring service: ${error.message}. Please check your internet connection.`;
-                showFailureResult([ { status: 'FAILED_NETWORK', actual: errorContent, input: 'AP Scoring Request', expected: 'AP Score/Rubric' } ], apCodeSubmission);
-            } finally {
-                checkCodeBtn.textContent = 'Submit AP Code';
-                checkCodeBtn.disabled = false;
-            }
-        }
-        
-        // --- Test Driver Generator (UNCHANGED) ---
+        // --- Test Driver Generator (UPDATED) ---
+        /**
+         * Creates the boilerplate Java code (the main method) to execute the user's solution
+         * with a specific test input, printing the result to stdout, using a template.
+         */
         function createJavaTestDriver(test, problem) {
             // If the problem requires the student to write main, do not inject a driver.
             if (problem.runAsMain) {
@@ -894,15 +573,20 @@
             const inputParts = test.input.split(',').map(s => s.trim()); 
                         
             // Define the Regular Expression to match placeholders like ##__IN_1__##, ##__IN_2__##, etc.
+            // (\d+) captures the number N. The 'g' flag ensures a global search (all matches are replaced).
             const inputRegex = /##__IN_(\d+)__##/g;
 
             // Perform the replacement using a replacer function
             callString = callString.replace(inputRegex, (match, p1) => {
-                const index = parseInt(p1, 10) - 1; 
+                // p1 is the captured group (the number N as a string, e.g., "1", "2")
+                const index = parseInt(p1, 10) - 1; // Convert the 1-based number (N) to a 0-based array index
 
+                // Safety check: ensure the placeholder index is valid
                 if (index >= 0 && index < inputParts.length) {
                     return inputParts[index];
                 } else {
+                    // If out of bounds, return the original placeholder as an error marker in the generated code
+                    // You might also want to log this error using console.error or console.warn
                     return match; 
                 }
             });
@@ -917,10 +601,8 @@
 
         }
 
-        // --- External Compilation and Test Running Logic (UNCHANGED for standard problems) ---
+        // --- External Compilation and Test Running Logic (UNCHANGED from previous version) ---
         async function handleConfirmedSubmission() {
-            // ... (Standard submission logic remains here) ...
-            // Code is the same as the original file for handleConfirmedSubmission (non-AP)
             cancelSubmission(); 
             showLoadingModal();
 
@@ -1055,40 +737,8 @@
         
         let lastFailedCode = ''; 
 
-        // --- NEW: AP Result Handler ---
-        function showAPResult(rawOutput, submittedCode) {
-            lastFailedCode = submittedCode; // Save for AI Tutor
-            
-            const actions = document.getElementById('result-modal-actions');
-            actions.innerHTML = `
-                <button onclick="restartFromScratch()" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors transform hover:scale-[1.01] w-full md:w-auto">
-                    Restart From Scratch
-                </button>
-                <button onclick="hideResultModal(); handleAPNavigation('back');" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full md:w-auto">
-                    Return to Code
-                </button>
-                <button onclick="explainWithAI()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full md:w-auto">
-                    🧠 Explain with AI Tutor
-                </button>
-                <button onclick="showHelp()" class="bg-gray-700/80 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full md:w-auto">
-                    Help (Show Solution)
-                </button>
-            `;
+        // ... (Result Handlers, AI Tutor, Selector Logic Unchanged) ...
 
-            // Try to extract score from the first line
-            const scoreMatch = rawOutput.match(/SCORE: (\d+\/\d+)/i);
-            const scoreText = scoreMatch ? scoreMatch[1] : 'Score Unknown';
-            const scoreTitle = `AP FRQ Score: ${scoreText}`;
-            
-            // The full response text (rubric, breakdown, feedback) goes into the code area
-            const message = `Your AP Free-Response Question (FRQ) submission has been evaluated by the AI Grader. Review the detailed feedback and scoring breakdown below.`;
-            
-            showResultModal(scoreTitle, message, 'help', rawOutput); // Use 'help' type for purple/neutral color
-        }
-
-
-        // ... (showSuccessResult, showFailureResult, showResultModal - UNCHANGED/KEPT FOR STANDARD) ...
-        
         function showSuccessResult(testResults) {
             
             checkCodeBtn.textContent = 'Check (Submit Code)';
@@ -1119,9 +769,10 @@
             
             lastFailedCode = userCode;
             
-            checkCodeBtn.textContent = isAPProblem ? 'Submit AP Code' : 'Check (Submit Code)';
+            checkCodeBtn.textContent = 'Check (Submit Code)';
             checkCodeBtn.disabled = false;
             
+            // Use the first failure found, or the only result if full program failed
             const firstFailure = testResults ? testResults.find(r => r.status.startsWith('FAILED')) || testResults[0] : null;
             const isCompilationError = firstFailure && firstFailure.status.includes('COMPILATION');
             const isRuntimeError = firstFailure && firstFailure.status.includes('RUNTIME');
@@ -1195,12 +846,12 @@
             if (codeContent) {
                 codeEl.textContent = codeContent;
                 codeEl.style.display = 'block';
-                document.getElementById('result-modal-title').classList.remove('text-ios-blue', 'text-green-500', 'text-red-500', 'text-yellow-300', 'text-purple-500');
-                document.getElementById('result-modal-title').classList.add(type === 'success' ? 'text-green-500' : (type === 'error' ? 'text-red-500' : (type === 'help' ? 'text-purple-500' : 'text-ios-blue')));
+                document.getElementById('result-modal-title').classList.remove('text-ios-blue', 'text-green-500', 'text-red-500', 'text-yellow-300');
+                document.getElementById('result-modal-title').classList.add(type === 'success' ? 'text-green-500' : (type === 'error' ? 'text-red-500' : 'text-yellow-300'));
             } else {
                 codeEl.style.display = 'none';
-                document.getElementById('result-modal-title').classList.remove('text-ios-blue', 'text-green-500', 'text-red-500', 'text-yellow-300', 'text-purple-500');
-                document.getElementById('result-modal-title').classList.add(type === 'success' ? 'text-green-500' : (type === 'error' ? 'text-red-500' : (type === 'help' ? 'text-purple-500' : 'text-ios-blue')));
+                document.getElementById('result-modal-title').classList.remove('text-ios-blue', 'text-green-500', 'text-red-500', 'text-yellow-300');
+                document.getElementById('result-modal-title').classList.add(type === 'success' ? 'text-green-500' : (type === 'error' ? 'text-red-500' : 'text-ios-blue'));
             }
 
             showModalWithTransition('result-modal', 'result-content');
@@ -1217,26 +868,10 @@
             renderFileTabs();
             
             hideResultModal();
-            
-            // For AP problems, go back to the first code-writing part
-            if (isAPProblem) {
-                currentSubQuestionIndex = 1;
-                handleAPNavigation('back'); // To force load the first part
-            }
         }
 
         function showHelp() {
             if (currentProblem) {
-                let solutionCode = '';
-                if (isAPProblem) {
-                    // For AP, concatenate all sub-question solutions
-                    solutionCode = currentProblem.subQuestions
-                        .map((q, i) => `// --- Part ${q.id} Solution ---\n${q.solution}`)
-                        .join('\n\n');
-                } else {
-                    solutionCode = currentProblem.solution;
-                }
-                
                 const message = "Here is the verified solution for the problem. Use this to compare against your attempt.";
                 const actions = document.getElementById('result-modal-actions');
                 
@@ -1245,11 +880,11 @@
                         Back to Editor
                     </button>
                 `;
-                showResultModal('Solution Revealed', message, 'help', solutionCode);
+                showResultModal('Solution Revealed', message, 'help', currentProblem.solution);
             }
         }
 
-        // --- AI TUTOR LOGIC (UPDATED for AP problem context) ---
+        // --- AI TUTOR LOGIC (UNCHANGED) ---
 
         async function explainWithAI() {
             hideResultModal();
@@ -1261,26 +896,16 @@
                 return;
             }
 
-            let userQuestion = "Please review my failing code and identify the most critical flaw (e.g., incorrect loop structure, wrong return type, missing keyword, or conceptual mistake) compared to the correct solution. Do NOT provide the correct code or method signature. Guide me towards the fix.";
-            let problemDescription = '';
+            const userQuestion = "Please review my failing code and identify the most critical flaw (e.g., incorrect loop structure, wrong return type, missing keyword, or conceptual mistake) compared to the correct solution. Do NOT provide the correct code or method signature. Guide me towards the fix.";
 
-            if (isAPProblem) {
-                // For AP, provide specific context for the part being worked on
-                const currentSubQuestion = currentProblem.subQuestions[currentSubQuestionIndex - 1] || currentProblem.subQuestions[0];
-                const problemTitle = `${currentProblem.title} - Part ${currentSubQuestion.id}`;
-                
-                problemDescription = `The problem title is: "${problemTitle}". The part requires: ${currentSubQuestion.prompt}. For your internal comparison, the correct solution for this part is: \n\n\`\`\`java\n${currentSubQuestion.solution}\n\`\`\n`;
-                // The lastFailedCode will contain ALL submitted AP code, which is fine for context.
-            } else {
-                problemDescription = `The problem title is: "${currentProblem.title}". The problem requires: ${currentProblem.description}. For your internal comparison, the correct solution is: \n\n\`\`\`java\n${currentProblem.solution}\n\`\`\n`;
-            }
+            const problemDescription = `The problem title is: "${currentProblem.title}". The problem requires: ${currentProblem.description}. For your internal comparison, the correct solution is: \n\n\`\`\`java\n${currentProblem.solution}\n\`\`\n`;
 
             let generatedText = "Apologies, the **AI Tutor is currently unavailable**. This may be due to a network connection issue or an error in the service. Please try again later or use the 'Help (Show Solution)' button.";
             
             try {
                 const payload = {
                     question: userQuestion,
-                    code: lastFailedCode, // The code that was submitted/failed
+                    code: lastFailedCode,
                     problemDescription: problemDescription
                 };
 
@@ -1321,7 +946,7 @@
             );
         }
 
-        // --- Problem Selector and Filter Logic (UPDATED for AP) ---
+        // --- Problem Selector and Filter Logic (UNCHANGED) ---
 
         function toggleProblemSelector(show = true) {
             if (show) {
@@ -1335,8 +960,7 @@
         function renderProblemList() {
             problemListEl.innerHTML = '';
             
-            // Filter by problem difficulty OR type (for 'AP')
-            const filteredProblems = problems.filter(p => activeFilters[p.difficulty] || activeFilters[p.type]);
+            const filteredProblems = problems.filter(p => activeFilters[p.difficulty]);
             
             if (filteredProblems.length === 0) {
                 problemListEl.innerHTML = '<p class="text-center text-gray-500 p-4">No problems match the current filter. Try selecting more difficulties.</p>';
@@ -1347,14 +971,14 @@
             }
 
             filteredProblems.forEach(p => {
-                const style = getDifficultyStyle(p.difficulty || p.type); // Use type 'AP' if difficulty is missing
+                const style = getDifficultyStyle(p.difficulty);
                 const problemItem = document.createElement('div');
                 problemItem.className = 'p-3 rounded-xl bg-gray-900/50 hover:bg-gray-700/70 transition-colors cursor-pointer flex justify-between items-center';
                 problemItem.onclick = () => loadProblem(p);
                 
                 problemItem.innerHTML = `
                     <span class="font-medium text-white">${p.title}</span>
-                    <span class="px-3 py-1 text-xs rounded-full font-medium ${style.text} ${style.bg}">${p.difficulty || p.type}</span>
+                    <span class="px-3 py-1 text-xs rounded-full font-medium ${style.text} ${style.bg}">${p.difficulty}</span>
                 `;
                 problemListEl.appendChild(problemItem);
             });
@@ -1365,8 +989,7 @@
         }
 
         function renderFilters() {
-            // Include 'AP' in the difficulties list
-            const difficulties = ['Easy', 'Medium', 'Hard', 'AP'];
+            const difficulties = ['Easy', 'Medium', 'Hard'];
             filterContainerEl.innerHTML = '';
 
             difficulties.forEach(diff => {
@@ -1387,21 +1010,23 @@
             renderFilters();
         }
 
-        // --- View Tracker Logic (UNCHANGED) ---
+        // --- View Tracker Logic ---
         async function trackWebsiteViews() {
             if (!websiteViewsEl) return;
             try {
+                // Sends a POST request to the API to increment the website view counter
                 const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
                 if(res.ok) {
+                    // Updates the displayed view count with the value returned from the API
                     websiteViewsEl.textContent = (await res.json()).views;
                 }
             } catch(e) {
                 console.error("Failed to track website views:", e);
-                websiteViewsEl.textContent = '---'; 
+                websiteViewsEl.textContent = '---'; // Show an indicator of failure
             }
         }
 
-        // --- Asynchronous Data Fetching (UNCHANGED) ---
+        // --- Asynchronous Data Fetching ---
         async function fetchProblems() {
             try {
                 const response = await fetch(PROBLEM_DATA_URL);
@@ -1415,9 +1040,7 @@
                 descriptionEl.innerHTML = convertMarkdownToHtml("Problems loaded! Please open the **Problem Selector** to choose a challenge, or click **Random Problem** to get started immediately.");
 
                 if (problems.length > 0) {
-                    // Find the first non-AP problem to load, or the first AP one if none exist
-                    const defaultProblem = problems.find(p => p.type !== 'AP') || problems[0];
-                    loadProblem(defaultProblem);
+                    loadProblem(problems[0]);
                 }
                 renderFilters();
             } catch (error) {
@@ -1427,6 +1050,7 @@
                 randomBtnEl.disabled = true;
             }
 
+            // Call the view tracker after the main content is loaded
             trackWebsiteViews();
         }
 
