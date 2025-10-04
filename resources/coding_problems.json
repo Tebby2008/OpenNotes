@@ -51,8 +51,7 @@
         "description": "Create two classes: a **`Snail`** class with private fields for its name and speed, a constructor, and a public `move` method. Then, create a **`Solution`** class containing a public static `simulateRace` method that instantiates and uses the `Snail` class. The compiler will call `simulateRace`. Ensure both classes are defined in the editor. *Do not write a main method.*",
         "requiredClasses": ["Snail.java", "Solution.java"],
         "solution": 
-            "public class Snail {\n    private String name;\n    private int speed;\n    public Snail(String name, int speed) {\n        this.name = name;\n        this.speed = speed;\n    }\n    public int move() {\n        return speed;\n    }\n}\n" + 
-            "public class Solution {\n    public static int simulateRace(int distance) {\n        Snail fastSnail = new Snail(\"Turbo\", 5);\n        Snail slowSnail = new Snail(\"Gary\", 2);\n        int totalDistance = fastSnail.move() + slowSnail.move();\n        return distance - totalDistance;\n    }\n}",
+            "public class Snail {\n    private String name;\n    private int speed;\n    public Snail(String name, int speed) {\n        this.name = name;\n        this.speed = speed;\n    }\n    public int move() {\n        return speed;\n    }\n}\npublic class Solution {\n    public static int simulateRace(int distance) {\n        Snail fastSnail = new Snail(\"Turbo\", 5);\n        Snail slowSnail = new Snail(\"Gary\", 2);\n        int totalDistance = fastSnail.move() + slowSnail.move();\n        return distance - totalDistance;\n    }\n}",
         "tests": [
             { "input": "10", "expectedOutput": "3" }, 
             { "input": "100", "expectedOutput": "93" }
@@ -61,3 +60,4 @@
         "driverCallTemplate": "System.out.print(Solution.simulateRace(DISTANCE));"
     }
 ]
+
