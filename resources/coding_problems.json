@@ -1,0 +1,53 @@
+[
+    {
+        "id": 1,
+        "title": "Sum of Two Integers",
+        "difficulty": "Easy",
+        "description": "Write a **public** Java class named `Solution` with a public static method `sum` that takes two integers, `a` and `b`, and returns their sum.",
+        "requiredClasses": ["Solution.java"],
+        "solution": "public class Solution {\n    public static int sum(int a, int b) {\n        return a + b;\n    }\n}",
+        "tests": [
+            { "input": "1, 2", "expectedOutput": "3" },
+            { "input": "5, 5", "expectedOutput": "10" },
+            { "input": "-10, 5", "expectedOutput": "-5" }
+        ]
+    },
+    {
+        "id": 2,
+        "title": "Factorial Calculation",
+        "difficulty": "Medium",
+        "description": "Write a public static method `factorial` that calculates the **factorial** of a non-negative integer `n`. The method should be inside a class named `Solution`. Assume input will not exceed 12.",
+        "requiredClasses": ["Solution.java"],
+        "solution": "public class Solution {\n    public static int factorial(int n) {\n        if (n < 0) return 0;\n        int result = 1;\n        for (int i = 2; i <= n; i++) {\n            result *= i;\n        }\n        return result;\n    }\n}",
+        "tests": [
+            { "input": "0", "expectedOutput": "1" },
+            { "input": "5", "expectedOutput": "120" },
+            { "input": "3", "expectedOutput": "6" }
+        ]
+    },
+    {
+        "id": 3,
+        "title": "Reverse a String",
+        "difficulty": "Hard",
+        "description": "Implement a **public static method** `reverse` within the `Solution` class that takes a String and returns a new String with the characters in reverse order.",
+        "requiredClasses": ["Solution.java"],
+        "solution": "public class Solution {\n    public static String reverse(String s) {\n        return new StringBuilder(s).reverse().toString();\n    }\n}",
+        "tests": [
+            { "input": "\"hello\"", "expectedOutput": "olleh" },
+            { "input": "\"racecar\"", "expectedOutput": "racecar" },
+            { "input": "\"a\"", "expectedOutput": "a" }
+        ]
+    },
+    {
+        "id": 4,
+        "title": "Snail Class Simulation",
+        "difficulty": "Hard",
+        "description": "Create two classes: a **`Snail`** class with private fields for its name and speed, a constructor, and a public `move` method. Then, create a **`Solution`** class containing a public static `simulateRace` method that instantiates and uses the `Snail` class. The compiler will run the `Solution` class. Ensure both classes are defined in the editor.",
+        "requiredClasses": ["Snail.java", "Solution.java"],
+        "solution": "public class Snail {\n    private String name;\n    private int speed;\n    public Snail(String name, int speed) {\n        this.name = name;\n        this.speed = speed;\n    }\n    public int move() {\n        return speed;\n    }\n}\npublic class Solution {\n    public static int simulateRace(int distance) {\n        Snail fastSnail = new Snail(\"Turbo\", 5);\n        Snail slowSnail = new Snail(\"Gary\", 2);\n        int totalDistance = fastSnail.move() + slowSnail.move();\n        return distance - totalDistance;\n    }\n}",
+        "tests": [
+            { "input": "10", "expectedOutput": "3" },
+            { "input": "100", "expectedOutput": "93" }
+        ]
+    }
+]
