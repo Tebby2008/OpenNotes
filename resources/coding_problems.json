@@ -4,292 +4,633 @@
         "title": "Sum of Two Integers",
         "difficulty": "Easy",
         "description": "Write a **public** Java class named `Solution` with a public static method `sum` that takes two integers, `a` and `b`, and returns their sum. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `1, 2` | Output: `3`\n- Input: `10, -5` | Output: `5`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static int sum(int a, int b) {\n        return a + b;\n    }\n}",
         "tests": [
-            { "input": "1, 2", "expectedOutput": "3" },
-            { "input": "10, -5", "expectedOutput": "5" },
-            { "input": "0, 0", "expectedOutput": "0" },
-            { "input": "-100, -200", "expectedOutput": "-300" },
-            { "input": "500, 500", "expectedOutput": "1000" },
-            { "input": "99, 1", "expectedOutput": "100" }
+            {
+                "input": "1, 2",
+                "expectedOutput": "3"
+            },
+            {
+                "input": "10, -5",
+                "expectedOutput": "5"
+            },
+            {
+                "input": "0, 0",
+                "expectedOutput": "0"
+            },
+            {
+                "input": "-100, -200",
+                "expectedOutput": "-300"
+            },
+            {
+                "input": "500, 500",
+                "expectedOutput": "1000"
+            },
+            {
+                "input": "99, 1",
+                "expectedOutput": "100"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.sum(A, B));"
+        "driverCallTemplate": "System.out.print(Solution.sum(##__IN_1__##, ##__IN_2__##));"
     },
     {
         "id": 2,
         "title": "Check Leap Year",
         "difficulty": "Easy",
         "description": "Write a public static method `isLeap` that takes an integer `year` and returns `true` if it is a leap year, and `false` otherwise. (A year is a leap year if it is divisible by 4, unless it is divisible by 100 but not by 400). *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `2000` | Output: `true`\n- Input: `1900` | Output: `false`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static boolean isLeap(int year) {\n        return (year % 400 == 0) || (year % 4 == 0 && year % 100 != 0);\n    }\n}",
         "tests": [
-            { "input": "2000", "expectedOutput": "true" },
-            { "input": "1900", "expectedOutput": "false" },
-            { "input": "2024", "expectedOutput": "true" },
-            { "input": "2023", "expectedOutput": "false" },
-            { "input": "1600", "expectedOutput": "true" },
-            { "input": "1800", "expectedOutput": "false" },
-            { "input": "2100", "expectedOutput": "false" }
+            {
+                "input": "2000",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "1900",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "2024",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "2023",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "1600",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "1800",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "2100",
+                "expectedOutput": "false"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.isLeap(A));"
+        "driverCallTemplate": "System.out.print(Solution.isLeap(##__IN_1__##));"
     },
     {
         "id": 3,
         "title": "Count Vowels in a String",
         "difficulty": "Easy",
         "description": "Write a public static method `countVowels` that takes a `String` and returns the count of vowels (`a`, `e`, `i`, `o`, `u`, case-insensitive). *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"hello\"` | Output: `2`\n- Input: `\"Rhythm\"` | Output: `0`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static int countVowels(String s) {\n        s = s.toLowerCase();\n        int count = 0;\n        for (int i = 0; i < s.length(); i++) {\n            char c = s.charAt(i);\n            if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') {\n                count++;\n            }\n        }\n        return count;\n    }\n}",
         "tests": [
-            { "input": "\"hello\"", "expectedOutput": "2" },
-            { "input": "\"Rhythm\"", "expectedOutput": "0" },
-            { "input": "\"AEIOU\"", "expectedOutput": "5" },
-            { "input": "\"Programming\"", "expectedOutput": "3" },
-            { "input": "\"a\"", "expectedOutput": "1" },
-            { "input": "\"\"", "expectedOutput": "0" }
+            {
+                "input": "\"hello\"",
+                "expectedOutput": "2"
+            },
+            {
+                "input": "\"Rhythm\"",
+                "expectedOutput": "0"
+            },
+            {
+                "input": "\"AEIOU\"",
+                "expectedOutput": "5"
+            },
+            {
+                "input": "\"Programming\"",
+                "expectedOutput": "3"
+            },
+            {
+                "input": "\"a\"",
+                "expectedOutput": "1"
+            },
+            {
+                "input": "\"\"",
+                "expectedOutput": "0"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.countVowels(S));"
+        "driverCallTemplate": "System.out.print(Solution.countVowels(##__IN_1__##));"
     },
     {
         "id": 4,
         "title": "Find Maximum of Three",
         "difficulty": "Easy",
         "description": "Write a public static method `maxOfThree` that takes three integers, `a`, `b`, and `c`, and returns the largest among them. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `10, 5, 20` | Output: `20`\n- Input: `7, 7, 3` | Output: `7`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static int maxOfThree(int a, int b, int c) {\n        return Math.max(a, Math.max(b, c));\n    }\n}",
         "tests": [
-            { "input": "10, 5, 20", "expectedOutput": "20" },
-            { "input": "7, 7, 3", "expectedOutput": "7" },
-            { "input": "-1, -5, -2", "expectedOutput": "-1" },
-            { "input": "0, 1, 0", "expectedOutput": "1" },
-            { "input": "100, 100, 100", "expectedOutput": "100" },
-            { "input": "5, 12, 8", "expectedOutput": "12" },
-            { "input": "20, 10, 5", "expectedOutput": "20" }
+            {
+                "input": "10, 5, 20",
+                "expectedOutput": "20"
+            },
+            {
+                "input": "7, 7, 3",
+                "expectedOutput": "7"
+            },
+            {
+                "input": "-1, -5, -2",
+                "expectedOutput": "-1"
+            },
+            {
+                "input": "0, 1, 0",
+                "expectedOutput": "1"
+            },
+            {
+                "input": "100, 100, 100",
+                "expectedOutput": "100"
+            },
+            {
+                "input": "5, 12, 8",
+                "expectedOutput": "12"
+            },
+            {
+                "input": "20, 10, 5",
+                "expectedOutput": "20"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.maxOfThree(A, B, C));"
+        "driverCallTemplate": "System.out.print(Solution.maxOfThree(##__IN_1__##, ##__IN_2__##, ##__IN_3__##));"
     },
     {
         "id": 5,
         "title": "Sum of Digits",
         "difficulty": "Easy",
         "description": "Write a public static method `sumDigits` that takes a non-negative integer and returns the sum of its individual digits. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `123` | Output: `6`\n- Input: `5` | Output: `5`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static int sumDigits(int n) {\n        int sum = 0;\n        while (n > 0) {\n            sum += n % 10;\n            n /= 10;\n        }\n        return sum;\n    }\n}",
         "tests": [
-            { "input": "123", "expectedOutput": "6" },
-            { "input": "5", "expectedOutput": "5" },
-            { "input": "900", "expectedOutput": "9" },
-            { "input": "9999", "expectedOutput": "36" },
-            { "input": "0", "expectedOutput": "0" },
-            { "input": "48", "expectedOutput": "12" },
-            { "input": "10101", "expectedOutput": "3" }
+            {
+                "input": "123",
+                "expectedOutput": "6"
+            },
+            {
+                "input": "5",
+                "expectedOutput": "5"
+            },
+            {
+                "input": "900",
+                "expectedOutput": "9"
+            },
+            {
+                "input": "9999",
+                "expectedOutput": "36"
+            },
+            {
+                "input": "0",
+                "expectedOutput": "0"
+            },
+            {
+                "input": "48",
+                "expectedOutput": "12"
+            },
+            {
+                "input": "10101",
+                "expectedOutput": "3"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.sumDigits(A));"
+        "driverCallTemplate": "System.out.print(Solution.sumDigits(##__IN_1__##));"
     },
     {
         "id": 6,
         "title": "String Starts With 'Hello'",
         "difficulty": "Easy",
         "description": "Write a public static method `startsWithHello` that takes a `String` and returns `true` if the string starts with the case-insensitive word 'Hello', otherwise returns `false`. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"Hello World\"` | Output: `true`\n- Input: `\"Hi there\"` | Output: `false`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static boolean startsWithHello(String s) {\n        if (s.length() < 5) return false;\n        return s.substring(0, 5).equalsIgnoreCase(\"Hello\");\n    }\n}",
         "tests": [
-            { "input": "\"Hello World\"", "expectedOutput": "true" },
-            { "input": "\"Hi there\"", "expectedOutput": "false" },
-            { "input": "\"hello\"", "expectedOutput": "true" },
-            { "input": "\"Hell\"", "expectedOutput": "false" },
-            { "input": "\"Hello!\"", "expectedOutput": "true" },
-            { "input": "\"\"", "expectedOutput": "false" },
-            { "input": "\"ZHello\"", "expectedOutput": "false" }
+            {
+                "input": "\"Hello World\"",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "\"Hi there\"",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "\"hello\"",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "\"Hell\"",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "\"Hello!\"",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "\"\"",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "\"ZHello\"",
+                "expectedOutput": "false"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.startsWithHello(S));"
+        "driverCallTemplate": "System.out.print(Solution.startsWithHello(##__IN_1__##));"
     },
     {
         "id": 7,
         "title": "Check Point Quadrant",
         "difficulty": "Easy",
         "description": "Write a public static method `getQuadrant` that takes two integers, `x` and `y`, representing coordinates. Return 1, 2, 3, or 4 for the quadrant, or 0 if the point is on an axis (x=0 or y=0). *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `1, 1` | Output: `1`\n- Input: `0, 5` | Output: `0`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static int getQuadrant(int x, int y) {\n        if (x == 0 || y == 0) return 0;\n        if (x > 0 && y > 0) return 1;\n        if (x < 0 && y > 0) return 2;\n        if (x < 0 && y < 0) return 3;\n        return 4;\n    }\n}",
         "tests": [
-            { "input": "1, 1", "expectedOutput": "1" },
-            { "input": "0, 5", "expectedOutput": "0" },
-            { "input": "-5, 2", "expectedOutput": "2" },
-            { "input": "-3, -4", "expectedOutput": "3" },
-            { "input": "6, -1", "expectedOutput": "4" },
-            { "input": "10, 0", "expectedOutput": "0" },
-            { "input": "0, 0", "expectedOutput": "0" }
+            {
+                "input": "1, 1",
+                "expectedOutput": "1"
+            },
+            {
+                "input": "0, 5",
+                "expectedOutput": "0"
+            },
+            {
+                "input": "-5, 2",
+                "expectedOutput": "2"
+            },
+            {
+                "input": "-3, -4",
+                "expectedOutput": "3"
+            },
+            {
+                "input": "6, -1",
+                "expectedOutput": "4"
+            },
+            {
+                "input": "10, 0",
+                "expectedOutput": "0"
+            },
+            {
+                "input": "0, 0",
+                "expectedOutput": "0"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.getQuadrant(A, B));"
+        "driverCallTemplate": "System.out.print(Solution.getQuadrant(##__IN_1__##, ##__IN_2__##));"
     },
     {
         "id": 8,
         "title": "Convert Fahrenheit to Celsius",
         "difficulty": "Easy",
         "description": "Write a public static method `fToC` that takes a double `fahrenheit` and returns the Celsius equivalent. Formula: `C = (F - 32) * 5 / 9`. Return the result rounded to one decimal place. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `32.0` | Output: `0.0`\n- Input: `212.0` | Output: `100.0`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static double fToC(double fahrenheit) {\n        double celsius = (fahrenheit - 32) * 5 / 9;\n        return Math.round(celsius * 10.0) / 10.0;\n    }\n}",
         "tests": [
-            { "input": "32.0", "expectedOutput": "0.0" },
-            { "input": "212.0", "expectedOutput": "100.0" },
-            { "input": "98.6", "expectedOutput": "37.0" },
-            { "input": "50.0", "expectedOutput": "10.0" },
-            { "input": "-40.0", "expectedOutput": "-40.0" },
-            { "input": "77.0", "expectedOutput": "25.0" }
+            {
+                "input": "32.0",
+                "expectedOutput": "0.0"
+            },
+            {
+                "input": "212.0",
+                "expectedOutput": "100.0"
+            },
+            {
+                "input": "98.6",
+                "expectedOutput": "37.0"
+            },
+            {
+                "input": "50.0",
+                "expectedOutput": "10.0"
+            },
+            {
+                "input": "-40.0",
+                "expectedOutput": "-40.0"
+            },
+            {
+                "input": "77.0",
+                "expectedOutput": "25.0"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.fToC(A));"
+        "driverCallTemplate": "System.out.print(Solution.fToC(##__IN_1__##));"
     },
     {
         "id": 9,
         "title": "Calculate Hypotenuse",
         "difficulty": "Easy",
         "description": "Write a public static method `getHypotenuse` that takes two double-precision integers, `a` and `b`, representing the legs of a right triangle, and returns the length of the hypotenuse using the Pythagorean theorem. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `3.0, 4.0` | Output: `5.0`\n- Input: `5.0, 12.0` | Output: `13.0`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static double getHypotenuse(double a, double b) {\n        return Math.sqrt(a * a + b * b);\n    }\n}",
         "tests": [
-            { "input": "3.0, 4.0", "expectedOutput": "5.0" },
-            { "input": "5.0, 12.0", "expectedOutput": "13.0" },
-            { "input": "1.0, 1.0", "expectedOutput": "1.4142135623730951" },
-            { "input": "0.0, 0.0", "expectedOutput": "0.0" },
-            { "input": "6.0, 8.0", "expectedOutput": "10.0" },
-            { "input": "7.0, 24.0", "expectedOutput": "25.0" }
+            {
+                "input": "3.0, 4.0",
+                "expectedOutput": "5.0"
+            },
+            {
+                "input": "5.0, 12.0",
+                "expectedOutput": "13.0"
+            },
+            {
+                "input": "1.0, 1.0",
+                "expectedOutput": "1.4142135623730951"
+            },
+            {
+                "input": "0.0, 0.0",
+                "expectedOutput": "0.0"
+            },
+            {
+                "input": "6.0, 8.0",
+                "expectedOutput": "10.0"
+            },
+            {
+                "input": "7.0, 24.0",
+                "expectedOutput": "25.0"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.getHypotenuse(A, B));"
+        "driverCallTemplate": "System.out.print(Solution.getHypotenuse(##__IN_1__##, ##__IN_2__##));"
     },
     {
         "id": 10,
         "title": "Swap First and Last Characters",
         "difficulty": "Easy",
         "description": "Write a public static method `swapEnds` that takes a `String` and returns a new string where the first and last characters are swapped. If the string length is less than 2, return the original string. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"abcd\"` | Output: `\"dbca\"`\n- Input: `\"a\"` | Output: `\"a\"`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static String swapEnds(String s) {\n        if (s.length() < 2) return s;\n        char first = s.charAt(0);\n        char last = s.charAt(s.length() - 1);\n        String middle = s.substring(1, s.length() - 1);\n        return last + middle + first;\n    }\n}",
         "tests": [
-            { "input": "\"abcd\"", "expectedOutput": "dbca" },
-            { "input": "\"a\"", "expectedOutput": "a" },
-            { "input": "\"ab\"", "expectedOutput": "ba" },
-            { "input": "\"hello\"", "expectedOutput": "oellh" },
-            { "input": "\"Java\"", "expectedOutput": "aavJ" },
-            { "input": "\"\"", "expectedOutput": "" }
+            {
+                "input": "\"abcd\"",
+                "expectedOutput": "dbca"
+            },
+            {
+                "input": "\"a\"",
+                "expectedOutput": "a"
+            },
+            {
+                "input": "\"ab\"",
+                "expectedOutput": "ba"
+            },
+            {
+                "input": "\"hello\"",
+                "expectedOutput": "oellh"
+            },
+            {
+                "input": "\"Java\"",
+                "expectedOutput": "aavJ"
+            },
+            {
+                "input": "\"\"",
+                "expectedOutput": ""
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.swapEnds(S));"
+        "driverCallTemplate": "System.out.print(Solution.swapEnds(##__IN_1__##));"
     },
     {
         "id": 11,
         "title": "String contains 'x' and 'y'",
         "difficulty": "Easy",
         "description": "Write a public static method `hasXandY` that takes a `String` and returns `true` if it contains both the character 'x' AND the character 'y' (case-insensitive), otherwise `false`. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"Xylophone\"` | Output: `true`\n- Input: `\"Xerox\"` | Output: `false`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static boolean hasXandY(String s) {\n        String lower = s.toLowerCase();\n        return lower.contains(\"x\") && lower.contains(\"y\");\n    }\n}",
         "tests": [
-            { "input": "\"Xylophone\"", "expectedOutput": "true" },
-            { "input": "\"Xerox\"", "expectedOutput": "false" },
-            { "input": "\"Myopia\"", "expectedOutput": "false" },
-            { "input": "\"xy\"", "expectedOutput": "true" },
-            { "input": "\"Yx\"", "expectedOutput": "true" },
-            { "input": "\"\"", "expectedOutput": "false" },
-            { "input": "\"axByc\"", "expectedOutput": "true" }
+            {
+                "input": "\"Xylophone\"",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "\"Xerox\"",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "\"Myopia\"",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "\"xy\"",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "\"Yx\"",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "\"\"",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "\"axByc\"",
+                "expectedOutput": "true"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.hasXandY(S));"
+        "driverCallTemplate": "System.out.print(Solution.hasXandY(##__IN_1__##));"
     },
     {
         "id": 12,
         "title": "Check Password Length",
         "difficulty": "Easy",
         "description": "Write a public static method `isValidLength` that takes a `String` representing a password. The password is valid if its length is between 8 and 12 characters (inclusive). Return `true` or `false`. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"P@ssword1\"` | Output: `true`\n- Input: `\"short\"` | Output: `false`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static boolean isValidLength(String password) {\n        int len = password.length();\n        return len >= 8 && len <= 12;\n    }\n}",
         "tests": [
-            { "input": "\"P@ssword1\"", "expectedOutput": "true" },
-            { "input": "\"short\"", "expectedOutput": "false" },
-            { "input": "\"12345678\"", "expectedOutput": "true" },
-            { "input": "\"123456789012\"", "expectedOutput": "true" },
-            { "input": "\"toooooooolong\"", "expectedOutput": "false" },
-            { "input": "\"7char\"", "expectedOutput": "false" }
+            {
+                "input": "\"P@ssword1\"",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "\"short\"",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "\"12345678\"",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "\"123456789012\"",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "\"toooooooolong\"",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "\"7char\"",
+                "expectedOutput": "false"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.isValidLength(S));"
+        "driverCallTemplate": "System.out.print(Solution.isValidLength(##__IN_1__##));"
     },
     {
         "id": 13,
         "title": "Area of a Circle",
         "difficulty": "Easy",
         "description": "Write a public static method `circleArea` that takes a double `radius` and returns the area of the circle. Use `Math.PI` for pi. Return the result rounded to two decimal places. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `1.0` | Output: `3.14`\n- Input: `2.5` | Output: `19.63`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static double circleArea(double radius) {\n        double area = Math.PI * radius * radius;\n        return Math.round(area * 100.0) / 100.0;\n    }\n}",
         "tests": [
-            { "input": "1.0", "expectedOutput": "3.14" },
-            { "input": "2.5", "expectedOutput": "19.63" },
-            { "input": "0.0", "expectedOutput": "0.0" },
-            { "input": "10.0", "expectedOutput": "314.16" },
-            { "input": "0.5", "expectedOutput": "0.79" },
-            { "input": "3.14159", "expectedOutput": "31.00" }
+            {
+                "input": "1.0",
+                "expectedOutput": "3.14"
+            },
+            {
+                "input": "2.5",
+                "expectedOutput": "19.63"
+            },
+            {
+                "input": "0.0",
+                "expectedOutput": "0.0"
+            },
+            {
+                "input": "10.0",
+                "expectedOutput": "314.16"
+            },
+            {
+                "input": "0.5",
+                "expectedOutput": "0.79"
+            },
+            {
+                "input": "3.14159",
+                "expectedOutput": "31.00"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.circleArea(A));"
+        "driverCallTemplate": "System.out.print(Solution.circleArea(##__IN_1__##));"
     },
     {
         "id": 14,
         "title": "Repeat Character 'n' Times",
         "difficulty": "Easy",
         "description": "Write a public static method `repeatChar` that takes a character `c` (represented by a String of length 1 for testing) and an integer `n`, and returns a String consisting of `c` repeated `n` times. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `'a', 3` | Output: `\"aaa\"`\n- Input: `'b', 0` | Output: `\"\"`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static String repeatChar(String c, int n) {\n        String result = \"\";\n        for (int i = 0; i < n; i++) {\n            result += c;\n        }\n        return result;\n    }\n}",
         "tests": [
-            { "input": "\"a\", 3", "expectedOutput": "aaa" },
-            { "input": "\"b\", 0", "expectedOutput": "" },
-            { "input": "\"*\", 5", "expectedOutput": "*****" },
-            { "input": "\"X\", 1", "expectedOutput": "X" },
-            { "input": "\"z\", 10", "expectedOutput": "zzzzzzzzzz" },
-            { "input": "\"#\", 2", "expectedOutput": "##" }
+            {
+                "input": "\"a\", 3",
+                "expectedOutput": "aaa"
+            },
+            {
+                "input": "\"b\", 0",
+                "expectedOutput": ""
+            },
+            {
+                "input": "\"*\", 5",
+                "expectedOutput": "*****"
+            },
+            {
+                "input": "\"X\", 1",
+                "expectedOutput": "X"
+            },
+            {
+                "input": "\"z\", 10",
+                "expectedOutput": "zzzzzzzzzz"
+            },
+            {
+                "input": "\"#\", 2",
+                "expectedOutput": "##"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.repeatChar(S, A));"
+        "driverCallTemplate": "System.out.print(Solution.repeatChar(##__IN_1__##, ##__IN_2__##));"
     },
     {
         "id": 15,
         "title": "Check if Number is Even",
         "difficulty": "Easy",
         "description": "Write a public static method `isEven` that takes an integer `n` and returns `true` if the number is even, and `false` otherwise. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `4` | Output: `true`\n- Input: `7` | Output: `false`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static boolean isEven(int n) {\n        return n % 2 == 0;\n    }\n}",
         "tests": [
-            { "input": "4", "expectedOutput": "true" },
-            { "input": "7", "expectedOutput": "false" },
-            { "input": "0", "expectedOutput": "true" },
-            { "input": "100", "expectedOutput": "true" },
-            { "input": "101", "expectedOutput": "false" },
-            { "input": "-2", "expectedOutput": "true" },
-            { "input": "-3", "expectedOutput": "false" }
+            {
+                "input": "4",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "7",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "0",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "100",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "101",
+                "expectedOutput": "false"
+            },
+            {
+                "input": "-2",
+                "expectedOutput": "true"
+            },
+            {
+                "input": "-3",
+                "expectedOutput": "false"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.isEven(A));"
+        "driverCallTemplate": "System.out.print(Solution.isEven(##__IN_1__##));"
     },
     {
         "id": 16,
         "title": "Array Sum and Print",
         "difficulty": "Medium",
         "description": "Write a **public** class named `Solution` containing a **`main` method**. In `main`, use `java.util.Scanner` to read an integer `n` (the size of an array) followed by `n` integers. Calculate the sum of all elements and print the result followed by a newline.\n\n**Example Test Cases:**\n- Input: `3\n10 20 30` | Output: `60\n`\n- Input: `5\n1 1 1 1 1` | Output: `5\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        int sum = 0;\n        for (int i = 0; i < n; i++) {\n            sum += scanner.nextInt();\n        }\n        System.out.println(sum);\n    }\n}",
         "tests": [
-            { "input": "3\n10 20 30", "expectedOutput": "60\n" },
-            { "input": "5\n1 1 1 1 1", "expectedOutput": "5\n" },
-            { "input": "1\n-50", "expectedOutput": "-50\n" },
-            { "input": "0\n", "expectedOutput": "0\n" },
-            { "input": "6\n1 2 3 4 5 6", "expectedOutput": "21\n" },
-            { "input": "4\n-1 -2 -3 -4", "expectedOutput": "-10\n" }
+            {
+                "input": "3\n10 20 30",
+                "expectedOutput": "60\n"
+            },
+            {
+                "input": "5\n1 1 1 1 1",
+                "expectedOutput": "5\n"
+            },
+            {
+                "input": "1\n-50",
+                "expectedOutput": "-50\n"
+            },
+            {
+                "input": "0\n",
+                "expectedOutput": "0\n"
+            },
+            {
+                "input": "6\n1 2 3 4 5 6",
+                "expectedOutput": "21\n"
+            },
+            {
+                "input": "4\n-1 -2 -3 -4",
+                "expectedOutput": "-10\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -299,16 +640,39 @@
         "title": "Find Average in Array",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read the array size `n`, followed by `n` integers. Calculate the average (as a double) of all elements and print it, rounded to one decimal place, followed by a newline.\n\n**Example Test Cases:**\n- Input: `3\n10 20 30` | Output: `20.0\n`\n- Input: `2\n5 10` | Output: `7.5\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        if (!scanner.hasNextInt()) return;\n        int n = scanner.nextInt();\n        if (n == 0) {\n            System.out.println(\"0.0\");\n            return;\n        }\n        double sum = 0;\n        for (int i = 0; i < n; i++) {\n            sum += scanner.nextInt();\n        }\n        double average = sum / n;\n        System.out.println(Math.round(average * 10.0) / 10.0);\n    }\n}",
         "tests": [
-            { "input": "3\n10 20 30", "expectedOutput": "20.0\n" },
-            { "input": "2\n5 10", "expectedOutput": "7.5\n" },
-            { "input": "4\n1 1 1 1", "expectedOutput": "1.0\n" },
-            { "input": "5\n-1 -2 0 1 2", "expectedOutput": "0.0\n" },
-            { "input": "1\n42", "expectedOutput": "42.0\n" },
-            { "input": "0\n", "expectedOutput": "0.0\n" },
-            { "input": "4\n1 2 3 4", "expectedOutput": "2.5\n" }
+            {
+                "input": "3\n10 20 30",
+                "expectedOutput": "20.0\n"
+            },
+            {
+                "input": "2\n5 10",
+                "expectedOutput": "7.5\n"
+            },
+            {
+                "input": "4\n1 1 1 1",
+                "expectedOutput": "1.0\n"
+            },
+            {
+                "input": "5\n-1 -2 0 1 2",
+                "expectedOutput": "0.0\n"
+            },
+            {
+                "input": "1\n42",
+                "expectedOutput": "42.0\n"
+            },
+            {
+                "input": "0\n",
+                "expectedOutput": "0.0\n"
+            },
+            {
+                "input": "4\n1 2 3 4",
+                "expectedOutput": "2.5\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -318,15 +682,35 @@
         "title": "Reverse Array and Print",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read the array size `n`, followed by `n` integers. Print the elements of the array in reverse order, separated by a single space, followed by a newline.\n\n**Example Test Cases:**\n- Input: `4\n1 2 3 4` | Output: `4 3 2 1\n`\n- Input: `1\n99` | Output: `99\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        if (!scanner.hasNextInt()) return;\n        int n = scanner.nextInt();\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) {\n            arr[i] = scanner.nextInt();\n        }\n        String result = \"\";\n        for (int i = n - 1; i >= 0; i--) {\n            result += arr[i] + (i == 0 ? \"\" : \" \");\n        }\n        System.out.println(result);\n    }\n}",
         "tests": [
-            { "input": "4\n1 2 3 4", "expectedOutput": "4 3 2 1\n" },
-            { "input": "1\n99", "expectedOutput": "99\n" },
-            { "input": "5\n10 20 30 40 50", "expectedOutput": "50 40 30 20 10\n" },
-            { "input": "0\n", "expectedOutput": "\n" },
-            { "input": "3\n-1 0 1", "expectedOutput": "1 0 -1\n" },
-            { "input": "6\n6 5 4 3 2 1", "expectedOutput": "1 2 3 4 5 6\n" }
+            {
+                "input": "4\n1 2 3 4",
+                "expectedOutput": "4 3 2 1\n"
+            },
+            {
+                "input": "1\n99",
+                "expectedOutput": "99\n"
+            },
+            {
+                "input": "5\n10 20 30 40 50",
+                "expectedOutput": "50 40 30 20 10\n"
+            },
+            {
+                "input": "0\n",
+                "expectedOutput": "\n"
+            },
+            {
+                "input": "3\n-1 0 1",
+                "expectedOutput": "1 0 -1\n"
+            },
+            {
+                "input": "6\n6 5 4 3 2 1",
+                "expectedOutput": "1 2 3 4 5 6\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -336,15 +720,35 @@
         "title": "Count Negative Numbers in Array",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read the array size `n`, followed by `n` integers. Count how many of these numbers are negative and print the count followed by a newline.\n\n**Example Test Cases:**\n- Input: `5\n-1 2 -3 4 -5` | Output: `3\n`\n- Input: `3\n1 2 3` | Output: `0\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        if (!scanner.hasNextInt()) return;\n        int n = scanner.nextInt();\n        int count = 0;\n        for (int i = 0; i < n; i++) {\n            if (scanner.nextInt() < 0) {\n                count++;\n            }\n        }\n        System.out.println(count);\n    }\n}",
         "tests": [
-            { "input": "5\n-1 2 -3 4 -5", "expectedOutput": "3\n" },
-            { "input": "3\n1 2 3", "expectedOutput": "0\n" },
-            { "input": "1\n-100", "expectedOutput": "1\n" },
-            { "input": "0\n", "expectedOutput": "0\n" },
-            { "input": "7\n0 0 0 -1 0 -2 -3", "expectedOutput": "3\n" },
-            { "input": "4\n10 20 -10 -20", "expectedOutput": "2\n" }
+            {
+                "input": "5\n-1 2 -3 4 -5",
+                "expectedOutput": "3\n"
+            },
+            {
+                "input": "3\n1 2 3",
+                "expectedOutput": "0\n"
+            },
+            {
+                "input": "1\n-100",
+                "expectedOutput": "1\n"
+            },
+            {
+                "input": "0\n",
+                "expectedOutput": "0\n"
+            },
+            {
+                "input": "7\n0 0 0 -1 0 -2 -3",
+                "expectedOutput": "3\n"
+            },
+            {
+                "input": "4\n10 20 -10 -20",
+                "expectedOutput": "2\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -354,10 +758,16 @@
         "title": "Simple Student Class and Object Creation",
         "difficulty": "Medium",
         "description": "Create a class `Student` with a private String `name` and a public constructor that initializes the name. Create a **`main` method** in `Solution` that creates a `Student` object named 'Alice' and prints a greeting: `Hello, Alice!` followed by a newline.\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `Hello, Alice!\n`",
-        "requiredClasses": ["Solution.java", "Student.java"],
+        "requiredClasses": [
+            "Solution.java",
+            "Student.java"
+        ],
         "solution": "class Student {\n    private String name;\n    public Student(String name) {\n        this.name = name;\n    }\n    public String getName() {\n        return name;\n    }\n}\n\npublic class Solution {\n    public static void main(String[] args) {\n        Student s = new Student(\"Alice\");\n        System.out.println(\"Hello, \" + s.getName() + \"!\");\n    }\n}",
         "tests": [
-            { "input": "", "expectedOutput": "Hello, Alice!\n" }
+            {
+                "input": "",
+                "expectedOutput": "Hello, Alice!\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -367,10 +777,15 @@
         "title": "Simulate Dice Roll",
         "difficulty": "Medium",
         "description": "Write a **`main` method** that uses `java.util.Random` to simulate rolling a standard 6-sided die. Print the result of a single roll (an integer between 1 and 6, inclusive) followed by a newline. *Note: For testing, the output will be checked against the range 1-6.*\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `(Any integer from 1 to 6)\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Random;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Random rand = new Random(100);\n        int roll = rand.nextInt(6) + 1;\n        System.out.println(roll);\n    }\n}",
         "tests": [
-            { "input": "", "expectedOutput": "4\n" }
+            {
+                "input": "",
+                "expectedOutput": "4\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -380,13 +795,27 @@
         "title": "Print Stars Pyramid",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read an integer `n` (the number of rows) using `Scanner`. Use nested loops to print a right-aligned triangle of stars, where the `k`-th row has `k` stars, followed by a newline. The pyramid should be aligned such that the base is on the left.\n\n**Example Test Cases:**\n- Input: `3` | Output: `*\n**\n***\n`\n- Input: `1` | Output: `*\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        for (int i = 1; i <= n; i++) {\n            String row = \"\";\n            for (int j = 0; j < i; j++) {\n                row += \"*\";\n            }\n            System.out.println(row);\n        }\n    }\n}",
         "tests": [
-            { "input": "3", "expectedOutput": "*\n**\n***\n" },
-            { "input": "1", "expectedOutput": "*\n" },
-            { "input": "0", "expectedOutput": "" },
-            { "input": "5", "expectedOutput": "*\n**\n***\n****\n*****\n" }
+            {
+                "input": "3",
+                "expectedOutput": "*\n**\n***\n"
+            },
+            {
+                "input": "1",
+                "expectedOutput": "*\n"
+            },
+            {
+                "input": "0",
+                "expectedOutput": ""
+            },
+            {
+                "input": "5",
+                "expectedOutput": "*\n**\n***\n****\n*****\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -396,14 +825,31 @@
         "title": "Filter ArrayList for Positive Numbers",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read an integer `n` followed by `n` integers. Store them in an `ArrayList<Integer>`. Remove all negative numbers from the list and then print the list (in standard `[e1, e2, ...]` format) followed by a newline.\n\n**Example Test Cases:**\n- Input: `5\n10 -5 20 -1 30` | Output: `[10, 20, 30]\n`\n- Input: `3\n-1 -2 -3` | Output: `[]\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\nimport java.util.ArrayList;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        ArrayList<Integer> list = new ArrayList<>();\n        for (int i = 0; i < n; i++) {\n            list.add(scanner.nextInt());\n        }\n        for (int i = list.size() - 1; i >= 0; i--) {\n            if (list.get(i) < 0) {\n                list.remove(i);\n            }\n        }\n        System.out.println(list);\n    }\n}",
         "tests": [
-            { "input": "5\n10 -5 20 -1 30", "expectedOutput": "[10, 20, 30]\n" },
-            { "input": "3\n-1 -2 -3", "expectedOutput": "[]\n" },
-            { "input": "4\n0 1 2 3", "expectedOutput": "[0, 1, 2, 3]\n" },
-            { "input": "1\n-99", "expectedOutput": "[]\n" },
-            { "input": "6\n-10 5 -20 15 0 -3", "expectedOutput": "[5, 15, 0]\n" }
+            {
+                "input": "5\n10 -5 20 -1 30",
+                "expectedOutput": "[10, 20, 30]\n"
+            },
+            {
+                "input": "3\n-1 -2 -3",
+                "expectedOutput": "[]\n"
+            },
+            {
+                "input": "4\n0 1 2 3",
+                "expectedOutput": "[0, 1, 2, 3]\n"
+            },
+            {
+                "input": "1\n-99",
+                "expectedOutput": "[]\n"
+            },
+            {
+                "input": "6\n-10 5 -20 15 0 -3",
+                "expectedOutput": "[5, 15, 0]\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -413,10 +859,16 @@
         "title": "Simple Inventory Class",
         "difficulty": "Medium",
         "description": "Create a class `Item` with private fields `name` (String) and `price` (double). Include a constructor and a public method `getSalePrice()` which returns the price discounted by 10%. Write a **`main` method** that creates an `Item` named 'Book' with price 20.00 and prints its sale price (e.g., `18.0`) followed by a newline.\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `18.0\n`",
-        "requiredClasses": ["Solution.java", "Item.java"],
+        "requiredClasses": [
+            "Solution.java",
+            "Item.java"
+        ],
         "solution": "class Item {\n    private String name;\n    private double price;\n\n    public Item(String name, double price) {\n        this.name = name;\n        this.price = price;\n    }\n\n    public double getSalePrice() {\n        // 10% discount\n        return price * 0.9;\n    }\n}\n\npublic class Solution {\n    public static void main(String[] args) {\n        Item item = new Item(\"Book\", 20.0);\n        System.out.println(item.getSalePrice());\n    }\n}",
         "tests": [
-            { "input": "", "expectedOutput": "18.0\n" }
+            {
+                "input": "",
+                "expectedOutput": "18.0\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -426,15 +878,35 @@
         "title": "Fibonacci Sequence Iterative",
         "difficulty": "Medium",
         "description": "Write a **`main` method** that reads an integer `n` using `Scanner` and prints the `n`-th Fibonacci number (where F(0) = 0 and F(1) = 1) followed by a newline. Use an iterative approach (loops, not recursion).\n\n**Example Test Cases:**\n- Input: `8` | Output: `21\n`\n- Input: `2` | Output: `1\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        if (n <= 1) {\n            System.out.println(n);\n            return;\n        }\n        int a = 0;\n        int b = 1;\n        int result = 0;\n        for (int i = 2; i <= n; i++) {\n            result = a + b;\n            a = b;\n            b = result;\n        }\n        System.out.println(result);\n    }\n}",
         "tests": [
-            { "input": "8", "expectedOutput": "21\n" },
-            { "input": "2", "expectedOutput": "1\n" },
-            { "input": "0", "expectedOutput": "0\n" },
-            { "input": "1", "expectedOutput": "1\n" },
-            { "input": "5", "expectedOutput": "5\n" },
-            { "input": "12", "expectedOutput": "144\n" }
+            {
+                "input": "8",
+                "expectedOutput": "21\n"
+            },
+            {
+                "input": "2",
+                "expectedOutput": "1\n"
+            },
+            {
+                "input": "0",
+                "expectedOutput": "0\n"
+            },
+            {
+                "input": "1",
+                "expectedOutput": "1\n"
+            },
+            {
+                "input": "5",
+                "expectedOutput": "5\n"
+            },
+            {
+                "input": "12",
+                "expectedOutput": "144\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -444,16 +916,39 @@
         "title": "Check Palindrome String (Main)",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read a single `String` using `Scanner`. Determine if the string is a palindrome (reads the same forwards and backwards, case-sensitive). Print `true` or `false` followed by a newline.\n\n**Example Test Cases:**\n- Input: `racecar` | Output: `true\n`\n- Input: `java` | Output: `false\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        String s = scanner.next();\n        int n = s.length();\n        boolean isPalindrome = true;\n        for (int i = 0; i < n / 2; i++) {\n            if (s.charAt(i) != s.charAt(n - 1 - i)) {\n                isPalindrome = false;\n                break;\n            }\n        }\n        System.out.println(isPalindrome);\n    }\n}",
         "tests": [
-            { "input": "racecar", "expectedOutput": "true\n" },
-            { "input": "java", "expectedOutput": "false\n" },
-            { "input": "madam", "expectedOutput": "true\n" },
-            { "input": "a", "expectedOutput": "true\n" },
-            { "input": "ab", "expectedOutput": "false\n" },
-            { "input": "level", "expectedOutput": "true\n" },
-            { "input": "noon", "expectedOutput": "true\n" }
+            {
+                "input": "racecar",
+                "expectedOutput": "true\n"
+            },
+            {
+                "input": "java",
+                "expectedOutput": "false\n"
+            },
+            {
+                "input": "madam",
+                "expectedOutput": "true\n"
+            },
+            {
+                "input": "a",
+                "expectedOutput": "true\n"
+            },
+            {
+                "input": "ab",
+                "expectedOutput": "false\n"
+            },
+            {
+                "input": "level",
+                "expectedOutput": "true\n"
+            },
+            {
+                "input": "noon",
+                "expectedOutput": "true\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -463,14 +958,31 @@
         "title": "2D Array Max Value",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read the number of rows `R` and columns `C`, followed by R*C integers for a 2D array. Find and print the single largest integer in the 2D array, followed by a newline.\n\n**Example Test Cases:**\n- Input: `2 3\n1 5 3\n9 2 6` | Output: `9\n`\n- Input: `1 1\n42` | Output: `42\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int R = scanner.nextInt();\n        int C = scanner.nextInt();\n        int max = Integer.MIN_VALUE;\n        for (int i = 0; i < R; i++) {\n            for (int j = 0; j < C; j++) {\n                int val = scanner.nextInt();\n                if (val > max) {\n                    max = val;\n                }\n            }\n        }\n        System.out.println(max);\n    }\n}",
         "tests": [
-            { "input": "2 3\n1 5 3\n9 2 6", "expectedOutput": "9\n" },
-            { "input": "1 1\n42", "expectedOutput": "42\n" },
-            { "input": "3 1\n-1\n-5\n-3", "expectedOutput": "-1\n" },
-            { "input": "2 2\n10 20\n30 40", "expectedOutput": "40\n" },
-            { "input": "1 5\n1 2 3 4 5", "expectedOutput": "5\n" }
+            {
+                "input": "2 3\n1 5 3\n9 2 6",
+                "expectedOutput": "9\n"
+            },
+            {
+                "input": "1 1\n42",
+                "expectedOutput": "42\n"
+            },
+            {
+                "input": "3 1\n-1\n-5\n-3",
+                "expectedOutput": "-1\n"
+            },
+            {
+                "input": "2 2\n10 20\n30 40",
+                "expectedOutput": "40\n"
+            },
+            {
+                "input": "1 5\n1 2 3 4 5",
+                "expectedOutput": "5\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -480,10 +992,16 @@
         "title": "Simple Object Array Print",
         "difficulty": "Medium",
         "description": "Create a class `Point` with an `x` field (int) and a constructor. Write a **`main` method** in `Solution` to create an array of `Point` objects: Point(1) and Point(2). Print the array in the format: `[Point(x=1), Point(x=2)]` followed by a newline.\n\n**Example Test Cases:**\n- Input: `(None)` | Output: `[Point(x=1), Point(x=2)]\n`",
-        "requiredClasses": ["Solution.java", "Point.java"],
+        "requiredClasses": [
+            "Solution.java",
+            "Point.java"
+        ],
         "solution": "class Point {\n    public int x;\n    public Point(int x) {\n        this.x = x;\n    }\n    public String toString() {\n        return \"Point(x=\" + x + \")\";\n    }\n}\n\npublic class Solution {\n    public static void main(String[] args) {\n        Point[] arr = new Point[2];\n        arr[0] = new Point(1);\n        arr[1] = new Point(2);\n        String result = \"[\" + arr[0] + \", \" + arr[1] + \"]\";\n        System.out.println(result);\n    }\n}",
         "tests": [
-            { "input": "", "expectedOutput": "[Point(x=1), Point(x=2)]\n" }
+            {
+                "input": "",
+                "expectedOutput": "[Point(x=1), Point(x=2)]\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -493,14 +1011,31 @@
         "title": "String Reversal (Main)",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read a single `String` from `Scanner`. Print the reversed version of that string, followed by a newline.\n\n**Example Test Cases:**\n- Input: `zebra` | Output: `arbez\n`\n- Input: `level` | Output: `level\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        String s = scanner.next();\n        String reversed = new StringBuilder(s).reverse().toString();\n        System.out.println(reversed);\n    }\n}",
         "tests": [
-            { "input": "zebra", "expectedOutput": "arbez\n" },
-            { "input": "level", "expectedOutput": "level\n" },
-            { "input": "a", "expectedOutput": "a\n" },
-            { "input": "", "expectedOutput": "\n" },
-            { "input": "programming", "expectedOutput": "gnimmargorp\n" }
+            {
+                "input": "zebra",
+                "expectedOutput": "arbez\n"
+            },
+            {
+                "input": "level",
+                "expectedOutput": "level\n"
+            },
+            {
+                "input": "a",
+                "expectedOutput": "a\n"
+            },
+            {
+                "input": "",
+                "expectedOutput": "\n"
+            },
+            {
+                "input": "programming",
+                "expectedOutput": "gnimmargorp\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -510,14 +1045,31 @@
         "title": "Input Validation Loop",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to continuously read integers from `Scanner` until a number between 1 and 100 (inclusive) is entered. Once a valid number is entered, print that number followed by ` is valid.\n` and then terminate.\n\n**Example Test Cases:**\n- Input: `-5\n0\n10` | Output: `10 is valid.\n`\n- Input: `101\n50` | Output: `50 is valid.\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n;\n        do {\n            n = scanner.nextInt();\n        } while (n < 1 || n > 100);\n        System.out.println(n + \" is valid.\");\n    }\n}",
         "tests": [
-            { "input": "-5\n0\n10", "expectedOutput": "10 is valid.\n" },
-            { "input": "101\n50", "expectedOutput": "50 is valid.\n" },
-            { "input": "1", "expectedOutput": "1 is valid.\n" },
-            { "input": "100", "expectedOutput": "100 is valid.\n" },
-            { "input": "900\n-50\n5", "expectedOutput": "5 is valid.\n" }
+            {
+                "input": "-5\n0\n10",
+                "expectedOutput": "10 is valid.\n"
+            },
+            {
+                "input": "101\n50",
+                "expectedOutput": "50 is valid.\n"
+            },
+            {
+                "input": "1",
+                "expectedOutput": "1 is valid.\n"
+            },
+            {
+                "input": "100",
+                "expectedOutput": "100 is valid.\n"
+            },
+            {
+                "input": "900\n-50\n5",
+                "expectedOutput": "5 is valid.\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -527,15 +1079,35 @@
         "title": "Count Words in a String",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read a line of text using `Scanner.nextLine()`. Count the number of words (assume words are separated by a single space and there are no leading/trailing spaces). Print the count followed by a newline.\n\n**Example Test Cases:**\n- Input: `Hello world` | Output: `2\n`\n- Input: `one two three four five` | Output: `5\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        String line = scanner.nextLine();\n        if (line.trim().isEmpty()) {\n            System.out.println(0);\n            return;\n        }\n        String[] words = line.trim().split(\"\\\\s+\");\n        System.out.println(words.length);\n    }\n}",
         "tests": [
-            { "input": "Hello world", "expectedOutput": "2\n" },
-            { "input": "one two three four five", "expectedOutput": "5\n" },
-            { "input": "singleword", "expectedOutput": "1\n" },
-            { "input": "", "expectedOutput": "0\n" },
-            { "input": "   ", "expectedOutput": "0\n" },
-            { "input": "  leading and trailing  ", "expectedOutput": "3\n" }
+            {
+                "input": "Hello world",
+                "expectedOutput": "2\n"
+            },
+            {
+                "input": "one two three four five",
+                "expectedOutput": "5\n"
+            },
+            {
+                "input": "singleword",
+                "expectedOutput": "1\n"
+            },
+            {
+                "input": "",
+                "expectedOutput": "0\n"
+            },
+            {
+                "input": "   ",
+                "expectedOutput": "0\n"
+            },
+            {
+                "input": "  leading and trailing  ",
+                "expectedOutput": "3\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -545,14 +1117,31 @@
         "title": "Swap Max and Min in Array",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read the array size `n`, followed by `n` integers. Find the maximum and minimum values in the array, then swap their positions. Print the modified array elements separated by spaces, followed by a newline. If there are duplicates, use the first occurrence.\n\n**Example Test Cases:**\n- Input: `5\n1 5 3 2 4` | Output: `5 1 3 2 4\n`\n- Input: `3\n10 1 10` | Output: `1 10 10\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        int[] arr = new int[n];\n        int minIndex = -1, maxIndex = -1;\n        int minVal = Integer.MAX_VALUE;\n        int maxVal = Integer.MIN_VALUE;\n\n        for (int i = 0; i < n; i++) {\n            arr[i] = scanner.nextInt();\n            if (arr[i] < minVal) {\n                minVal = arr[i];\n                minIndex = i;\n            }\n            if (arr[i] > maxVal) {\n                maxVal = arr[i];\n                maxIndex = i;\n            }\n        }\n        \n        if (minIndex != maxIndex && n > 0) {\n            int temp = arr[minIndex];\n            arr[minIndex] = arr[maxIndex];\n            arr[maxIndex] = temp;\n        }\n\n        String result = \"\";\n        for (int i = 0; i < n; i++) {\n            result += arr[i] + (i == n - 1 ? \"\" : \" \");\n        }\n        System.out.println(result);\n    }\n}",
         "tests": [
-            { "input": "5\n1 5 3 2 4", "expectedOutput": "5 1 3 2 4\n" },
-            { "input": "3\n10 1 10", "expectedOutput": "1 10 10\n" },
-            { "input": "4\n1 2 3 4", "expectedOutput": "4 2 3 1\n" },
-            { "input": "1\n5", "expectedOutput": "5\n" },
-            { "input": "6\n-1 -5 0 5 1 2", "expectedOutput": "-1 5 0 -5 1 2\n" }
+            {
+                "input": "5\n1 5 3 2 4",
+                "expectedOutput": "5 1 3 2 4\n"
+            },
+            {
+                "input": "3\n10 1 10",
+                "expectedOutput": "1 10 10\n"
+            },
+            {
+                "input": "4\n1 2 3 4",
+                "expectedOutput": "4 2 3 1\n"
+            },
+            {
+                "input": "1\n5",
+                "expectedOutput": "5\n"
+            },
+            {
+                "input": "6\n-1 -5 0 5 1 2",
+                "expectedOutput": "-1 5 0 -5 1 2\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -562,15 +1151,35 @@
         "title": "Check Array for Sorted Order",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read the array size `n`, followed by `n` integers. Determine if the array is sorted in non-decreasing (ascending) order. Print `true` or `false` followed by a newline.\n\n**Example Test Cases:**\n- Input: `4\n1 2 3 4` | Output: `true\n`\n- Input: `4\n4 2 3 1` | Output: `false\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        if (n <= 1) {\n            System.out.println(true);\n            return;\n        }\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) {\n            arr[i] = scanner.nextInt();\n        }\n\n        boolean isSorted = true;\n        for (int i = 0; i < n - 1; i++) {\n            if (arr[i] > arr[i + 1]) {\n                isSorted = false;\n                break;\n            }\n        }\n        System.out.println(isSorted);\n    }\n}",
         "tests": [
-            { "input": "4\n1 2 3 4", "expectedOutput": "true\n" },
-            { "input": "4\n4 2 3 1", "expectedOutput": "false\n" },
-            { "input": "5\n1 2 2 4 5", "expectedOutput": "true\n" },
-            { "input": "5\n5 4 3 2 1", "expectedOutput": "false\n" },
-            { "input": "1\n10", "expectedOutput": "true\n" },
-            { "input": "0\n", "expectedOutput": "true\n" }
+            {
+                "input": "4\n1 2 3 4",
+                "expectedOutput": "true\n"
+            },
+            {
+                "input": "4\n4 2 3 1",
+                "expectedOutput": "false\n"
+            },
+            {
+                "input": "5\n1 2 2 4 5",
+                "expectedOutput": "true\n"
+            },
+            {
+                "input": "5\n5 4 3 2 1",
+                "expectedOutput": "false\n"
+            },
+            {
+                "input": "1\n10",
+                "expectedOutput": "true\n"
+            },
+            {
+                "input": "0\n",
+                "expectedOutput": "true\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -580,15 +1189,35 @@
         "title": "ArrayList Remove Duplicates",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read a line of space-separated strings. Store them in an `ArrayList<String>`. Remove all duplicate entries, keeping the first occurrence. Print the resulting list (in standard `[e1, e2, ...]` format) followed by a newline.\n\n**Example Test Cases:**\n- Input: `a b c a b` | Output: `[a, b, c]\n`\n- Input: `one two one two` | Output: `[one, two]\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\nimport java.util.ArrayList;\nimport java.util.Arrays;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        String line = scanner.nextLine();\n        if (line.trim().isEmpty()) {\n            System.out.println(\"[]\");\n            return;\n        }\n        String[] words = line.trim().split(\"\\\\s+\");\n        ArrayList<String> list = new ArrayList<>(Arrays.asList(words));\n        ArrayList<String> uniqueList = new ArrayList<>();\n        \n        for (String word : list) {\n            if (!uniqueList.contains(word)) {\n                uniqueList.add(word);\n            }\n        }\n        System.out.println(uniqueList);\n    }\n}",
         "tests": [
-            { "input": "a b c a b", "expectedOutput": "[a, b, c]\n" },
-            { "input": "one two one two", "expectedOutput": "[one, two]\n" },
-            { "input": "test", "expectedOutput": "[test]\n" },
-            { "input": "", "expectedOutput": "[]\n" },
-            { "input": "a a a a a", "expectedOutput": "[a]\n" },
-            { "input": "1 2 3 4 5", "expectedOutput": "[1, 2, 3, 4, 5]\n" }
+            {
+                "input": "a b c a b",
+                "expectedOutput": "[a, b, c]\n"
+            },
+            {
+                "input": "one two one two",
+                "expectedOutput": "[one, two]\n"
+            },
+            {
+                "input": "test",
+                "expectedOutput": "[test]\n"
+            },
+            {
+                "input": "",
+                "expectedOutput": "[]\n"
+            },
+            {
+                "input": "a a a a a",
+                "expectedOutput": "[a]\n"
+            },
+            {
+                "input": "1 2 3 4 5",
+                "expectedOutput": "[1, 2, 3, 4, 5]\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -598,14 +1227,31 @@
         "title": "Count Occurrences in 2D Array",
         "difficulty": "Medium",
         "description": "Write a **`main` method** to read the number of rows `R`, columns `C`, and a target integer `T`. Then read R*C integers for a 2D array. Count how many times `T` appears in the array and print the count followed by a newline.\n\n**Example Test Cases:**\n- Input: `2 2\n5\n1 5\n5 1` | Output: `2\n`\n- Input: `1 3\n10\n1 2 3` | Output: `0\n`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Scanner;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int R = scanner.nextInt();\n        int C = scanner.nextInt();\n        int T = scanner.nextInt();\n        int count = 0;\n        for (int i = 0; i < R; i++) {\n            for (int j = 0; j < C; j++) {\n                if (scanner.nextInt() == T) {\n                    count++;\n                }\n            }\n        }\n        System.out.println(count);\n    }\n}",
         "tests": [
-            { "input": "2 2\n5\n1 5\n5 1", "expectedOutput": "2\n" },
-            { "input": "1 3\n10\n1 2 3", "expectedOutput": "0\n" },
-            { "input": "3 1\n0\n0\n0\n0", "expectedOutput": "3\n" },
-            { "input": "2 2\n-1\n-1 -1\n-1 -1", "expectedOutput": "4\n" },
-            { "input": "1 5\n99\n1 2 3 4 5", "expectedOutput": "0\n" }
+            {
+                "input": "2 2\n5\n1 5\n5 1",
+                "expectedOutput": "2\n"
+            },
+            {
+                "input": "1 3\n10\n1 2 3",
+                "expectedOutput": "0\n"
+            },
+            {
+                "input": "3 1\n0\n0\n0\n0",
+                "expectedOutput": "3\n"
+            },
+            {
+                "input": "2 2\n-1\n-1 -1\n-1 -1",
+                "expectedOutput": "4\n"
+            },
+            {
+                "input": "1 5\n99\n1 2 3 4 5",
+                "expectedOutput": "0\n"
+            }
         ],
         "runAsMain": true,
         "driverCallTemplate": null
@@ -615,172 +1261,636 @@
         "title": "Recursive Sum of an Array",
         "difficulty": "Hard",
         "description": "Write a public static method `recursiveSum` that takes an array of integers and returns the sum of all elements using **recursion**. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `{1, 2, 3}` | Output: `6`\n- Input: `{5}` | Output: `5`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static int recursiveSum(int[] arr) {\n        return recursiveSum(arr, arr.length - 1);\n    }\n\n    private static int recursiveSum(int[] arr, int index) {\n        if (index < 0) {\n            return 0;\n        }\n        return arr[index] + recursiveSum(arr, index - 1);\n    }\n}",
         "tests": [
-            { "input": "{1, 2, 3}", "expectedOutput": "6" },
-            { "input": "{5}", "expectedOutput": "5" },
-            { "input": "{}", "expectedOutput": "0" },
-            { "input": "{10, 20, 30, 40}", "expectedOutput": "100" },
-            { "input": "{-1, 1, -2, 2}", "expectedOutput": "0" },
-            { "input": "{1000}", "expectedOutput": "1000" }
+            {
+                "input": "{1, 2, 3}",
+                "expectedOutput": "6"
+            },
+            {
+                "input": "{5}",
+                "expectedOutput": "5"
+            },
+            {
+                "input": "{}",
+                "expectedOutput": "0"
+            },
+            {
+                "input": "{10, 20, 30, 40}",
+                "expectedOutput": "100"
+            },
+            {
+                "input": "{-1, 1, -2, 2}",
+                "expectedOutput": "0"
+            },
+            {
+                "input": "{1000}",
+                "expectedOutput": "1000"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.recursiveSum(A));"
+        "driverCallTemplate": "System.out.print(Solution.recursiveSum(##__IN_1__##));"
     },
     {
         "id": 37,
         "title": "Insertion Sort - Single Pass",
         "difficulty": "Hard",
         "description": "Write a public static method `insertionSortPass` that takes an integer array and an integer `k` (the index of the element to be inserted). Perform a single pass of the Insertion Sort algorithm to place the element at index `k` into its correct sorted position within the subarray from index 0 to `k`. Return the modified array as a String (e.g., `[1, 5, 4, 2, 8]`). *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `{5, 1, 4, 2, 8}, 1` | Output: `[1, 5, 4, 2, 8]`\n- Input: `{1, 5, 4, 2, 8}, 2` | Output: `[1, 4, 5, 2, 8]`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.Arrays;\n\npublic class Solution {\n    public static String insertionSortPass(int[] arr, int k) {\n        if (k <= 0) return Arrays.toString(arr);\n        int current = arr[k];\n        int j = k - 1;\n        while (j >= 0 && arr[j] > current) {\n            arr[j + 1] = arr[j];\n            j--;\n        }\n        arr[j + 1] = current;\n        return Arrays.toString(arr);\n    }\n}",
         "tests": [
-            { "input": "{5, 1, 4, 2, 8}, 1", "expectedOutput": "[1, 5, 4, 2, 8]" },
-            { "input": "{1, 5, 4, 2, 8}, 2", "expectedOutput": "[1, 4, 5, 2, 8]" },
-            { "input": "{10, 20, 5, 15}, 2", "expectedOutput": "[5, 10, 20, 15]" },
-            { "input": "{1, 2, 3}, 0", "expectedOutput": "[1, 2, 3]" },
-            { "input": "{3, 2, 1}, 2", "expectedOutput": "[1, 3, 2]" },
-            { "input": "{2, 5, 1}, 2", "expectedOutput": "[2, 1, 5]" }
+            {
+                "input": "{5, 1, 4, 2, 8}, 1",
+                "expectedOutput": "[1, 5, 4, 2, 8]"
+            },
+            {
+                "input": "{1, 5, 4, 2, 8}, 2",
+                "expectedOutput": "[1, 4, 5, 2, 8]"
+            },
+            {
+                "input": "{10, 20, 5, 15}, 2",
+                "expectedOutput": "[5, 10, 20, 15]"
+            },
+            {
+                "input": "{1, 2, 3}, 0",
+                "expectedOutput": "[1, 2, 3]"
+            },
+            {
+                "input": "{3, 2, 1}, 2",
+                "expectedOutput": "[1, 3, 2]"
+            },
+            {
+                "input": "{2, 5, 1}, 2",
+                "expectedOutput": "[2, 1, 5]"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.insertionSortPass(A, B));"
+        "driverCallTemplate": "System.out.print(Solution.insertionSortPass(##__IN_1__##, ##__IN_2__##));"
     },
     {
         "id": 38,
         "title": "Polymorphic Greeting",
         "difficulty": "Hard",
         "description": "Create an abstract class `Animal` with an abstract method `speak()`. Create two subclasses, `Dog` and `Cat`, that implement `speak()` to return \"Woof\" and \"Meow\", respectively. Write a public static method `getAnimalSound` that takes an `Animal` object and returns its sound. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `new Dog()` | Output: `Woof`\n- Input: `new Cat()` | Output: `Meow`",
-        "requiredClasses": ["Solution.java", "Animal.java", "Dog.java", "Cat.java"],
+        "requiredClasses": [
+            "Solution.java",
+            "Animal.java",
+            "Dog.java",
+            "Cat.java"
+        ],
         "solution": "abstract class Animal {\n    public abstract String speak();\n}\n\nclass Dog extends Animal {\n    public String speak() {\n        return \"Woof\";\n    }\n}\n\nclass Cat extends Animal {\n    public String speak() {\n        return \"Meow\";\n    }\n}\n\npublic class Solution {\n    public static String getAnimalSound(Animal a) {\n        return a.speak();\n    }\n}",
         "tests": [
-            { "input": "new Dog()", "expectedOutput": "Woof" },
-            { "input": "new Cat()", "expectedOutput": "Meow" }
+            {
+                "input": "new Dog()",
+                "expectedOutput": "Woof"
+            },
+            {
+                "input": "new Cat()",
+                "expectedOutput": "Meow"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.getAnimalSound(A));"
+        "driverCallTemplate": "System.out.print(Solution.getAnimalSound(##__IN_1__##));"
     },
     {
         "id": 39,
         "title": "ArrayList Remove All Occurrences",
         "difficulty": "Hard",
         "description": "Write a public static method `removeAll` that takes an `ArrayList<String>` and a `String` target. Remove *all* instances of the target string from the list. Return the modified list as a String (in `[e1, e2, ...]` format). *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `[\"a\", \"b\", \"a\", \"c\"], \"a\"` | Output: `[b, c]`\n- Input: `[\"x\", \"y\", \"z\"], \"w\"` | Output: `[x, y, z]`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "import java.util.ArrayList;\n\npublic class Solution {\n    public static String removeAll(ArrayList<String> list, String target) {\n        while (list.contains(target)) {\n            list.remove(target);\n        }\n        return list.toString();\n    }\n}",
         "tests": [
-            { "input": "new ArrayList<>(Arrays.asList(\"a\", \"b\", \"a\", \"c\")), \"a\"", "expectedOutput": "[b, c]" },
-            { "input": "new ArrayList<>(Arrays.asList(\"x\", \"y\", \"z\")), \"w\"", "expectedOutput": "[x, y, z]" },
-            { "input": "new ArrayList<>(Arrays.asList(\"1\", \"1\", \"1\")), \"1\"", "expectedOutput": "[]" },
-            { "input": "new ArrayList<>(Arrays.asList(\"A\", \"B\", \"C\")), \"b\"", "expectedOutput": "[A, B, C]" },
-            { "input": "new ArrayList<>(), \"a\"", "expectedOutput": "[]" }
+            {
+                "input": "new ArrayList<>(Arrays.asList(\"a\", \"b\", \"a\", \"c\")), \"a\"",
+                "expectedOutput": "[b, c]"
+            },
+            {
+                "input": "new ArrayList<>(Arrays.asList(\"x\", \"y\", \"z\")), \"w\"",
+                "expectedOutput": "[x, y, z]"
+            },
+            {
+                "input": "new ArrayList<>(Arrays.asList(\"1\", \"1\", \"1\")), \"1\"",
+                "expectedOutput": "[]"
+            },
+            {
+                "input": "new ArrayList<>(Arrays.asList(\"A\", \"B\", \"C\")), \"b\"",
+                "expectedOutput": "[A, B, C]"
+            },
+            {
+                "input": "new ArrayList<>(), \"a\"",
+                "expectedOutput": "[]"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.removeAll(A, S));"
+        "driverCallTemplate": "System.out.print(Solution.removeAll(##__IN_1__##, ##__IN_2__##));"
     },
     {
         "id": 40,
         "title": "Reverse Words in a String",
         "difficulty": "Hard",
         "description": "Write a public static method `reverseWords` that takes a `String` containing words separated by single spaces. The method should return a new string where the order of the words is reversed, but the words themselves are not. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"hello world\"` | Output: `\"world hello\"`\n- Input: `\"a b c\"` | Output: `\"c b a\"`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static String reverseWords(String s) {\n        String[] words = s.split(\" \");\n        StringBuilder sb = new StringBuilder();\n        for (int i = words.length - 1; i >= 0; i--) {\n            sb.append(words[i]);\n            if (i > 0) {\n                sb.append(\" \");\n            }\n        }\n        return sb.toString();\n    }\n}",
         "tests": [
-            { "input": "\"hello world\"", "expectedOutput": "world hello" },
-            { "input": "\"a b c\"", "expectedOutput": "c b a" },
-            { "input": "\"single\"", "expectedOutput": "single" },
-            { "input": "\"\"", "expectedOutput": "" },
-            { "input": "\"one two three four\"", "expectedOutput": "four three two one" }
+            {
+                "input": "\"hello world\"",
+                "expectedOutput": "world hello"
+            },
+            {
+                "input": "\"a b c\"",
+                "expectedOutput": "c b a"
+            },
+            {
+                "input": "\"single\"",
+                "expectedOutput": "single"
+            },
+            {
+                "input": "\"\"",
+                "expectedOutput": ""
+            },
+            {
+                "input": "\"one two three four\"",
+                "expectedOutput": "four three two one"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.reverseWords(S));"
+        "driverCallTemplate": "System.out.print(Solution.reverseWords(##__IN_1__##));"
     },
     {
         "id": 41,
         "title": "Scrabble Word Score",
         "difficulty": "Hard",
         "description": "Write a public static method `getScore` that takes a word (`String`) and returns its Scrabble score. Use the following point values: A, E, I, O, U, L, N, S, T, R (1 point); D, G (2 points); B, C, M, P (3 points); F, H, V, W, Y (4 points); K (5 points); J, X (8 points); Q, Z (10 points). The input will be uppercase. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"JAZZ\"` | Output: `29` (J=8, A=1, Z=10, Z=10)\n- Input: `\"A\"` | Output: `1`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static int getScore(String word) {\n        int score = 0;\n        for (char c : word.toCharArray()) {\n            switch (c) {\n                case 'A': case 'E': case 'I': case 'O': case 'U': case 'L': case 'N': case 'S': case 'T': case 'R': score += 1; break;\n                case 'D': case 'G': score += 2; break;\n                case 'B': case 'C': case 'M': case 'P': score += 3; break;\n                case 'F': case 'H': case 'V': case 'W': case 'Y': score += 4; break;\n                case 'K': score += 5; break;\n                case 'J': case 'X': score += 8; break;\n                case 'Q': case 'Z': score += 10; break;\n            }\n        }\n        return score;\n    }\n}",
         "tests": [
-            { "input": "\"JAZZ\"", "expectedOutput": "29" },
-            { "input": "\"A\"", "expectedOutput": "1" },
-            { "input": "\"PROGRAMMING\"", "expectedOutput": "22" },
-            { "input": "\"QUIZ\"", "expectedOutput": "22" },
-            { "input": "\"KNOWLEDGE\"", "expectedOutput": "18" },
-            { "input": "\"\"", "expectedOutput": "0" }
+            {
+                "input": "\"JAZZ\"",
+                "expectedOutput": "29"
+            },
+            {
+                "input": "\"A\"",
+                "expectedOutput": "1"
+            },
+            {
+                "input": "\"PROGRAMMING\"",
+                "expectedOutput": "22"
+            },
+            {
+                "input": "\"QUIZ\"",
+                "expectedOutput": "22"
+            },
+            {
+                "input": "\"KNOWLEDGE\"",
+                "expectedOutput": "18"
+            },
+            {
+                "input": "\"\"",
+                "expectedOutput": "0"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.getScore(S));"
+        "driverCallTemplate": "System.out.print(Solution.getScore(##__IN_1__##));"
     },
     {
         "id": 42,
         "title": "2D Array - Column Sum",
         "difficulty": "Hard",
         "description": "Write a public static method `columnSum` that takes a 2D integer array (`int[][]`) and a column index (`int col`). Return the sum of all elements in that specific column. Assume the array is non-empty and rectangular. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `{{1, 2, 3}, {4, 5, 6}}, 1` | Output: `7` (2 + 5)\n- Input: `{{10}, {20}, {30}}, 0` | Output: `60` (10 + 20 + 30)",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static int columnSum(int[][] arr, int col) {\n        int sum = 0;\n        for (int row = 0; row < arr.length; row++) {\n            sum += arr[row][col];\n        }\n        return sum;\n    }\n}",
         "tests": [
-            { "input": "new int[][]{{1, 2, 3}, {4, 5, 6}}, 1", "expectedOutput": "7" },
-            { "input": "new int[][]{{10}, {20}, {30}}, 0", "expectedOutput": "60" },
-            { "input": "new int[][]{{1, 1, 1}, {1, 1, 1}}, 2", "expectedOutput": "2" },
-            { "input": "new int[][]{{100, 0, 0}}, 0", "expectedOutput": "100" },
-            { "input": "new int[][]{{1, 2, 3, 4}}, 3", "expectedOutput": "4" }
+            {
+                "input": "new int[][]{{1, 2, 3}, {4, 5, 6}}, 1",
+                "expectedOutput": "7"
+            },
+            {
+                "input": "new int[][]{{10}, {20}, {30}}, 0",
+                "expectedOutput": "60"
+            },
+            {
+                "input": "new int[][]{{1, 1, 1}, {1, 1, 1}}, 2",
+                "expectedOutput": "2"
+            },
+            {
+                "input": "new int[][]{{100, 0, 0}}, 0",
+                "expectedOutput": "100"
+            },
+            {
+                "input": "new int[][]{{1, 2, 3, 4}}, 3",
+                "expectedOutput": "4"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.columnSum(A, B));"
+        "driverCallTemplate": "System.out.print(Solution.columnSum(##__IN_1__##, ##__IN_2__##));"
     },
     {
         "id": 43,
         "title": "Count 'Code' Substring",
         "difficulty": "Hard",
         "description": "Write a public static method `countCode` that takes a `String` and returns the number of times the substring \"code\" appears. We will allow any character in place of the 'd', so \"cope\" and \"cooe\" count. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `\"aaacodebbb\"` | Output: `1`\n- Input: `\"cozexxcope\"` | Output: `2`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static int countCode(String s) {\n        int count = 0;\n        for (int i = 0; i < s.length() - 3; i++) {\n            if (s.substring(i, i + 2).equals(\"co\") && s.charAt(i + 3) == 'e') {\n                count++;\n            }\n        }\n        return count;\n    }\n}",
         "tests": [
-            { "input": "\"aaacodebbb\"", "expectedOutput": "1" },
-            { "input": "\"cozexxcope\"", "expectedOutput": "2" },
-            { "input": "\"codexxcode\"", "expectedOutput": "2" },
-            { "input": "\"cce\"", "expectedOutput": "0" },
-            { "input": "\"code\"", "expectedOutput": "1" },
-            { "input": "\"cococoe\"", "expectedOutput": "2" }
+            {
+                "input": "\"aaacodebbb\"",
+                "expectedOutput": "1"
+            },
+            {
+                "input": "\"cozexxcope\"",
+                "expectedOutput": "2"
+            },
+            {
+                "input": "\"codexxcode\"",
+                "expectedOutput": "2"
+            },
+            {
+                "input": "\"cce\"",
+                "expectedOutput": "0"
+            },
+            {
+                "input": "\"code\"",
+                "expectedOutput": "1"
+            },
+            {
+                "input": "\"cococoe\"",
+                "expectedOutput": "2"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.countCode(S));"
+        "driverCallTemplate": "System.out.print(Solution.countCode(##__IN_1__##));"
     },
     {
         "id": 44,
         "title": "Abstract Class Shape Area",
         "difficulty": "Hard",
         "description": "Create an abstract class `Shape` with an abstract method `getArea()`. Create a subclass `Rectangle` with a constructor that takes length and width. Write a public static method `getTotalArea` that takes a `Rectangle` object and returns its area. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `new Rectangle(2, 3)` | Output: `6.0`\n- Input: `new Rectangle(10, 5)` | Output: `50.0`",
-        "requiredClasses": ["Solution.java", "Shape.java", "Rectangle.java"],
+        "requiredClasses": [
+            "Solution.java",
+            "Shape.java",
+            "Rectangle.java"
+        ],
         "solution": "abstract class Shape {\n    public abstract double getArea();\n}\n\nclass Rectangle extends Shape {\n    private double length;\n    private double width;\n\n    public Rectangle(double length, double width) {\n        this.length = length;\n        this.width = width;\n    }\n\n    public double getArea() {\n        return length * width;\n    }\n}\n\npublic class Solution {\n    public static double getTotalArea(Shape s) {\n        return s.getArea();\n    }\n}",
         "tests": [
-            { "input": "new Rectangle(2.0, 3.0)", "expectedOutput": "6.0" },
-            { "input": "new Rectangle(10.0, 5.0)", "expectedOutput": "50.0" },
-            { "input": "new Rectangle(1.0, 1.0)", "expectedOutput": "1.0" },
-            { "input": "new Rectangle(0.0, 5.0)", "expectedOutput": "0.0" }
+            {
+                "input": "new Rectangle(2.0, 3.0)",
+                "expectedOutput": "6.0"
+            },
+            {
+                "input": "new Rectangle(10.0, 5.0)",
+                "expectedOutput": "50.0"
+            },
+            {
+                "input": "new Rectangle(1.0, 1.0)",
+                "expectedOutput": "1.0"
+            },
+            {
+                "input": "new Rectangle(0.0, 5.0)",
+                "expectedOutput": "0.0"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.getTotalArea(A));"
+        "driverCallTemplate": "System.out.print(Solution.getTotalArea(##__IN_1__##));"
     },
     {
         "id": 45,
         "title": "Binary Search Implementation",
         "difficulty": "Hard",
         "description": "Write a public static method `binarySearch` that takes a sorted array of integers (`int[]`) and a target value (`int target`). The method should return the index of the target in the array, or `-1` if the target is not present. *Do not write a main method.*\n\n**Example Test Cases:**\n- Input: `{2, 4, 6, 8, 10}, 8` | Output: `3`\n- Input: `{1, 3, 5, 7, 9}, 4` | Output: `-1`",
-        "requiredClasses": ["Solution.java"],
+        "requiredClasses": [
+            "Solution.java"
+        ],
         "solution": "public class Solution {\n    public static int binarySearch(int[] arr, int target) {\n        int low = 0;\n        int high = arr.length - 1;\n\n        while (low <= high) {\n            int mid = low + (high - low) / 2;\n            if (arr[mid] == target) {\n                return mid;\n            } else if (arr[mid] < target) {\n                low = mid + 1;\n            } else {\n                high = mid - 1;\n            }\n        }\n        return -1;\n    }\n}",
         "tests": [
-            { "input": "{2, 4, 6, 8, 10}, 8", "expectedOutput": "3" },
-            { "input": "{1, 3, 5, 7, 9}, 4", "expectedOutput": "-1" },
-            { "input": "{10, 20, 30}, 10", "expectedOutput": "0" },
-            { "input": "{10, 20, 30}, 30", "expectedOutput": "2" },
-            { "input": "{10, 20, 30}, 5", "expectedOutput": "-1" },
-            { "input": "{1}, 1", "expectedOutput": "0" },
-            { "input": "{1}, 5", "expectedOutput": "-1" },
-            { "input": "{}", "expectedOutput": "-1" }
+            {
+                "input": "{2, 4, 6, 8, 10}, 8",
+                "expectedOutput": "3"
+            },
+            {
+                "input": "{1, 3, 5, 7, 9}, 4",
+                "expectedOutput": "-1"
+            },
+            {
+                "input": "{10, 20, 30}, 10",
+                "expectedOutput": "0"
+            },
+            {
+                "input": "{10, 20, 30}, 30",
+                "expectedOutput": "2"
+            },
+            {
+                "input": "{10, 20, 30}, 5",
+                "expectedOutput": "-1"
+            },
+            {
+                "input": "{1}, 1",
+                "expectedOutput": "0"
+            },
+            {
+                "input": "{1}, 5",
+                "expectedOutput": "-1"
+            },
+            {
+                "input": "{}",
+                "expectedOutput": "-1"
+            }
         ],
         "runAsMain": false,
-        "driverCallTemplate": "System.out.print(Solution.binarySearch(A, B));"
+        "driverCallTemplate": "System.out.print(Solution.binarySearch(##__IN_1__##, ##__IN_2__##));"
+    },
+    {
+        "id": "AP_FRQ_2025_Q1",
+        "title": "AP CSA 2025 Q1: Array/ArrayList Pair Clearing",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "PairClearer"
+        ],
+        "description": "The `PairClearer` class is used to play a game based on a 2D array of integers called `puzzle`. The game involves identifying and clearing pairs of elements from the puzzle based on specific rules. All numbers in `puzzle` are between 0 and 9, inclusive.",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "Write the `hasMatchingPair(int row, int col)` method. This method returns `true` if the element at `puzzle[row][col]` has a matching pair (an element with the same value or an element whose value sums to 10 with the current element) in the portion of the 2D array that is in the same row but a later column, or in a later row. It returns `false` otherwise.",
+                "rubric": "Point 1: Initializes to false. Point 2: Accesses the element at `puzzle[row][col]` correctly. Point 3: Iterates through the correct range of the same row (col + 1 to end). Point 4: Iterates through the correct range of later rows (row + 1 to end). Point 5: Checks for a match: same value OR sum of 10. Point 6: Returns true if a match is found and false otherwise (algorithm).",
+                "solution": "public boolean hasMatchingPair(int row, int col) {\n    int targetVal = puzzle[row][col];\n    int valToSum = 10 - targetVal;\n\n    // Check same row, later columns\n    for (int c = col + 1; c < puzzle[row].length; c++) {\n        if (puzzle[row][c] == targetVal || puzzle[row][c] == valToSum) {\n            return true;\n        }\n    }\n\n    // Check later rows (starting from first column)\n    for (int r = row + 1; r < puzzle.length; r++) {\n        for (int c = 0; c < puzzle[r].length; c++) {\n            if (puzzle[r][c] == targetVal || puzzle[r][c] == valToSum) {\n                return true;\n            }\n        }\n    }\n\n    return false;\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "Write the `clearPair(int row, int col)` method. This method searches for the first matching pair for the element at `puzzle[row][col]` according to the rules in part (a). If a matching pair is found, the element at `puzzle[row][col]` and the matching element are both set to 0 and the method returns `true`. If no matching pair is found, no changes are made to `puzzle` and the method returns `false`.",
+                "rubric": "Point 1: Accesses the element at `puzzle[row][col]` correctly. Point 2: Iterates through the correct range of the same row (col + 1 to end). Point 3: Iterates through the correct range of later rows (row + 1 to end). Point 4: Checks for a match: same value OR sum of 10. Point 5: Sets `puzzle[row][col]` to 0 when match is found. Point 6: Sets the identified matching element to 0 when match is found. Point 7: Returns `true` when a match is found and `false` otherwise (algorithm).",
+                "solution": "public boolean clearPair(int row, int col) {\n    int targetVal = puzzle[row][col];\n    int valToSum = 10 - targetVal;\n\n    // Search same row, later columns\n    for (int c = col + 1; c < puzzle[row].length; c++) {\n        if (puzzle[row][c] == targetVal || puzzle[row][c] == valToSum) {\n            puzzle[row][col] = 0;\n            puzzle[row][c] = 0;\n            return true;\n        }\n    }\n\n    // Search later rows\n    for (int r = row + 1; r < puzzle.length; r++) {\n        for (int c = 0; c < puzzle[r].length; c++) {\n            if (puzzle[r][c] == targetVal || puzzle[r][c] == valToSum) {\n                puzzle[row][col] = 0;\n                puzzle[r][c] = 0;\n                return true;\n            }\n        }\n    }\n\n    return false;\n}"
+            }
+        ]
+    },
+    {
+        "id": "AP_FRQ_2025_Q2",
+        "title": "AP CSA 2025 Q2: Class Design and Object Comparison",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "ScoreEntry",
+            "HighScoreList"
+        ],
+        "description": "This question involves designing a class to represent a single score entry and then implementing a class to manage a list of these high scores.",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "Write the `ScoreEntry` class. A `ScoreEntry` object represents a single high score and has two private instance variables: a String name and an int score. The class must include:\n1. A constructor that accepts a name and a score.\n2. Accessor methods `getName()` and `getScore()`.\n3. A public method `equals(Object other)` that returns `true` if the other object is a `ScoreEntry` with the same name (case-insensitive) and score.",
+                "rubric": "Point 1: `name` (String) and `score` (int) private instance variables. Point 2: Constructor initializes both instance variables. Point 3: Accessor methods `getName()` and `getScore()` return correct values. Point 4: Correct `equals(Object other)` header and checks if `other` is an instance of `ScoreEntry` (or equivalent check). Point 5: Correctly casts `other` to `ScoreEntry`. Point 6: Compares scores using `==`. Point 7: Compares names case-insensitively.",
+                "solution": "public class ScoreEntry {\n    private String name;\n    private int score;\n\n    public ScoreEntry(String name, int score) {\n        this.name = name;\n        this.score = score;\n    }\n\n    public String getName() {\n        return name;\n    }\n\n    public int getScore() {\n        return score;\n    }\n\n    public boolean equals(Object other) {\n        if (!(other instanceof ScoreEntry)) {\n            return false;\n        }\n        ScoreEntry otherEntry = (ScoreEntry) other;\n        return this.score == otherEntry.score &&\n               this.name.equalsIgnoreCase(otherEntry.name);\n    }\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "The `HighScoreList` class manages a list of `ScoreEntry` objects in a private ArrayList named `scores`. Write the `addEntry(ScoreEntry entry)` method. This method adds the given entry to `scores` only if it is not already present in the list (checking for equality using the method written in part (a)). The list should remain sorted in descending order by score (highest score first).",
+                "rubric": "Point 1: Iterates through `scores` list (or uses an equivalent list method). Point 2: Uses `entry.equals(currentScore)` to check for duplicates (or correct name/score comparison). Point 3: Returns if a duplicate is found. Point 4: Finds the correct insertion index to maintain descending score order. Point 5: Uses `scores.add(index, entry)` to insert at the correct position. Point 6: Handles the case where the entry should be added to the end of the list (or uses `scores.add(entry)` when no smaller score is found).",
+                "solution": "public class HighScoreList {\n    private ArrayList<ScoreEntry> scores;\n\n    public HighScoreList() {\n        scores = new ArrayList<ScoreEntry>();\n    }\n\n    public void addEntry(ScoreEntry entry) {\n        // Check for duplicates\n        for (ScoreEntry s : scores) {\n            if (entry.equals(s)) {\n                return;\n            }\n        }\n\n        // Find insertion point to maintain descending order\n        for (int i = 0; i < scores.size(); i++) {\n            if (entry.getScore() > scores.get(i).getScore()) {\n                scores.add(i, entry);\n                return;\n            }\n        }\n\n        // Add to the end if score is the smallest\n        scores.add(entry);\n    }\n    // other methods like getScores() omitted for FRQ segment\n}"
+            }
+        ]
+    },
+    {
+        "id": "AP_FRQ_2025_Q3",
+        "title": "AP CSA 2025 Q3: Recursion with 2D Arrays",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "PathFinder"
+        ],
+        "description": "The `PathFinder` class finds and sums values along a path in a 2D integer array called `grid`. A path is defined by moving from the current location to a new location returned by the `getNextLoc` method.",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "The `Location` class (omitted) has `getRow()` and `getCol()` methods. The `GridPath` class (omitted) has a method `getNextLoc(int row, int col)` that returns the next location on the path. Write the `sumPath(int row, int col)` method using **iteration** (loops). The method should compute and return the sum of all values in `grid` along the path starting from `grid[row][col]`. The path ends when `getNextLoc` returns `null` or when the last element of the grid is reached. Assume `getNextLoc` works as intended.",
+                "rubric": "Point 1: Initializes sum to include the starting element `grid[row][col]`. Point 2: Iteratively calls `getNextLoc` until `null` is returned (or uses correct loop condition/stop). Point 3: Updates the current row and column variables within the loop based on the `Location` returned by `getNextLoc`. Point 4: Correctly adds the value of the grid element at the new location to the running sum. Point 5: Calls `getRow` and `getCol` on a `Location` object. Point 6: Accesses grid element at positions derived from `Location` object. Point 7: Correct algorithm to compute the sum along the path (stops correctly).",
+                "solution": "public int sumPath(int row, int col) {\n    int sum = grid[row][col];\n    Location next = getNextLoc(row, col);\n\n    while (next != null) {\n        row = next.getRow();\n        col = next.getCol();\n        sum += grid[row][col];\n        next = getNextLoc(row, col);\n    }\n\n    return sum;\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "Write a **recursive** version of the `sumPath` method that performs the same task as in part (a). The method should compute and return the sum of all values in `grid` along the path starting from `grid[row][col]`. **You must use the `getNextLoc` method appropriately in order to receive full credit.**",
+                "rubric": "Point 1: Correct recursive base case: `getNextLoc(row, col)` returns `null`. Point 2: Correct recursive base case: returns the current element value when the path ends. Point 3: Recursive step calls `getNextLoc` using current parameters. Point 4: Recursive step correctly calls the method with the next location's coordinates. Point 5: Calls `getRow` and `getCol` on a `Location` object. Point 6: Computes the sum of the current element and the recursive call result (algorithm).",
+                "solution": "public int sumPath(int row, int col) {\n    // Base Case: Path ends (getNextLoc returns null)\n    Location next = getNextLoc(row, col);\n\n    if (next == null) {\n        return grid[row][col]; // Path ends, return last element\n    }\n\n    // Recursive Step: Sum current element and the rest of the path\n    int nextRow = next.getRow();\n    int nextCol = next.getCol();\n\n    return grid[row][col] + sumPath(nextRow, nextCol);\n}"
+            }
+        ]
+    },
+    {
+        "id": "AP_FRQ_2024_Q1",
+        "title": "AP CSA 2024 Q1: Simple Array List Manipulation",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "WordList"
+        ],
+        "description": "The `WordList` class contains an ArrayList of String objects called `myList`. This question involves manipulating and filtering this list.",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "Write the `numWordsOfLength(int len)` method. This method should return the number of words in `myList` that have a length equal to `len`. The order of the words in `myList` is not changed as a result of the call.",
+                "rubric": "Point 1: Initializes counter to 0. Point 2: Iterates through all elements of `myList`. Point 3: Correctly retrieves length of word using `.length()`. Point 4: Correctly compares length to `len`. Point 5: Increments counter inside the loop and returns the counter (algorithm).",
+                "solution": "public int numWordsOfLength(int len) {\n    int count = 0;\n    for (String word : myList) {\n        if (word.length() == len) {\n            count++;\n        }\n    }\n    return count;\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "Write the `removeWordsOfLength(int len)` method. This method removes all words from `myList` that have a length equal to `len`. The method returns the total number of words removed. You must traverse the list efficiently and correctly remove elements without skipping over other elements.",
+                "rubric": "Point 1: Initializes counter to 0. Point 2: Correctly iterates through the list of Strings (either backwards or using an Iterator). Point 3: Correctly retrieves length of word using `.length()`. Point 4: Correctly compares length to `len`. Point 5: Correctly removes element from `myList` (uses `myList.remove(i)` or iterator's `remove()`). Point 6: Returns the total number of words removed (algorithm).",
+                "solution": "public int removeWordsOfLength(int len) {\n    int countRemoved = 0;\n    for (int i = myList.size() - 1; i >= 0; i--) {\n        if (myList.get(i).length() == len) {\n            myList.remove(i);\n            countRemoved++;\n        }\n    }\n    return countRemoved;\n\n    /* ALTERNATE SOLUTION USING ITERATOR:\n    int countRemoved = 0;\n    Iterator<String> iter = myList.iterator();\n    while (iter.hasNext()) {\n        String word = iter.next();\n        if (word.length() == len) {\n            iter.remove();\n            countRemoved++;\n        }\n    }\n    return countRemoved;\n    */\n}"
+            }
+        ]
+    },
+    {
+        "id": "AP_FRQ_2024_Q2",
+        "title": "AP CSA 2024 Q2: 2D Array and Class Design",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "SeatAvailability"
+        ],
+        "description": "The `SeatAvailability` class manages available seats in a theater using a 2D array of boolean values called `seats`, where `true` means the seat is available and `false` means it is occupied.",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "Write the `getAvailableSeatCount(int row)` method. This method should return the number of available seats (where the boolean value is `true`) in the specified row. Assume `row` is a valid index.",
+                "rubric": "Point 1: Initializes counter to 0. Point 2: Iterates through the elements of `seats[row]`. Point 3: Correctly checks if the boolean element is `true`. Point 4: Increments counter and returns the total count (algorithm).",
+                "solution": "public int getAvailableSeatCount(int row) {\n    int count = 0;\n    for (boolean seat : seats[row]) {\n        if (seat) { // same as if (seat == true)\n            count++;\n        }\n    }\n    return count;\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "Write the `findAvailableSeats(int numSeats)` method. This method attempts to find a contiguous block of `numSeats` available seats in the theater. The method should return the index of the column where the block begins. If no such block can be found in any row, the method returns -1. The method must only return the first block found, starting the search from row 0, then row 1, and so on. Within each row, search from column 0, then column 1, and so on.",
+                "rubric": "Point 1: Outer loop iterates through all rows of `seats`. Point 2: Inner loop iterates through columns up to the correct boundary (`col <= seats[row].length - numSeats`). Point 3: Correctly checks for `numSeats` contiguous available seats within the inner loop (e.g., a third, innermost loop). Point 4: Checks and accumulates a count of contiguous available seats. Point 5: Returns the starting column index if a block is found. Point 6: Returns -1 if no such block is found (algorithm).",
+                "solution": "public int findAvailableSeats(int numSeats) {\n    for (int r = 0; r < seats.length; r++) {\n        for (int c = 0; c <= seats[r].length - numSeats; c++) {\n            boolean foundBlock = true;\n            // Check for numSeats contiguous available seats starting at (r, c)\n            for (int k = 0; k < numSeats; k++) {\n                if (!seats[r][c + k]) { // if occupied\n                    foundBlock = false;\n                    break;\n                }\n            }\n\n            if (foundBlock) {\n                return c; // Return starting column index\n            }\n        }\n    }\n    return -1; // No block found in any row\n}"
+            }
+        ]
+    },
+    {
+        "id": "AP_FRQ_2024_Q3",
+        "title": "AP CSA 2024 Q3: String and Array Processing",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "StringProcessor"
+        ],
+        "description": "The `StringProcessor` class provides methods for manipulating and analyzing a string array called `words`.",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "Write the `getProcessedString()` method. This method should process each word in the `words` array as follows:\n1. If a word's length is less than 3, it is not modified.\n2. If a word's length is 3 or greater, the first and last letters of the word are swapped.\nThe method should return a String containing all the processed words, separated by a single space.",
+                "rubric": "Point 1: Initializes the result string/StringBuilder. Point 2: Iterates through all elements of the `words` array. Point 3: Correctly checks for length `< 3`. Point 4: Correctly gets the first character (index 0). Point 5: Correctly gets the last character (index `length - 1`). Point 6: Correctly extracts the middle substring. Point 7: Correctly reassembles the swapped word. Point 8: Concatenates all words separated by a single space (algorithm).",
+                "solution": "public String getProcessedString() {\n    String result = \"\";\n    for (int i = 0; i < words.length; i++) {\n        String currentWord = words[i];\n        String processedWord = currentWord;\n\n        if (currentWord.length() >= 3) {\n            char first = currentWord.charAt(0);\n            char last = currentWord.charAt(currentWord.length() - 1);\n            String middle = currentWord.substring(1, currentWord.length() - 1);\n            processedWord = last + middle + first;\n        }\n\n        if (i > 0) {\n            result += \" \";\n        }\n        result += processedWord;\n    }\n    return result;\n\n    /* Alternative with StringBuilder (more efficient):\n    StringBuilder sb = new StringBuilder();\n    for (String currentWord : words) {\n        if (currentWord.length() >= 3) {\n            // swap logic as above\n        }\n        if (sb.length() > 0) sb.append(\" \");\n        sb.append(processedWord);\n    }\n    return sb.toString();\n    */\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "Write the `getMaxLength(int start, int end)` method. This method should return the length of the longest word in the `words` array from index `start` up to and including index `end`. Assume `start` and `end` are valid indices in the array, with `start <= end`.",
+                "rubric": "Point 1: Initializes a variable to track max length (correct initial value, e.g., length of first word in range). Point 2: Iterates through the `words` array from `start` to `end` (inclusive). Point 3: Correctly retrieves the length of the current word. Point 4: Correctly updates the max length (algorithm).",
+                "solution": "public int getMaxLength(int start, int end) {\n    if (start > end || words.length == 0) {\n        // Should not happen based on precondition, but safe practice\n        return 0;\n    }\n\n    int maxLength = words[start].length();\n\n    for (int i = start + 1; i <= end; i++) {\n        int currentLength = words[i].length();\n        if (currentLength > maxLength) {\n            maxLength = currentLength;\n        }\n    }\n    return maxLength;\n}"
+            }
+        ]
+    },
+    {
+        "id": "AP_FRQ_2023_Q1",
+        "title": "AP CSA 2023 Q1: String Manipulation and Array of Objects",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "TestResults"
+        ],
+        "description": "The `TestResults` class is used to track the results of a multiple-choice test. It has a constructor that takes a String representing the correct answer key and a private instance variable, an array of `StudentAnswerSheet` objects, called `sheets` (omitted).",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "The `StudentAnswerSheet` class (omitted) has a method `getScore(String key)` that returns the student's score based on the key. The `TestResults` class contains the method `highestScoringStudent(String key)`. Write this method, which returns the name of the student who achieved the highest score. If there is a tie, the name of the student who appears first in the `sheets` array should be returned. Assume `sheets` contains at least one student.",
+                "rubric": "Point 1: Initializes variables to track the highest score and/or the name of the highest scoring student. Point 2: Iterates through all elements of the `sheets` array. Point 3: Correctly calls `sheets[i].getScore(key)` to get the score for the current student. Point 4: Compares the current student's score with the recorded highest score. Point 5: Updates the highest score and the corresponding student's name if the current score is greater. Point 6: Returns the name of the highest scoring student (algorithm).",
+                "solution": "public String highestScoringStudent(String key) {\n    // Precondition: sheets has at least one student\n    StudentAnswerSheet topStudent = sheets[0];\n    int maxScore = topStudent.getScore(key);\n\n    for (int i = 1; i < sheets.length; i++) {\n        int currentScore = sheets[i].getScore(key);\n        if (currentScore > maxScore) {\n            maxScore = currentScore;\n            topStudent = sheets[i];\n        }\n    }\n\n    return topStudent.getName();\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "Write the `getScores()` method. This method should return an ArrayList of Integer objects containing the scores of all students in the `sheets` array, in the same order as they appear in `sheets`. Assume the instance variable `answerKey` contains the correct answer key String.",
+                "rubric": "Point 1: Initializes a new ArrayList of Integers. Point 2: Iterates through all elements of the `sheets` array. Point 3: Correctly calls `sheets[i].getScore(answerKey)` to get the score. Point 4: Adds the score (an Integer object) to the new ArrayList. Point 5: Returns the ArrayList (algorithm).",
+                "solution": "public ArrayList<Integer> getScores() {\n    ArrayList<Integer> scoresList = new ArrayList<Integer>();\n    for (StudentAnswerSheet sheet : sheets) {\n        int score = sheet.getScore(answerKey);\n        scoresList.add(score);\n    }\n    return scoresList;\n}"
+            }
+        ]
+    },
+    {
+        "id": "AP_FRQ_2023_Q2",
+        "title": "AP CSA 2023 Q2: 2D Array and Array List Manipulation",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "BoxOfCandy",
+            "Candy"
+        ],
+        "description": "The `BoxOfCandy` class stores pieces of candy in a 2D array of `Candy` objects called `box`. The `Candy` class has a method `public String getFlavor()`.",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "Write the `moveCandyToFirstRow(int col)` method. This method moves a candy from the last row of `box` to the first available (non-null) spot in the specified column, returning `true` if a move was successful and `false` otherwise. The last element in the specified column of the last row is set to `null` if the move is successful. A spot is available if it is `null`.",
+                "rubric": "Point 1: Accesses the candy object from the last row (correct index). Point 2: Checks if the candy object is null. Point 3: Loops through the rows from 0 to `box.length - 2` (excluding last row). Point 4: Checks if the spot at `box[r][col]` is `null`. Point 5: Assigns the candy object to `box[r][col]`. Point 6: Sets the original spot in the last row to `null`. Point 7: Returns `true` if successful, `false` otherwise (algorithm).",
+                "solution": "public boolean moveCandyToFirstRow(int col) {\n    Candy candyToMove = box[box.length - 1][col];\n\n    if (candyToMove == null) {\n        return false;\n    }\n\n    for (int r = 0; r < box.length - 1; r++) {\n        if (box[r][col] == null) {\n            box[r][col] = candyToMove;\n            box[box.length - 1][col] = null;\n            return true;\n        }\n    }\n\n    return false;\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "Write the `removeNextByFlavor(String flavor)` method. This method searches `box` starting at row 0, column 0 and proceeding across rows for the first `Candy` object whose flavor matches the `flavor` parameter. If a match is found, that candy object is removed (set to `null` in `box`) and returned. If no matching candy is found, the method returns `null`.",
+                "rubric": "Point 1: Correctly uses nested loops to traverse the 2D array. Point 2: Guards against a method call on a `null` element (in the context of an if statement). Point 3: Calls `getFlavor()` on a `Candy` object. Point 4: Compares a `Candy` object’s flavor with the `flavor` parameter using `.equals()`. Point 5: Replaces the first matching `Candy` object with `null` and returns the replaced object (algorithm). Point 6: Returns `null` when no matching `Candy` object is found.",
+                "solution": "public Candy removeNextByFlavor(String flavor) {\n    for (int r = 0; r < box.length; r++) {\n        for (int c = 0; c < box[r].length; c++) {\n            Candy currentCandy = box[r][c];\n            if (currentCandy != null && currentCandy.getFlavor().equals(flavor)) {\n                box[r][c] = null; // Remove the candy\n                return currentCandy;\n            }\n        }\n    }\n    return null;\n}"
+            }
+        ]
+    },
+    {
+        "id": "AP_FRQ_2023_Q3",
+        "title": "AP CSA 2023 Q3: Interface and Polymorphism",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "Animal",
+            "Cat",
+            "Dog"
+        ],
+        "description": "This question involves defining an `Animal` interface and implementing it with two classes, `Cat` and `Dog`, and then using polymorphism in a client program (omitted). The `Animal` interface requires a `speak()` method and a `move()` method.",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "Write the complete `Cat` class that implements the `Animal` interface (omitted). The `Cat` class has a private instance variable for the cat's name (String). The class must have a constructor that accepts the cat's name. The `speak()` method should print the cat's name followed by ' says Meow!'. The `move()` method should print the cat's name followed by ' is moving stealthily.'.",
+                "rubric": "Point 1: Correct class header implements `Animal`. Point 2: Private instance variable for `name` (String). Point 3: Constructor initializes the `name`. Point 4: Correct `speak()` method header. Point 5: `speak()` method prints correct output format. Point 6: Correct `move()` method header. Point 7: `move()` method prints correct output format.",
+                "solution": "public class Cat implements Animal {\n    private String name;\n\n    public Cat(String name) {\n        this.name = name;\n    }\n\n    public void speak() {\n        System.out.println(name + \" says Meow!\");\n    }\n\n    public void move() {\n        System.out.println(name + \" is moving stealthily.\");\n    }\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "Write the complete `Dog` class that implements the `Animal` interface. The `Dog` class has a private instance variable for the dog's name (String). The class must have a constructor that accepts the dog's name. The `speak()` method should print the dog's name followed by ' says Woof!'. The `move()` method should print the dog's name followed by ' is trotting along.'.",
+                "rubric": "Point 1: Correct class header implements `Animal`. Point 2: Private instance variable for `name` (String). Point 3: Constructor initializes the `name`. Point 4: Correct `speak()` method header. Point 5: `speak()` method prints correct output format. Point 6: Correct `move()` method header. Point 7: `move()` method prints correct output format.",
+                "solution": "public class Dog implements Animal {\n    private String name;\n\n    public Dog(String name) {\n        this.name = name;\n    }\n\n    public void speak() {\n        System.out.println(name + \" says Woof!\");\n    }\n\n    public void move() {\n        System.out.println(name + \" is trotting along.\");\n    }\n}"
+            }
+        ]
+    },
+    {
+        "id": "AP_FRQ_2024_Q4",
+        "title": "AP CSA 2024 Q4: Class Design and Insertion Sort (Q4 Recursion/Class Design)",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "InsertionSorter"
+        ],
+        "description": "The `InsertionSorter` class has a method to perform an insertion sort on a list of Integers.",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "The `InsertionSorter` class has a private instance variable `list` (ArrayList of Integer). Write the `insertValue(int val)` method. This method inserts `val` into `list` so that the elements of `list` remain sorted in ascending order (smallest to largest). You can assume `list` is already sorted when this method is called.",
+                "rubric": "Point 1: Correctly initializes loop/index to start search (e.g., from the end or start). Point 2: Iterates/searches for the insertion position. Point 3: Correctly compares `val` with list element to find the insertion index (e.g., `val < list.get(i)`). Point 4: Uses `list.add(index, val)` to insert at the correct position. Point 5: Handles the case where `val` should be added to the end of the list (e.g., if no element is greater).",
+                "solution": "public void insertValue(int val) {\n    for (int i = 0; i < list.size(); i++) {\n        if (val < list.get(i)) {\n            list.add(i, val);\n            return;\n        }\n    }\n    // If val is the largest, add it to the end\n    list.add(val);\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "Write the `sortList(ArrayList<Integer> unsorted)` method. This static method takes an unsorted ArrayList of Integers as a parameter. It should perform an insertion sort by repeatedly calling the `insertValue` method on an internal `InsertionSorter` object and then return the sorted list. The original `unsorted` list should remain unchanged.",
+                "rubric": "Point 1: Creates a new, empty ArrayList to store the sorted result (or a new `InsertionSorter` object). Point 2: Iterates through all elements of the `unsorted` list. Point 3: Creates a new `InsertionSorter` object outside the loop OR reuses a single `InsertionSorter` object correctly. Point 4: Calls the `insertValue` method for each element of the `unsorted` list. Point 5: Returns the internal sorted list from the `InsertionSorter` object. Point 6: The `unsorted` parameter is not modified.",
+                "solution": "public static ArrayList<Integer> sortList(ArrayList<Integer> unsorted) {\n    // Create a new sorter object to manage the sorted list\n    InsertionSorter sorter = new InsertionSorter(); \n\n    for (int val : unsorted) {\n        // Use the instance method to insert/sort the value\n        sorter.insertValue(val);\n    }\n\n    // Return the internal sorted list of the sorter object\n    return sorter.list; \n}"
+            }
+        ]
+    },
+    {
+        "id": "AP_FRQ_2023_Q4",
+        "title": "AP CSA 2023 Q4: Recursion",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "RecursiveChecker"
+        ],
+        "description": "The `RecursiveChecker` class has methods that check properties of an array of Integers using recursion.",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "Write the `isSorted(int[] arr)` method. This static method should return `true` if the elements in the array `arr` are in strictly increasing order (each element is strictly greater than the one before it), and `false` otherwise. You **must use recursion** in your solution. Your solution must not use any loops (for or while).",
+                "rubric": "Point 1: Correct base case: array is empty or has one element (or index is at end). Point 2: Returns true in the base case. Point 3: Checks the relationship between two adjacent elements. Point 4: Returns false if the strict increasing order is violated. Point 5: Correctly makes the recursive call with a smaller array/index to check the rest. Point 6: Returns the result of the recursive call (algorithm).",
+                "solution": "public static boolean isSorted(int[] arr) {\n    return isSorted(arr, arr.length - 1);\n}\n\nprivate static boolean isSorted(int[] arr, int k) {\n    if (k == 0) {\n        return true; // Base case: first element is trivially sorted\n    }\n    if (arr[k] <= arr[k - 1]) {\n        return false; // Not strictly increasing\n    }\n    // Recursive step\n    return isSorted(arr, k - 1);\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "Write the `countOccurrences(int[] arr, int target)` method. This static method should return the number of times the value `target` appears in the array `arr`. You **must use recursion** in your solution. Your solution must not use any loops (for or while).",
+                "rubric": "Point 1: Correct base case: array is empty (or index is at end). Point 2: Returns 0 in the base case. Point 3: Checks if the current element equals `target`. Point 4: Correctly adds 1 (or 0) to the result of the recursive call. Point 5: Correctly makes the recursive call with a smaller array/index to check the rest. Point 6: Returns the total count (algorithm).",
+                "solution": "public static int countOccurrences(int[] arr, int target) {\n    return countOccurrences(arr, target, arr.length - 1);\n}\n\nprivate static int countOccurrences(int[] arr, int target, int k) {\n    if (k < 0) {\n        return 0; // Base case: end of array reached\n    }\n\n    // Check current element\n    int count = 0;\n    if (arr[k] == target) {\n        count = 1;\n    }\n\n    // Recursive step: add current count to the count from the rest of the array\n    return count + countOccurrences(arr, target, k - 1);\n}"
+            }
+        ]
+    },
+    {
+        "id": "AP_FRQ_2025_Q4",
+        "title": "AP CSA 2025 Q4: Data Structure Design and Method Implementation",
+        "difficulty": "AP",
+        "requiredClasses": [
+            "TimeTracker"
+        ],
+        "description": "The `TimeTracker` class is used to keep track of the duration of various tasks. It stores task names and their durations (in minutes) in two separate ArrayLists, `taskNames` and `durations`.",
+        "subQuestions": [
+            {
+                "id": "A",
+                "prompt": "Write the `addTask(String name, int duration)` method. This method should add the new task name to `taskNames` and the duration to `durations`. If a task with the given `name` already exists, its existing duration should be replaced by the new `duration`. The order of existing tasks should not change.",
+                "rubric": "Point 1: Iterates through `taskNames` list. Point 2: Correctly checks if `name` is equal to an existing task name (using `.equals()` or `equalsIgnoreCase()`). Point 3: If found, uses `durations.set(index, duration)` to update the duration. Point 4: If not found, uses `taskNames.add(name)` and `durations.add(duration)` to append both to the end of the lists (algorithm).",
+                "solution": "public void addTask(String name, int duration) {\n    for (int i = 0; i < taskNames.size(); i++) {\n        if (taskNames.get(i).equals(name)) {\n            durations.set(i, duration); // Replace existing duration\n            return;\n        }\n    }\n    // Task not found, add to the end\n    taskNames.add(name);\n    durations.add(duration);\n}"
+            },
+            {
+                "id": "B",
+                "prompt": "Write the `getTotalDuration(int minDuration)` method. This method should return the total duration (sum of minutes) of all tasks in the tracker whose individual duration is greater than or equal to `minDuration`. The method should not modify the lists.",
+                "rubric": "Point 1: Initializes sum to 0. Point 2: Iterates through the indices of the `durations` list (or uses enhanced loop with index tracking). Point 3: Correctly retrieves the duration value. Point 4: Correctly compares duration to `minDuration`. Point 5: Adds the duration to the running sum if the condition is met. Point 6: Returns the total sum (algorithm).",
+                "solution": "public int getTotalDuration(int minDuration) {\n    int total = 0;\n    for (int duration : durations) {\n        if (duration >= minDuration) {\n            total += duration;\n        }\n    }\n    return total;\n}"
+            }
+        ]
     }
 ]
