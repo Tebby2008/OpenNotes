@@ -552,53 +552,41 @@
             hideModalWithTransition('confirmation-modal', 'confirmation-content');
         }
 
-        // --- Test Driver Generator (UPDATED) ---
+        const TEST_DELIMITER = "__TEST_CASE_DELIMITER__"; 
+
         /**
-         * Creates the boilerplate Java code (the main method) to execute the user's solution
-         * with a specific test input, printing the result to stdout, using a template.
+         * Creates a single TestDriver class with a main method that runs all tests 
+         * and prints the result of each, surrounded by a unique delimiter.
+         * NOTE: This assumes problem.driverCallTemplate contains the necessary System.out.print()
          */
-        function createJavaTestDriver(test, problem) {
-            // If the problem requires the student to write main, do not inject a driver.
-            if (problem.runAsMain) {
-                return '';
-            }
-            
-            let callString = problem.driverCallTemplate;
+        function createJavaTestDriver(tests, problem) {
+            let mainMethodBody = '';
 
-            if (!callString) {
-                return `// Error: driverCallTemplate missing for problem ${problem.id}`;
-            }
+            tests.forEach((test, index) => {
+                let callString = problem.driverCallTemplate;
 
-            // Split input by comma and trim. This works for any number of arguments.
-            const inputParts = test.input.split(',').map(s => s.trim()); 
-                        
-            // Define the Regular Expression to match placeholders like ##__IN_1__##, ##__IN_2__##, etc.
-            // (\d+) captures the number N. The 'g' flag ensures a global search (all matches are replaced).
-            const inputRegex = /##__IN_(\d+)__##/g;
+                // Ensure input values are substituted (e.g., ##__IN_1__## -> 5)
+                const inputParts = test.input.split(',').map(s => s.trim()); 
+                const inputRegex = /##__IN_(\d+)__##/g;
+                callString = callString.replace(inputRegex, (match, p1) => {
+                    const i = parseInt(p1, 10) - 1;
+                    return (i >= 0 && i < inputParts.length) ? inputParts[i] : match; 
+                });
 
-            // Perform the replacement using a replacer function
-            callString = callString.replace(inputRegex, (match, p1) => {
-                // p1 is the captured group (the number N as a string, e.g., "1", "2")
-                const index = parseInt(p1, 10) - 1; // Convert the 1-based number (N) to a 0-based array index
-
-                // Safety check: ensure the placeholder index is valid
-                if (index >= 0 && index < inputParts.length) {
-                    return inputParts[index];
-                } else {
-                    // If out of bounds, return the original placeholder as an error marker in the generated code
-                    // You might also want to log this error using console.error or console.warn
-                    return match; 
-                }
+                mainMethodBody += `
+                    System.out.println("${TEST_DELIMITER}");
+                    ${callString};
+                    System.out.println("${TEST_DELIMITER}");
+                `;
             });
-            
+
             return `
         class TestDriver {
             public static void main(String[] args) {
-                ${callString}
+                ${mainMethodBody}
             }
         }
-        `;
-
+            `;
         }
 
         // --- External Compilation and Test Running Logic (UNCHANGED from previous version) ---
@@ -621,117 +609,110 @@
                 return;
             }
 
-            const testResults = [];
-            let compilationFailed = false;
-
-            // --- Determine Testing Strategy ---
             const isFullProgramMode = currentProblem.runAsMain;
+            const tests = currentProblem.tests; // All individual tests
             
-            // In Full Program Mode (runAsMain: true), combine all tests into one run.
-            const testsToRun = isFullProgramMode 
-                ? [{ 
-                    input: currentProblem.tests.map(t => t.input).join('\n'), 
-                    expected: currentProblem.tests.map(t => t.expectedOutput).join(''), 
-                    isFullProgram: true 
-                }] 
-                : currentProblem.tests;
+            let fullProgram;
+            let expectedOutput;
+            let inputForCompiler = null; // Used only for Full Program Mode
 
-            for (const [index, test] of testsToRun.entries()) {
+            if (isFullProgramMode) {
+                // **Full Program Mode**: Student writes main. Input is separated by delimiter for AI.
+                fullProgram = userCode;
+                inputForCompiler = tests.map(t => t.input).join(`\n${TEST_DELIMITER}\n`); 
+                expectedOutput = tests.map(t => t.expectedOutput).join('');
+            } else {
+                // **Method Mode**: Driver injects delimiters around each test's output.
+                const driverCode = createJavaTestDriver(tests, currentProblem); 
+                fullProgram = userCode + '\n' + driverCode;
+                expectedOutput = tests.map(t => t.expectedOutput).join('');
+            }
+
+            // --- Single Compilation and Execution ---
+            try {
+                const response = await fetch(COMPILER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        code: fullProgram,
+                        input: inputForCompiler // null for Method Mode
+                    })
+                });
+
+                const rawOutput = await response.text();
                 
-                let fullProgram;
-                let expectedOutput;
-                let inputForCompiler = null; 
+                // --- Single Test Run Result Analysis ---
+                let combinedStatus = 'PASSED';
+                let actualOutput = rawOutput;
+                let compilationFailed = false;
 
-                if (isFullProgramMode) {
-                    // Full Program Mode: Student writes main, run their code directly.
-                    fullProgram = userCode;
-                    expectedOutput = test.expected;
-                    inputForCompiler = test.input; 
-                } else {
-                    // Method Mode: Wrap the student's code with a Test Driver.
-                    const driverCode = createJavaTestDriver(test, currentProblem);
-                    fullProgram = userCode + '\n' + driverCode;
-                    expectedOutput = test.expectedOutput;
+                if (rawOutput.startsWith('COMPILATION_ERROR:')) {
+                    combinedStatus = 'FAILED_COMPILATION';
+                    compilationFailed = true;
+                } else if (rawOutput.startsWith('RUNTIME_ERROR:')) {
+                    combinedStatus = 'FAILED_RUNTIME';
+                    compilationFailed = true;
                 }
 
-                try {
-                    const response = await fetch(COMPILER_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            code: fullProgram,
-                            input: inputForCompiler
-                        })
-                    });
+                let finalResults = [];
 
-                    const rawOutput = await response.text();
-                    let actualOutput = rawOutput;
-                    let status = 'PASSED';
-                    
-                    if (rawOutput.startsWith('COMPILATION_ERROR:')) {
-                        status = 'FAILED_COMPILATION';
-                        compilationFailed = true;
-                    } else if (rawOutput.startsWith('RUNTIME_ERROR:')) {
-                        status = 'FAILED_RUNTIME';
-                        compilationFailed = true;
-                    } else {
-                        if (actualOutput !== expectedOutput) {
-                            status = 'FAILED_LOGIC';
-                        }
-                    }
-
-                    testResults.push({
-                        input: isFullProgramMode ? 'Combined Test Input' : test.input, 
-                        expected: expectedOutput,
+                if (compilationFailed) {
+                    // Show the raw error as a single test result
+                    finalResults = [{
+                        input: 'All Tests',
+                        expected: '',
                         actual: actualOutput,
-                        status: status
-                    });
+                        status: combinedStatus
+                    }];
+                } else {
+                    // Split the output by the custom delimiter for individual test results
+                    // Filter handles empty lines and the delimiter itself if it appears standalone
+                    const outputs = actualOutput.split(TEST_DELIMITER)
+                                            .map(s => s.trim())
+                                            .filter(s => s.length > 0 && s !== TEST_DELIMITER.trim()); 
                     
-                    if (compilationFailed) {
-                        break;
-                    }
-                    
-                    if (!isFullProgramMode) {
-                        // The output for method-only problems is handled one by one.
+                    if (outputs.length !== tests.length) {
+                        // If the number of results is unexpected, something went wrong with the delimiter/AI output
+                        combinedStatus = 'FAILED_LOGIC'; 
+                        finalResults = [{
+                            input: 'Test Parsing Error',
+                            expected: 'Expected ' + tests.length + ' test results.',
+                            actual: `Received ${outputs.length} results. Raw output (first 500 chars): ${actualOutput.substring(0, 500)}`,
+                            status: combinedStatus
+                        }];
                     } else {
-                        // If it's full program mode, we ran all tests in one go, so break after the first loop.
-                        break;
+                        // Compare individual results
+                        finalResults = tests.map((test, i) => {
+                            const actual = outputs[i];
+                            const expected = test.expectedOutput;
+
+                            let status = (actual === expected) ? 'PASSED' : 'FAILED_LOGIC';
+                            if (status !== 'PASSED') { combinedStatus = 'FAILED_LOGIC'; }
+
+                            return {
+                                input: test.input,
+                                expected: expected,
+                                actual: actual,
+                                status: status
+                            };
+                        });
                     }
-
-                } catch (error) {
-                    hideLoadingModal();
-                    showFailureResult([ { status: 'FAILED_NETWORK', actual: `Failed to reach the compiler service: ${error.message}.`, input: '', expected: '' } ], userCode);
-                    return;
                 }
-            }
-            
-            hideLoadingModal();
+                
+                hideLoadingModal();
 
-            // 7. Process all test results
-            let finalResults;
-            if (isFullProgramMode && testResults.length === 1 && testResults[0].status === 'PASSED') {
-                // If full program mode passed, split the single output by newline to show individual passes
-                const actualOutputs = testResults[0].actual.split('\n');
-                finalResults = currentProblem.tests.map((test, i) => ({
-                    input: test.input,
-                    expected: test.expectedOutput,
-                    actual: actualOutputs[i] || '', 
-                    status: 'PASSED'
-                }));
-            } else if (isFullProgramMode && testResults.length === 1 && testResults[0].status.startsWith('FAILED')) {
-                // If full program failed compilation/runtime/logic, show the single failure result
-                finalResults = testResults;
-            } else {
-                // Method mode results (testResults already contains all individual results)
-                finalResults = testResults;
-            }
+                // Use the overall status (or the first failure if logic failed) to determine the outcome
+                const firstFailure = finalResults.find(r => r.status.startsWith('FAILED'));
+                if (firstFailure) {
+                    showFailureResult(finalResults, userCode);
+                } else {
+                    showSuccessResult(finalResults);
+                }
 
-
-            const firstFailure = finalResults.find(r => r.status.startsWith('FAILED'));
-            if (firstFailure) {
-                showFailureResult(finalResults, userCode);
-            } else {
-                showSuccessResult(finalResults);
+            } catch (error) {
+                hideLoadingModal();
+                showFailureResult([ { status: 'FAILED_NETWORK', actual: `Failed to reach the compiler service: ${error.message}.`, input: '', expected: '' } ], userCode);
+                return;
             }
         }
         
