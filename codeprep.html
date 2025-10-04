@@ -14,8 +14,8 @@
                         mono: ['Source Code Pro', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
                     },
                     colors: {
-                        'ios-blue': '#0A84FF',
-                        'ios-dark-bg': '#1C1C1E',
+                        'accent-blue': '#198cff',
+                        'accent-dark-bg': '#1C1C1E',
                         'glass-surface': 'rgba(44, 44, 46, 0.85)', // Lighter surface for cards
                     }
                 }
@@ -64,7 +64,7 @@
         
         /* Monospace for the compiler */
         #code-editor {
-            caret-color: #0A84FF; /* iOS blue cursor */
+            caret-color: #198cff; /* accent blue cursor */
         }
         
         /* --- FILE TAB STYLING --- */
@@ -136,7 +136,7 @@
         /* Spinner for Loading State */
         .spinner {
             border: 4px solid rgba(255, 255, 255, 0.1);
-            border-left-color: #0A84FF;
+            border-left-color: #198cff;
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -154,7 +154,7 @@
         <header class="text-center py-4">
             <h1 class="text-6xl font-bold text-white tracking-tight p-6">CodePrep</h1>
             <p class="text-gray-400 mt-1 text-sm">Your user-friendly coding practice platform from OpenNotes. Tailored specifically for your AP CSA needs.</p>
-            <a href="https://tebby2008.github.io/OpenNotes/" target="_blank" class="inline-block mt-3 text-sm font-medium text-gray-300 hover:text-white transition-colors border border-gray-700/50 hover:border-ios-blue px-4 py-1.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/70 shadow-md">
+            <a href="https://tebby2008.github.io/OpenNotes/" target="_blank" class="inline-block mt-3 text-sm font-medium text-gray-300 hover:text-white transition-colors border border-gray-700/50 hover:border-accent-blue px-4 py-1.5 rounded-xl bg-gray-700/50 hover:bg-gray-600/70 shadow-md">
                 Explore OpenNotes Platform
             </a>
         </header>
@@ -163,7 +163,7 @@
 
             <div class="lg:col-span-1 glass-card p-6 rounded-2xl shadow-xl h-full flex flex-col mb-6 lg:mb-0">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 id="current-problem-title" class="text-xl font-semibold text-ios-blue">Loading Problems...</h2>
+                    <h2 id="current-problem-title" class="text-xl font-semibold text-accent-blue">Loading Problems...</h2>
                     <span id="current-problem-difficulty" class="px-3 py-1 text-xs rounded-full font-medium" style="background-color: rgba(255, 255, 255, 0.1);"></span>
                 </div>
                 <div id="problem-description" class="text-gray-300 scroll-area overflow-y-auto flex-grow" style="max-height: 100vh;">
@@ -187,7 +187,7 @@
                     </div>
                 </div>
 
-                <textarea id="code-editor" class="font-mono text-sm w-full h-96 p-4 rounded-lg bg-gray-900/60 text-white outline-none resize-none border-2 border-transparent focus:border-ios-blue transition-colors shadow-inner" spellcheck="false" placeholder="Write your complete Java class here..."></textarea>
+                <textarea id="code-editor" class="font-mono text-sm w-full h-96 p-4 rounded-lg bg-gray-900/60 text-white outline-none resize-none border-2 border-transparent focus:border-accent-blue transition-colors shadow-inner" spellcheck="false" placeholder="Write your complete Java class here..."></textarea>
                 
             </div>
         </div>
@@ -198,7 +198,7 @@
                 <button onclick="toggleProblemSelector(true)" class="bg-gray-700/80 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
                     Problem Selector
                 </button>
-                <button id="random-problem-btn" onclick="loadRandomProblem()" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
+                <button id="random-problem-btn" onclick="loadRandomProblem()" class="bg-accent-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors">
                     Random Problem
                 </button>
             </div>
@@ -250,7 +250,7 @@
 
     <div id="result-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 backdrop-transition" onclick="if(event.target.id === 'result-modal') hideResultModal()">
         <div id="result-content" class="glass-card w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative modal-content-transition modal-enter">
-            <h3 id="result-modal-title" class="text-2xl font-bold mb-4 text-ios-blue"></h3>
+            <h3 id="result-modal-title" class="text-2xl font-bold mb-4 text-accent-blue"></h3>
             
             <div id="result-modal-content-area" class="text-gray-300 space-y-4 scrollable-content">
                 <p id="result-modal-message" class="text-gray-300"></p>
@@ -277,10 +277,10 @@
     <footer class="mt-12 py-4 border-t border-gray-700/50 bg-gray-900/50 text-gray-400 text-sm">
         <div class="max-w-7xl mx-auto px-4 md:px-0 flex justify-between items-center flex-wrap gap-4">
             <div class="flex flex-wrap gap-x-6 gap-y-2">
-                <a href="https://tebby2008.github.io/OpenNotes" target="_blank" rel="noopener" class="flex items-center gap-1 hover:text-ios-blue transition-colors">
+                <a href="https://tebby2008.github.io/OpenNotes" target="_blank" rel="noopener" class="flex items-center gap-1 hover:text-accent-blue transition-colors">
                     OpenNotes
                 </a>
-                <a href="https://github.com/Tebby2008/OpenNotes" target="_blank" rel="noopener" class="flex items-center gap-1 hover:text-ios-blue transition-colors">
+                <a href="https://github.com/Tebby2008/OpenNotes" target="_blank" rel="noopener" class="flex items-center gap-1 hover:text-accent-blue transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 96" fill="currentColor" class="h-4 w-4"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg>
                     Github
                 </a>
@@ -821,7 +821,7 @@
                 <button onclick="restartFromScratch()" class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors transform hover:scale-[1.01] w-full md:w-auto">
                     Restart From Scratch
                 </button>
-                <button onclick="hideResultModal()" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full md:w-auto">
+                <button onclick="hideResultModal()" class="bg-accent-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full md:w-auto">
                     Retry with Current Code
                 </button>
                 <button onclick="explainWithAI()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full md:w-auto">
@@ -846,12 +846,12 @@
             if (codeContent) {
                 codeEl.textContent = codeContent;
                 codeEl.style.display = 'block';
-                document.getElementById('result-modal-title').classList.remove('text-ios-blue', 'text-green-500', 'text-red-500', 'text-yellow-300');
+                document.getElementById('result-modal-title').classList.remove('text-accent-blue', 'text-green-500', 'text-red-500', 'text-yellow-300');
                 document.getElementById('result-modal-title').classList.add(type === 'success' ? 'text-green-500' : (type === 'error' ? 'text-red-500' : 'text-yellow-300'));
             } else {
                 codeEl.style.display = 'none';
-                document.getElementById('result-modal-title').classList.remove('text-ios-blue', 'text-green-500', 'text-red-500', 'text-yellow-300');
-                document.getElementById('result-modal-title').classList.add(type === 'success' ? 'text-green-500' : (type === 'error' ? 'text-red-500' : 'text-ios-blue'));
+                document.getElementById('result-modal-title').classList.remove('text-accent-blue', 'text-green-500', 'text-red-500', 'text-yellow-300');
+                document.getElementById('result-modal-title').classList.add(type === 'success' ? 'text-green-500' : (type === 'error' ? 'text-red-500' : 'text-accent-blue'));
             }
 
             showModalWithTransition('result-modal', 'result-content');
@@ -876,7 +876,7 @@
                 const actions = document.getElementById('result-modal-actions');
                 
                 actions.innerHTML = `
-                    <button onclick="hideResultModal()" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full">
+                    <button onclick="hideResultModal()" class="bg-accent-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full">
                         Back to Editor
                     </button>
                 `;
@@ -933,7 +933,7 @@
             
             const actions = document.getElementById('result-modal-actions');
             actions.innerHTML = `
-                <button onclick="showFailureResult(null, lastFailedCode)" class="bg-ios-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full">
+                <button onclick="showFailureResult(null, lastFailedCode)" class="bg-accent-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full">
                     Back to Retry Options
                 </button>
             `;
@@ -998,7 +998,7 @@
                 
                 const button = document.createElement('button');
                 button.textContent = diff;
-                button.className = `py-1 px-3 rounded-full text-sm font-medium transition-all ${style.text} ${style.bg} ${isChecked ? 'ring-2 ring-offset-2 ring-offset-glass-card ring-ios-blue' : 'opacity-70 hover:opacity-100'}`;
+                button.className = `py-1 px-3 rounded-full text-sm font-medium transition-all ${isChecked ? `${style.text} ${style.bg} border border-gray-500/70 opacity-100` : `text-gray-300 border border-gray-500/70 hover:${style.text} hover:${style.bg} opacity-70`} hover:opacity-80`;
                 button.onclick = () => toggleFilter(diff);
                 filterContainerEl.appendChild(button);
             });
