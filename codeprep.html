@@ -665,11 +665,21 @@
                         status: combinedStatus
                     }];
                 } else {
-                    // Split the output by the custom delimiter for individual test results
-                    // Filter handles empty lines and the delimiter itself if it appears standalone
-                    const outputs = actualOutput.split(TEST_DELIMITER)
-                                            .map(s => s.trim())
-                                            .filter(s => s.length > 0 && s !== TEST_DELIMITER.trim()); 
+                    const expectedOutputsCount = tests.length;
+                    const rawParts = actualOutput.split(TEST_DELIMITER);
+                    let outputs = [];
+
+                    for (let i = 0; i < expectedOutputsCount; i++) {
+                        const outputIndex = (2 * i) + 1;
+
+                        if (outputIndex < rawParts.length) {
+                            
+                            outputs.push(rawParts[outputIndex].trim());
+                        } else {
+                            // This handles cases where the compiler stopped printing before all delimiters were reached
+                            outputs.push("[ERROR: Output Missing]"); 
+                        }
+                    }
                     
                     if (outputs.length !== tests.length) {
                         // If the number of results is unexpected, something went wrong with the delimiter/AI output
