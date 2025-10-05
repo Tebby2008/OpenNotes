@@ -3,7 +3,7 @@
   "short_name": "CodePrep",
   "description": "Your user-friendly coding practice platform from OpenNotes..",
   "start_url": "/codeprep",
-  "display": "standalone",
+  "display": "browser",
   "scope": "/",
   "theme_color": "#0f172a",
   "background_color": "#1f2937",
