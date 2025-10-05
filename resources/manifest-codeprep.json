@@ -2,9 +2,9 @@
   "name": "CodePrep from OpenNotes",
   "short_name": "CodePrep",
   "description": "Your user-friendly coding practice platform from OpenNotes..",
-  "start_url": "/codeprep/",
+  "start_url": "/codeprep",
   "display": "standalone",
-  "scope": "/codeprep/",
+  "scope": "/codeprep",
   "theme_color": "#0f172a",
   "background_color": "#1f2937",
   "icons": [
