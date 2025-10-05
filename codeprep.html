@@ -767,8 +767,6 @@
         
         let lastFailedCode = ''; 
 
-        // ... (Result Handlers, AI Tutor, Selector Logic Unchanged) ...
-
         function showSuccessResult(testResults) {
             
             checkCodeBtn.textContent = 'Check Code';
@@ -830,11 +828,11 @@
 
             if (isCompilationError) {
                 title = 'Compilation Error';
-                message = `The Java compiler failed to build your code. This is typically due to a syntax error, incorrect class/method signature, or missing required classes. The compiler reported an error (see box below). Use the AI Tutor for a hint!`;
+                message = `The Java compiler failed to build your code. This is typically due to a syntax error, incorrect class/method signature, or missing required classes. The compiler reported an error (see box below). Use the AI explanation for a hint!`;
                 codeContent = firstFailure.actual;
             } else if (isRuntimeError) {
                 title = 'Runtime Error';
-                message = `Your code compiled but crashed during execution (e.g., NullPointerException). The runtime reported an error (see box below). Use the AI Tutor for a hint!`;
+                message = `Your code compiled but crashed during execution (e.g., NullPointerException). The runtime reported an error (see box below). Use the AI explanation for a hint!`;
                 codeContent = firstFailure.actual;
             } else if (firstFailure.status === 'FAILED_NETWORK') {
                 title = 'Network Error';
@@ -926,8 +924,6 @@
             }
         }
 
-        // --- AI TUTOR LOGIC (UNCHANGED) ---
-
         async function explainWithAI() {
             hideResultModal();
             showLoadingModal();
@@ -942,7 +938,7 @@
 
             const problemDescription = `The problem title is: "${currentProblem.title}". The problem requires: ${currentProblem.description}. For your internal comparison, the correct solution is: \n\n\`\`\`java\n${currentProblem.solution}\n\`\`\n`;
 
-            let generatedText = "Apologies, the **AI Tutor is currently unavailable**. This may be due to a network connection issue or an error in the service. Please try again later or use the 'Help (Show Solution)' button.";
+            let generatedText = "Apologies, the **AI explanation service is currently unavailable**. This may be due to a network connection issue or an error in the service. Please try again later or use the 'Help (Show Solution)' button.";
             
             try {
                 const payload = {
@@ -958,9 +954,9 @@
                 });
 
                 if (!response.ok) {
-                    generatedText = `The AI Tutor service returned an error (Status: ${response.status}).`;
+                    generatedText = `The AI explanation service returned an error (Status: ${response.status}).`;
                     if (response.status === 403) {
-                        generatedText = "The AI Tutor failed due to a **403 Forbidden Error**. This is usually because a browser security setting (like an extension) is blocking the required authentication process, or the Worker's CORS settings are incorrect.";
+                        generatedText = "The AI explanation service failed due to a **403 Forbidden Error**. This is usually because a browser security setting (like an extension) is blocking the required authentication process, or the Worker's CORS settings are incorrect.";
                     }
                     throw new Error(`Worker API HTTP error! status: ${response.status}`);
                 }
@@ -968,7 +964,7 @@
                 generatedText = await response.text();
                 
             } catch (error) {
-                console.error("AI Tutor Fetch Error:", error);
+                console.error("AI explain Fetch Error:", error);
             }
 
             hideLoadingModal();
@@ -981,7 +977,7 @@
             `;
             
             showResultModal(
-                'AI Tutor Analysis', 
+                'Explain with AI', 
                 convertMarkdownToHtml(generatedText), 
                 'help', 
                 null
@@ -1102,6 +1098,7 @@
     </script>
     </body>
 </html>
+
 
 
 
