@@ -18,32 +18,26 @@
                     colors: {
                         'accent-blue': '#198cff',
                         'accent-dark-bg': '#1C1C1E',
-                        'glass-surface': 'rgba(44, 44, 46, 0.85)', // Lighter surface for cards
+                        'glass-surface': 'rgba(44, 44, 46, 0.85)', 
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Ensuring Inter font is loaded and base styles */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;600&display=swap');
-        
-        /* Material Icons for the Footer */
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200');
 
         body {
-            /* Flex setup to push the footer to the bottom */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             
-            /* Existing background and color */
-            background: linear-gradient(135deg, #1f2937, #0f172a); /* Dark gradient background */
+            background: linear-gradient(135deg, #1f2937, #0f172a);
             color: #E5E5E5;
         }
 
-        /* Frosted Glass Effect Base */
         .glass-card {
             background-color: var(--tw-color-glass-surface);
             backdrop-filter: blur(16px);
@@ -52,7 +46,6 @@
             transition: all 0.3s ease;
         }
         
-        /* Custom scrollbar for better aesthetics */
         textarea::-webkit-scrollbar, .scroll-area::-webkit-scrollbar {
             width: 8px;
         }
@@ -64,12 +57,10 @@
             background: transparent;
         }
         
-        /* Monospace for the compiler */
         #code-editor {
-            caret-color: #198cff; /* accent blue cursor */
+            caret-color: #198cff;
         }
         
-        /* --- FILE TAB STYLING --- */
         .file-tab {
             margin-right: 0.5rem; 
             padding: 0.5rem 1rem; 
@@ -98,10 +89,7 @@
             font-weight: 600; 
             border-bottom: 2px solid transparent; 
         }
-        /* --- END FILE TAB STYLING --- */
 
-        /* --- MODAL TRANSITION STYLING --- */
-        /* Modal Content (The glass card itself) */
         .modal-content-transition {
             transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
@@ -118,7 +106,6 @@
             transform: scale(0.9);
         }
         
-        /* Modal Backdrop (The dark screen overlay) */
         .backdrop-transition {
             transition: opacity 0.3s ease-out;
             opacity: 0;
@@ -126,16 +113,13 @@
         .backdrop-active {
             opacity: 1;
         }
-        /* --- END MODAL TRANSITION STYLING --- */
 
-        /* CRITICAL FIX: Ensures AI explanations are scrollable */
         .scrollable-content {
-            max-height: 50vh; /* Set maximum height */
-            overflow-y: auto; /* Enable vertical scrolling */
-            padding-right: 1rem; /* Adjust padding for scrollbar visibility */
+            max-height: 50vh; 
+            overflow-y: auto; 
+            padding-right: 1rem; 
         }
 
-        /* Spinner for Loading State */
         .spinner {
             border: 4px solid rgba(255, 255, 255, 0.1);
             border-left-color: #198cff;
@@ -308,18 +292,16 @@
         const fileTabsEl = document.getElementById('file-tabs');
         const resultModalMessageEl = document.getElementById('result-modal-message');
 
-        // --- API CONFIGURATION ---
         const WORKER_BASE_URL = 'https://java-compiler-worker.tebby2008-li.workers.dev'; 
         const COMPILER_URL = `${WORKER_BASE_URL}/compile`;
         const TUTOR_URL = `${WORKER_BASE_URL}/tutor`;
         const PROBLEM_DATA_URL = 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/coding_problems.json'; // URL for the JSON file
         const TRANSITION_DURATION = 300; 
         
-        // --- NEW: View Tracker Configuration ---
         const API_URL = "https://open-notes.tebby2008-li.workers.dev";
         const websiteViewsEl = document.getElementById('websiteViews');
 
-        let problems = []; // Data is fetched into this array
+        let problems = []; 
         let currentProblem = null;
         let activeFilters = {
             'Easy': true,
@@ -330,7 +312,6 @@
         let codeFiles = [];
         let currentFileIndex = 0;
         
-        // --- Modal Transition Handlers (UNCHANGED) ---
         function showModalWithTransition(modalId, contentId) {
             const modal = document.getElementById(modalId);
             const content = contentId ? document.getElementById(contentId) : null;
@@ -373,19 +354,14 @@
             hideModalWithTransition('loading-modal', null);
         }
 
-        // --- Utility Functions (UNCHANGED) ---
-
         function convertMarkdownToHtml(text) {
             if (!text) return '';
-            // Basic markdown to HTML conversion for text content
             text = text.replace(/`([^`]+)`/g, '<code class="font-mono text-yellow-300 bg-gray-800 px-1 py-0.5 rounded">\$1</code>');
             text = text.replace(/\*\*([^\*]+)\*\*/g, '<strong>\$1</strong>');
-            // Convert newlines to breaks for display in the message area
             text = text.replace(/\n/g, '<br>');
             return text;
         }
 
-        // --- Editor and File Management (UNCHANGED) ---
         editor.addEventListener('input', () => {
             if (codeFiles.length > 0 && currentFileIndex >= 0) {
                 const currentContent = editor.value;
@@ -411,22 +387,17 @@
             }
         });
         
-        // --- Code Editor Enhancements (Tab Key Handling) ---
         editor.addEventListener('keydown', function(e) {
-            // 1. Tab Key Handling: Insert 4 spaces instead of changing focus
             if (e.key === 'Tab') {
                 e.preventDefault();
                 const start = this.selectionStart;
                 const end = this.selectionEnd;
-                const fourSpaces = '    '; // Four spaces for indentation
+                const fourSpaces = '    ';
 
-                // Insert four spaces at the cursor position
                 this.value = this.value.substring(0, start) + fourSpaces + this.value.substring(end);
 
-                // Move the cursor right after the inserted spaces
                 this.selectionStart = this.selectionEnd = start + fourSpaces.length;
                 
-                // e.preventDefault() handles stopping the default focus change.
             }
         });
 
@@ -448,7 +419,6 @@
             titleEl.textContent = problem.title;
             descriptionEl.innerHTML = convertMarkdownToHtml(problem.description);
             
-            // CRITICAL: Initialize codeFiles with EMPTY content, as requested.
             codeFiles = problem.requiredClasses.map(name => ({
                 name: name,
                 content: ''
@@ -518,8 +488,6 @@
             }
         }
 
-        // --- Main App Logic (COMPILATION/TUTOR LOGIC UNCHANGED) ---
-
         function loadRandomProblem() {
             let filteredProblems = problems.filter(p => activeFilters[p.difficulty]);
             
@@ -556,18 +524,12 @@
 
         const TEST_DELIMITER = "__TEST_CASE_DELIMITER__"; 
 
-        /**
-         * Creates a single TestDriver class with a main method that runs all tests 
-         * and prints the result of each, surrounded by a unique delimiter.
-         * NOTE: This assumes problem.driverCallTemplate contains the necessary System.out.print()
-         */
         function createJavaTestDriver(tests, problem) {
             let mainMethodBody = '';
 
             tests.forEach((test, index) => {
                 let callString = problem.driverCallTemplate;
 
-                // Ensure input values are substituted (e.g., ##__IN_1__## -> 5)
                 const inputParts = test.input.split(',').map(s => s.trim()); 
                 const inputRegex = /##__IN_(\d+)__##/g;
                 callString = callString.replace(inputRegex, (match, p1) => {
@@ -591,7 +553,6 @@
             `;
         }
 
-        // --- External Compilation and Test Running Logic (UNCHANGED from previous version) ---
         async function handleConfirmedSubmission() {
             cancelSubmission(); 
             showLoadingModal();
@@ -604,6 +565,23 @@
             }
 
             const userCode = codeFiles.map(f => f.content).join('\n');
+
+            const MAX_CODE_LENGTH = 2000;
+            if (userCode.length > MAX_CODE_LENGTH) {
+                hideLoadingModal();
+                checkCodeBtn.textContent = 'Check Code';
+                checkCodeBtn.disabled = false;
+                
+                const failureResult = [{
+                    status: 'FAILED_VALIDATION',
+                    actual: `Your combined code length is ${userCode.length} characters, which exceeds the limit of ${MAX_CODE_LENGTH} characters. Please shorten your code or remove unnecessary comments/files.`,
+                    input: 'Pre-Submission Check',
+                    expected: `Code length <= ${MAX_CODE_LENGTH} characters`
+                }];
+                
+                showFailureResult(failureResult, userCode);
+                return;
+            }
             
             if (userCode.trim() === "") {
                 hideLoadingModal();
@@ -612,38 +590,34 @@
             }
 
             const isFullProgramMode = currentProblem.runAsMain;
-            const tests = currentProblem.tests; // All individual tests
+            const tests = currentProblem.tests; 
             
             let fullProgram;
             let expectedOutput;
-            let inputForCompiler = null; // Used only for Full Program Mode
+            let inputForCompiler = null;
 
             if (isFullProgramMode) {
-                // **Full Program Mode**: Student writes main. Input is separated by delimiter for AI.
                 fullProgram = userCode;
                 inputForCompiler = tests.map(t => t.input).join(`\n${TEST_DELIMITER}\n`); 
                 expectedOutput = tests.map(t => t.expectedOutput).join('');
             } else {
-                // **Method Mode**: Driver injects delimiters around each test's output.
                 const driverCode = createJavaTestDriver(tests, currentProblem); 
                 fullProgram = userCode + '\n' + driverCode;
                 expectedOutput = tests.map(t => t.expectedOutput).join('');
             }
 
-            // --- Single Compilation and Execution ---
             try {
                 const response = await fetch(COMPILER_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         code: fullProgram,
-                        input: inputForCompiler // null for Method Mode
+                        input: inputForCompiler
                     })
                 });
 
                 const rawOutput = await response.text();
                 
-                // --- Single Test Run Result Analysis ---
                 let combinedStatus = 'PASSED';
                 let actualOutput = rawOutput;
                 let compilationFailed = false;
@@ -659,7 +633,6 @@
                 let finalResults = [];
 
                 if (compilationFailed) {
-                    // Show the raw error as a single test result
                     finalResults = [{
                         input: 'All Tests',
                         expected: '',
@@ -678,13 +651,11 @@
                             
                             outputs.push(rawParts[outputIndex].trim());
                         } else {
-                            // This handles cases where the compiler stopped printing before all delimiters were reached
                             outputs.push("[ERROR: Output Missing]"); 
                         }
                     }
                     
                     if (outputs.length !== tests.length) {
-                        // If the number of results is unexpected, something went wrong with the delimiter/AI output
                         combinedStatus = 'FAILED_LOGIC'; 
                         finalResults = [{
                             input: 'Test Parsing Error',
@@ -693,9 +664,8 @@
                             status: combinedStatus
                         }];
                     } else {
-                        // Compare individual results
                         finalResults = tests.map((test, i) => {
-                            const rawActual = outputs[i]; // This is the string captured after splitting and trimming by the delimiter
+                            const rawActual = outputs[i];
                             const rawExpected = test.expectedOutput;
                             
                             const sanitize = (str) => {
@@ -704,37 +674,27 @@
                                 return str.trim();
                             };
 
-                            // NEW: Helper function to check for the random integer match
                             const isRandomIntMatch = (expected, actual) => {
-                                // Regex to find ##__Randint_A_B__##, supporting negative numbers for A and B
                                 const randomIntRegex = /^##__Randint_(-?\d+)_(-?\d+)__##$/; 
                                 const match = expected.trim().match(randomIntRegex);
 
                                 if (match) {
-                                    // Random Integer Range Check
                                     const min = parseInt(match[1], 10);
                                     const max = parseInt(match[2], 10);
                                     
-                                    // Check if actual is an integer string (e.g., '5', not '5.0')
                                     const actualInt = parseInt(actual, 10);
                                     
-                                    // Validation: 
-                                    // 1. actual must strictly match its integer representation (e.g., avoids matching floating points)
-                                    // 2. Must be a valid number and within the inclusive range
                                     if (actual === String(actualInt) && !isNaN(actualInt) && actualInt >= min && actualInt <= max) {
                                         return true;
                                     }
                                     return false;
                                 } else {
-                                    // Standard comparison: Compare sanitized actual to sanitized expected
                                     return actual === sanitize(expected);
                                 }
                             };
                             
-                            // Sanitize actual output once
                             const actual = sanitize(rawActual);
 
-                            // Use the new function for comparison
                             let status = isRandomIntMatch(rawExpected, actual) ? 'PASSED' : 'FAILED_LOGIC';                            
                             if (status !== 'PASSED') { combinedStatus = 'FAILED_LOGIC'; }
 
@@ -750,7 +710,6 @@
                 
                 hideLoadingModal();
 
-                // Use the overall status (or the first failure if logic failed) to determine the outcome
                 const firstFailure = finalResults.find(r => r.status.startsWith('FAILED'));
                 if (firstFailure) {
                     showFailureResult(finalResults, userCode);
@@ -800,7 +759,6 @@
             checkCodeBtn.textContent = 'Check Code';
             checkCodeBtn.disabled = false;
             
-            // Use the first failure found, or the only result if full program failed
             const firstFailure = testResults ? testResults.find(r => r.status.startsWith('FAILED')) || testResults[0] : null;
             const isCompilationError = firstFailure && firstFailure.status.includes('COMPILATION');
             const isRuntimeError = firstFailure && firstFailure.status.includes('RUNTIME');
@@ -810,7 +768,6 @@
             let codeContent = '';
             
             let testOutput = '';
-            // Only generate test output if we have results (i.e., not a network error)
             if (testResults) {
                 testResults.forEach((test, index) => {
                     const icon = test.status.startsWith('FAILED') ? '❌' : '✅';
@@ -840,7 +797,6 @@
                 codeContent = firstFailure.actual;
             }
              else {
-                // Failed Logic
                 codeContent = testOutput;
             }
             
@@ -968,25 +924,7 @@
             }
 
             hideLoadingModal();
-            const actions = document.getElementById('result-modal-actions');
-    
-            actions.innerHTML = `
-                <div class="flex flex-col md:flex-row w-full space-y-3 md:space-y-0 md:space-x-3">
-                    
-                    <button onclick="restartFromScratch()" 
-                            class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors transform hover:scale-[1.01] 
-                                   w-full md:flex-grow whitespace-nowrap">
-                        Restart From Scratch
-                    </button>
-                    
-                    <button onclick="showHelp()" 
-                            class="bg-gray-700/80 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors 
-                                   w-full md:flex-grow whitespace-nowrap">
-                        Show Solution
-                    </button>
-                    
-                </div>
-            `;
+            
             showResultModal(
                 'Explain with AI', 
                 convertMarkdownToHtml(generatedText), 
@@ -1057,23 +995,19 @@
             renderFilters();
         }
 
-        // --- View Tracker Logic ---
         async function trackWebsiteViews() {
             if (!websiteViewsEl) return;
             try {
-                // Sends a POST request to the API to increment the website view counter
                 const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
                 if(res.ok) {
-                    // Updates the displayed view count with the value returned from the API
                     websiteViewsEl.textContent = (await res.json()).views;
                 }
             } catch(e) {
                 console.error("Failed to track website views:", e);
-                websiteViewsEl.textContent = '---'; // Show an indicator of failure
+                websiteViewsEl.textContent = '--'; 
             }
         }
 
-        // --- Asynchronous Data Fetching ---
         async function fetchProblems() {
             try {
                 const response = await fetch(PROBLEM_DATA_URL);
@@ -1097,17 +1031,14 @@
                 randomBtnEl.disabled = true;
             }
 
-            // Call the view tracker after the main content is loaded
             trackWebsiteViews();
         }
 
-        // Initialize the app - Now asynchronous
         window.onload = fetchProblems;
 
     </script>
     </body>
 </html>
-
 
 
 
