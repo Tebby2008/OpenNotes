@@ -440,17 +440,16 @@
     }
     @media (max-width: 768px) {
         .controls {
-            padding: 12px 1.5rem; /* Use the desired mobile padding here */
+            padding: 12px 1.5rem;
         }
         #typeBtn, #aiToggleBtn {
             display: none;
         }
-        /* Grid/List View Mobile Toggle Optimization */
         .toggle {
-            display: none !important; /* Hide the desktop grid/list buttons */
+            display: none !important; 
         }
         .mobile-only-toggle {
-            display: flex !important; /* Show the single mobile toggle button */
+            display: flex !important;
         }
         #searchInput {
             width:0px;
@@ -460,6 +459,26 @@
         }
         .search:focus-within #searchInput {
             width: 100px;
+        }
+      .viewer {
+            display: flex;
+            flex-direction: column; 
+            grid-template-columns: none; 
+            max-height: 100vh; 
+            border-radius: 0; 
+        }
+    
+        .viewer .left {
+            flex-grow: 1; 
+            min-height: 50vh;
+            padding: 12px;
+        }
+    
+        .viewer .right {
+            min-height: min-content; 
+            max-height: 50vh; 
+            overflow-y: auto;
+            padding: 24px 24px 12px;
         }
     }
   </style>
