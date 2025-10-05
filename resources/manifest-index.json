@@ -1,0 +1,18 @@
+{
+  "name": "OpenNotes",
+  "short_name": "OpenNotes",
+  "description": "Notes made open.",
+  "start_url": "/",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#dbeafe",
+  "background_color": "#f7f9fc",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "192x192",
+      "type": "svg",
+      "purpose": "any maskable"
+    }
+  ]
+}
