@@ -273,7 +273,7 @@
             </div>
             <div class="flex items-center gap-2 text-gray-400">
                 <span class="material-symbols-outlined text-lg">visibility</span>
-                <span id="websiteViews" class="font-medium text-white">0</span>
+                <span id="websiteViews" class="font-medium text-gray-400">0</span>
             </div>
         </div>
     </footer>
@@ -977,7 +977,7 @@
                 problemItem.onclick = () => loadProblem(p);
                 
                 problemItem.innerHTML = `
-                    <span class="font-medium text-gray-400">${p.title}</span>
+                    <span class="font-medium text-white">${p.title}</span>
                     <span class="px-3 py-1 text-xs rounded-full font-medium ${style.text} ${style.bg}">${p.difficulty}</span>
                 `;
                 problemListEl.appendChild(problemItem);
@@ -1054,6 +1054,7 @@
     </script>
     </body>
 </html>
+
 
 
 
