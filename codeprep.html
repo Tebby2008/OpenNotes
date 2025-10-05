@@ -969,13 +969,6 @@
 
             hideLoadingModal();
             
-            const actions = document.getElementById('result-modal-actions');
-            actions.innerHTML = `
-                <button onclick="showFailureResult(null, lastFailedCode)" class="bg-accent-blue hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-xl shadow-md transition-colors w-full">
-                    Back to Retry Options
-                </button>
-            `;
-            
             showResultModal(
                 'Explain with AI', 
                 convertMarkdownToHtml(generatedText), 
@@ -983,8 +976,6 @@
                 null
             );
         }
-
-        // --- Problem Selector and Filter Logic (UNCHANGED) ---
 
         function toggleProblemSelector(show = true) {
             if (show) {
@@ -1098,6 +1089,7 @@
     </script>
     </body>
 </html>
+
 
 
 
