@@ -780,8 +780,24 @@
         "requiredClasses": [
             "Solution.java"
         ],
-        "solution": "import java.util.Random;\n\npublic class Solution {\n    public static void main(String[] args) {\n        Random rand = new Random(100);\n        int roll = rand.nextInt(6) + 1;\n        System.out.println(roll);\n    }\n}",
+        "solution": "\n\npublic class Solution {\n    public static void main(String[] args) {\n        int roll = (int) (Math.random() * 6) + 1;\n        System.out.println(roll);\n    }\n}",
         "tests": [
+            {
+                "input": "\n",
+                "expectedOutput": "##__Randint_1_6__##\n"
+            },
+            {
+                "input": "\n",
+                "expectedOutput": "##__Randint_1_6__##\n"
+            },
+            {
+                "input": "\n",
+                "expectedOutput": "##__Randint_1_6__##\n"
+            },
+            {
+                "input": "\n",
+                "expectedOutput": "##__Randint_1_6__##\n"
+            },
             {
                 "input": "\n",
                 "expectedOutput": "##__Randint_1_6__##\n"
