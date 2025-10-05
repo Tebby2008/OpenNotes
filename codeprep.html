@@ -567,20 +567,37 @@
             const userCode = codeFiles.map(f => f.content).join('\n');
 
             const MAX_CODE_LENGTH = 2000;
+            const JAVA_CHARSET_REGEX = /[^\w\s{}\[\]();,.:<>="'+-*\/%&|^\~?\@\#\$\\]/g;
+
+            let finalResults = [];
+
             if (userCode.length > MAX_CODE_LENGTH) {
+                finalResults.push({
+                    status: 'FAILED_VALIDATION',
+                    actual: `Your combined code length is ${userCode.length} characters, which exceeds the limit of ${MAX_CODE_LENGTH} characters. Please shorten your code.`,
+                    input: 'Length Check',
+                    expected: `Code length <= ${MAX_CODE_LENGTH} characters`
+                });
+            }
+
+            const illegalCharsMatch = userCode.match(JAVA_CHARSET_REGEX);
+            if (illegalCharsMatch) {
+                const uniqueIllegalChars = [...new Set(illegalCharsMatch)].join(', ');
+                
+                finalResults.push({
+                    status: 'FAILED_VALIDATION',
+                    actual: `Found non-standard characters in your code which could cause compilation issues. The following characters were flagged: ${uniqueIllegalChars}. Only use standard Java/ASCII characters.`,
+                    input: 'Character Set Check',
+                    expected: 'Only standard Java/ASCII characters'
+                });
+            }
+
+            if (finalResults.length > 0) {
                 hideLoadingModal();
                 checkCodeBtn.textContent = 'Check Code';
                 checkCodeBtn.disabled = false;
-                
-                const failureResult = [{
-                    status: 'FAILED_VALIDATION',
-                    actual: `Your combined code length is ${userCode.length} characters, which exceeds the limit of ${MAX_CODE_LENGTH} characters. Please shorten your code or remove unnecessary comments/files.`,
-                    input: 'Pre-Submission Check',
-                    expected: `Code length <= ${MAX_CODE_LENGTH} characters`
-                }];
-                
-                showFailureResult(failureResult, userCode);
-                return;
+                showFailureResult(finalResults, userCode);
+                return; 
             }
             
             if (userCode.trim() === "") {
@@ -629,8 +646,6 @@
                     combinedStatus = 'FAILED_RUNTIME';
                     compilationFailed = true;
                 }
-
-                let finalResults = [];
 
                 if (compilationFailed) {
                     finalResults = [{
