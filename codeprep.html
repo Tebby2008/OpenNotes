@@ -567,7 +567,7 @@
             const userCode = codeFiles.map(f => f.content).join('\n');
 
             const MAX_CODE_LENGTH = 2000;
-            const JAVA_CHARSET_REGEX = /[^\w\s{}\[\]();,.:<>="'+-*\/%&|^\~?\@\#\$\\]/g;
+            const JAVA_CHARSET_REGEX = /[^\w\s{}\[\]();,.:<>="'+\/\%&|^\~?\@\#\$\-\\]/g;
 
             let finalResults = [];
 
