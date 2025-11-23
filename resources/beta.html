@@ -3,561 +3,378 @@
 <head>
   <meta charset="utf-8" />
   <title>OpenNotes - Notes made open</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <meta name="description" content="Open platform for notes.">
 
-  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
+  <!-- Preconnects for speed -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Assets -->
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-  <link rel="manifest" href="/resources/manifest-index.json">
-  <link rel="apple-touch-icon" href="/resources/icon-square.png">
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js"></script>
+  
+  <!-- Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js" defer></script>
+
   <style>
     :root {
-      /* Light Mode Colors */
+      /* --- THEME VARIABLES (Light Default) --- */
+      --font: "Plus Jakarta Sans", system-ui, sans-serif;
       --bg: #f7f9fc;
       --panel: #ffffff;
       --panel-glass: rgba(255, 255, 255, 0.65);
-      --panel-glass-light: rgba(255, 255, 255, 0.85);
+      --panel-glass-strong: rgba(255, 255, 255, 0.85);
+      
       --text: #0f172a;
       --text-muted: #94a3b8;
-      --text-secondary: #64748b;
+      --text-sec: #64748b;
       
       --accent: #3b82f6;
-      --accent-light: #dbeafe;
       --accent-glow: rgba(59, 130, 246, 0.2);
+      --accent-hover: #1d4ed8;
       
       --gold: #f59e0b;
       --gold-glow: rgba(245, 158, 11, 0.2);
+      
+      --border: rgba(255, 255, 255, 0.6);
+      --border-soft: rgba(0,0,0,0.05);
       
       --shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
       --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.1);
       
       --radius: 20px;
       --radius-sm: 12px;
+      --radius-pill: 999px;
       
       /* Animation */
-      --trans-speed: 0.4s;
-      --trans-ease: cubic-bezier(0.34, 1.56, 0.64, 1); 
+      --ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --speed: 0.3s;
 
-      /* File type styles */
-      --pdf-main-color: #ef4444;
-      --pdf-bg-color: #fef2f2;
-      --docx-main-color: #3b82f6;
-      --docx-bg-color: #eff6ff;
+      /* Files */
+      --c-pdf: #ef4444; --bg-pdf: #fef2f2;
+      --c-docx: #3b82f6; --bg-docx: #eff6ff;
+      
+      --filter-logo: invert(0.9) hue-rotate(180deg) brightness(1.2) saturate(1.5);
     }
     
     .dark-mode {
-      /* Dark Mode Colors */
       --bg: #0f172a;
       --panel: #1e293b;
       --panel-glass: rgba(30, 41, 59, 0.7);
-      --panel-glass-light: rgba(30, 41, 59, 0.9);
+      --panel-glass-strong: rgba(30, 41, 59, 0.9);
+      
       --text: #f1f5f9;
       --text-muted: #64748b;
-      --text-secondary: #94a3b8;
-
-      --accent-light: #3b82f6;
+      --text-sec: #94a3b8;
+      
       --accent-glow: rgba(59, 130, 246, 0.15);
       --gold: #fde047;
       --gold-glow: rgba(253, 224, 71, 0.1);
+      
+      --border: rgba(255, 255, 255, 0.1);
+      --border-soft: rgba(255, 255, 255, 0.05);
+      
       --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
       --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.5);
 
-      --pdf-bg-color: rgba(239, 68, 68, 0.15);
-      --docx-bg-color: rgba(59, 130, 246, 0.15);
-      --pdf-main-color: #f87171;
-      --docx-main-color: #60a5fa;
+      --c-pdf: #f87171; --bg-pdf: rgba(239, 68, 68, 0.15);
+      --c-docx: #60a5fa; --bg-docx: rgba(59, 130, 246, 0.15);
+      
+      --filter-logo: none;
     }
 
-    /* Invert logo in light mode */
-    body:not(.dark-mode) .header-logo,
-    body:not(.dark-mode) .header-subtitle img {
-      filter: invert(0.9) hue-rotate(180deg) brightness(1.2) saturate(1.5);
-    }
-
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
+    /* --- RESET & BASE --- */
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; margin: 0; }
     
     body {
-      margin: 0;
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      font-family: var(--font);
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
       overflow-x: hidden;
-      transition: background-color var(--trans-speed) ease, color var(--trans-speed) ease;
+      transition: background var(--speed) ease, color var(--speed) ease;
     }
 
+    /* Ambient Background */
     body::before {
-      content: '';
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
+      content: ''; position: fixed; inset: 0; z-index: -1;
       background: radial-gradient(circle at 10% 20%, var(--accent-glow), transparent 40%),
                   radial-gradient(circle at 90% 85%, var(--gold-glow), transparent 40%);
-      animation: slow-pan 25s ease-in-out infinite alternate;
-      z-index: -1;
+      animation: pan 25s ease-in-out infinite alternate;
     }
+    @keyframes pan { from { transform: scale(1); } to { transform: translate(5%, -5%) scale(1.1); } }
 
-    @keyframes slow-pan {
-      from { transform: translate(0%, 0%) scale(1); }
-      to { transform: translate(5%, -5%) scale(1.1); }
-    }
-
+    /* Icons */
     .material-symbols-rounded {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      font-size: 20px;
-      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; display: inline-flex; align-items: center; justify-content: center;
     }
-    .icon-filled { font-variation-settings: 'FILL' 1 !important; }
 
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 4rem 1.5rem 2rem;
-      text-align: center;
-    }
-    .header-logo { width: 100%; max-width: 400px; margin-bottom: 1rem; }
+    /* --- HEADER --- */
+    header { padding: 4rem 1.5rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .header-logo { width: 100%; max-width: 400px; margin-bottom: 1rem; filter: var(--filter-logo); }
     .header-subtitle { color: var(--text-muted); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
-    .header-subtitle img { height: 24px; }
+    .header-subtitle img { height: 24px; filter: var(--filter-logo); }
     
-    .controls-container {
-      position: sticky; top: 16px; z-index: 100;
-      padding-bottom: 2rem;
-    }
+    /* --- CONTROLS --- */
+    .controls-container { position: sticky; top: 16px; z-index: 100; padding-bottom: 2rem; pointer-events: none; }
     .controls {
-      display: flex; flex-wrap:wrap; align-items: center; justify-content: space-between; gap: 8px;
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;
       background: var(--panel-glass);
       backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-      border-radius: 999px;
-      padding: 8px; 
-      width: max-content;
-      max-width: calc(100vw - 20px);
-      margin: 0 auto;
-      transition: all var(--trans-speed) var(--trans-ease);
+      border: 1px solid rgba(255,255,255,0.5);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      border-radius: var(--radius-pill);
+      padding: 8px; width: max-content; max-width: calc(100vw - 20px); margin: 0 auto;
+      pointer-events: auto;
+      transition: all var(--speed) var(--ease);
     }
-    .dark-mode .controls { border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
-    .controls .left, .controls .right { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+    .dark-mode .controls { border-color: rgba(255,255,255,0.1); }
+    .controls .grp { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 
-    .mobile-only-toggle {
-        display: none !important; 
-    }
+    .mobile-only-toggle { display: none !important; }
 
+    /* Buttons */
     .btn {
       background: transparent; color: var(--text); border: none;
-      border-radius: 999px; padding: 8px 16px;
+      border-radius: var(--radius-pill); padding: 8px 16px;
       display: flex; align-items: center; gap: 8px;
-      cursor: pointer; font-weight: 600; font-size: 0.875rem;
+      cursor: pointer; font: 600 0.875rem var(--font);
       text-decoration: none; white-space: nowrap;
-      transition: all var(--trans-speed) var(--trans-ease);
+      transition: all var(--speed) var(--ease);
     }
-    .btn:hover { background: rgba(0, 0, 0, 0.04); transform: translateY(-1px); }
-    .dark-mode .btn:hover { background: rgba(255, 255, 255, 0.08); }
+    .btn:hover { background: rgba(0,0,0,0.04); transform: translateY(-1px); }
+    .dark-mode .btn:hover { background: rgba(255,255,255,0.08); }
     .btn:active { transform: scale(0.96); }
-    .btn.active { background: var(--panel); box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-    .dark-mode .btn.active { box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .btn.active { background: var(--panel); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    
     .btn.active-ai { background: var(--panel); box-shadow: 0 0 0 2px var(--gold-glow) inset; color: #b38600; }
     .dark-mode .btn.active-ai { color: var(--gold); }
-    #aiToggleBtn .material-symbols-rounded { font-variation-settings: 'FILL' 1; }
-    #aiToggleBtn.active-ai .material-symbols-rounded { color: var(--gold); }
-    .btn.active-sort { background: var(--accent-light); color: var(--accent); }
-    .dark-mode .btn.active-sort { background: var(--accent); color: white; }
+    .btn.active-ai .material-symbols-rounded { font-variation-settings: 'FILL' 1; }
+    
+    .btn.active-sort { background: var(--accent); color: white; }
+    .icon-only { padding: 8px 10px; }
 
+    /* Search */
     .search {
       display: flex; align-items: center; background: rgba(0,0,0,0.03);
-      border-radius: 999px; padding-left: 14px;
-      border: 1px solid transparent; transition: all var(--trans-speed) var(--trans-ease);
+      border-radius: var(--radius-pill); padding-left: 14px;
+      border: 1px solid transparent; transition: all var(--speed) var(--ease);
     }
     .dark-mode .search { background: rgba(255,255,255,0.08); }
-    .search:focus-within { background: var(--panel); border-color: rgba(0,0,0,0.05); box-shadow: 0 0 0 3px var(--accent-glow); }
-    .dark-mode .search:focus-within { background: var(--panel); border-color: rgba(255,255,255,0.1); }
+    .search:focus-within { background: var(--panel); box-shadow: 0 0 0 3px var(--accent-glow); }
     .search input {
       height: 36px; background: transparent; border: none; outline: none;
-      color: var(--text); font: inherit; padding: 0 14px 0 8px; width: 140px; transition: width var(--trans-speed) var(--trans-ease);
-      font-weight: 500;
+      color: var(--text); font: 500 inherit var(--font); padding: 0 14px 0 8px; 
+      width: 140px; transition: width var(--speed) var(--ease);
     }
     .search input::placeholder { color: var(--text-muted); }
     .search:focus-within input { width: 220px; }
 
-    .toggle { display: flex; background: rgba(0,0,0,0.03); padding: 4px; border-radius: 999px; }
+    .toggle { display: flex; background: rgba(0,0,0,0.03); padding: 4px; border-radius: var(--radius-pill); }
     .dark-mode .toggle { background: rgba(255,255,255,0.08); }
     
     .dark-mode-toggle {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        background: none;
-        border: none;
-        padding: 0;
-        font: inherit;
-        cursor: pointer;
-        outline: inherit;
-        white-space: nowrap;
-        color: var(--text-muted);
-        transition: color .2s;
+        background: none; border: none; cursor: pointer; color: var(--text-muted);
+        transition: color .2s; padding: 4px; display: flex;
     }
-    
-    .dark-mode-toggle:hover {
-        color: var(--accent);
-    }
+    .dark-mode-toggle:hover { color: var(--accent); }
 
+    /* Dropdown */
     .sort-wrapper { position: relative; }
     .custom-dropdown {
       position: absolute; top: calc(100% + 8px); left: 0; 
       background: var(--panel-glass); backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      border-radius: 16px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15); 
-      z-index: 20; display: flex; flex-direction: column; 
-      min-width: 200px; padding: 6px;
-      opacity: 0; pointer-events: none;
-      transform: translateY(10px) scale(0.95);
-      transform-origin: top left;
-      transition: all 0.2s var(--trans-ease);
+      border: 1px solid var(--border); border-radius: 16px;
+      box-shadow: var(--shadow-lg); z-index: 20; 
+      display: flex; flex-direction: column; min-width: 200px; padding: 6px;
+      opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95);
+      transform-origin: top left; transition: all 0.2s var(--ease);
     }
-    .dark-mode .custom-dropdown { border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4); }
     .custom-dropdown.open { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
-    .custom-dropdown .option { padding: 12px 16px; cursor: pointer; border-radius: 12px; font-weight: 600; font-size: 0.9rem; transition: background 0.2s, color 0.2s; }
-    .custom-dropdown .option:hover { background: rgba(0,0,0,0.03); }
-    .dark-mode .custom-dropdown .option:hover { background: rgba(255,255,255,0.08); }
+    .custom-dropdown .option { padding: 12px 16px; cursor: pointer; border-radius: 12px; font-weight: 600; font-size: 0.9rem; transition: 0.2s; }
+    .custom-dropdown .option:hover { background: var(--border-soft); }
     .custom-dropdown .option.active { background: var(--accent); color: white; }
 
+    /* --- GRID/LIST --- */
     .wrap { padding: 0 24px 48px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; perspective: 2500px; }
     .list { display: flex; flex-direction: column; gap: 16px; }
 
+    /* Cards */
     .card, .row {
-      --glow-opacity: 0;
-      --glow-x: 50%; --glow-y: 50%;
-      position: relative;
-      background: var(--panel-glass-light);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      transition: transform var(--trans-speed) var(--trans-ease), box-shadow var(--trans-speed) var(--trans-ease);
-      overflow: hidden;
-      will-change: transform;
-      cursor: pointer;
+      --glow-op: 0; --glow-x: 50%; --glow-y: 50%;
+      position: relative; background: var(--panel-glass-strong);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      box-shadow: var(--shadow); overflow: hidden;
+      cursor: pointer; opacity: 0; transform-origin: bottom center;
+      transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+      animation: popUp 0.6s var(--ease) forwards;
     }
-    .dark-mode .card, .dark-mode .row { border: 1px solid rgba(255, 255, 255, 0.1); }
+    @keyframes popUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    
     .card::before, .row::before {
-      content: ''; position: absolute; left: 0; top: 0;
-      width: 100%; height: 100%;
+      content: ''; position: absolute; inset: 0;
       background: radial-gradient(circle at var(--glow-x) var(--glow-y), var(--accent-glow), transparent 40%);
-      opacity: var(--glow-opacity);
-      transition: opacity var(--trans-speed) var(--trans-ease);
-      z-index: 0;
+      opacity: var(--glow-op); transition: opacity var(--speed) ease; z-index: 0;
     }
-    .card:hover, .row:hover {
-      transform: translateY(-8px) scale(1.02);
-      box-shadow: var(--shadow-lg);
-      z-index: 10;
-      --glow-opacity: 1;
-    }
+    .card:hover, .row:hover { transform: translateY(-8px) scale(1.02); box-shadow: var(--shadow-lg); z-index: 10; --glow-op: 1; }
     .card > *, .row > * { position: relative; z-index: 1; }
 
-    @keyframes fade-in-up {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .card, .row {
-      animation: fade-in-up 0.6s var(--trans-ease) forwards;
-      opacity: 0; transform-origin: bottom center;
-    }
-
     .thumb {
-      background: rgba(0,0,0,0.03); height: 180px; border-radius: var(--radius);
+      background: var(--border-soft); height: 180px; border-radius: var(--radius);
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; position: relative; margin: 6px;
     }
-    .dark-mode .thumb { background: rgba(255,255,255,0.05); }
     .thumb img {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      object-fit: cover; z-index: 1; transition: transform 0.6s var(--trans-ease);
-      border-radius: 14px;
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.6s var(--ease); border-radius: 14px;
     }
     .card:hover .thumb img { transform: scale(1.08); }
 
     .fmt-badge {
       position: absolute; bottom: 10px; right: 10px; z-index: 2;
       padding: 4px 10px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
-      border-radius: 999px; background: rgba(255, 255, 255, 0.8);
+      border-radius: 999px; background: rgba(255,255,255,0.8);
       backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    .dark-mode .fmt-badge { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); }
-    .fmt-pdf { color: var(--pdf-main-color); }
-    .fmt-docx { color: var(--docx-main-color); }
+    .dark-mode .fmt-badge { background: rgba(30,41,59,0.8); border: 1px solid rgba(255,255,255,0.1); }
+    .fmt-pdf { color: var(--c-pdf); } .fmt-docx { color: var(--c-docx); }
 
     .body { padding: 12px 20px 20px; }
-    .title-line { font-weight: 700; font-size: 1.1rem; margin: 0 0 8px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+    .title-line { font-weight: 700; font-size: 1.1rem; margin: 0 0 8px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
     
-    .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; }
-    .author-line { display: inline-flex; align-items: center; gap: 4px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; color: var(--text-sec); font-size: 0.85rem; font-weight: 500; align-items: center; }
     .meta .dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.4; }
     
     .ai-tag {
       background: var(--gold-glow); color: var(--gold); font-size: 10px; font-weight: 700; padding: 2px 8px;
       border-radius: 999px; display: inline-flex; align-items: center; gap: 4px;
     }
-    .ai-tag .material-symbols-rounded { font-size: 14px; color: var(--gold); font-variation-settings: 'FILL' 1; }
+    .ai-tag .material-symbols-rounded { font-size: 14px; font-variation-settings: 'FILL' 1; }
     .verified-tag .material-symbols-rounded { color: var(--accent); font-variation-settings: 'FILL' 1; font-size: 16px; }
 
-    .stats { margin-top: 14px; display: flex; align-items: center; gap: 16px; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
+    .stats { margin-top: 14px; display: flex; gap: 16px; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; }
     .stat { display: inline-flex; align-items: center; gap: 6px; }
     .stat .material-symbols-rounded { font-size: 18px; }
 
+    /* Row Layout */
     .row { display: grid; grid-template-columns: 80px 1fr auto; gap: 16px; align-items: center; padding: 12px; }
     .row .thumb { height: 100%; width: 100%; border-radius: var(--radius-sm); margin: 0; }
     .row .thumb img { border-radius: var(--radius-sm); }
     .row .main { display: grid; grid-template-columns: minmax(200px, 2fr) 1fr 1fr 1fr; gap: 16px; align-items: center; }
-    .row .main .cell { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; color: var(--text-secondary); font-weight: 500;}
+    .row .cell { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 14px; color: var(--text-sec); font-weight: 500;}
     .row .title-line { font-size: 1rem; color: var(--text); }
-    .row .pill {
-        padding: 4px 10px; font-weight: 700; font-size: 11px; border-radius: 999px;
-        background: rgba(0,0,0,0.05); color: var(--text-muted);
-    }
-    .dark-mode .row .pill { background: rgba(255,255,255,0.1); }
+    .row .pill { padding: 4px 10px; font-weight: 700; font-size: 11px; border-radius: 999px; background: var(--border-soft); color: var(--text-muted); }
 
+    /* --- OVERLAY --- */
     .overlay {
-      position: fixed; inset: 0;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      z-index: 1000; padding: 0;
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
       display: flex; align-items: center; justify-content: center;
-      opacity: 0; transition: opacity var(--trans-speed) ease; pointer-events: none;
+      opacity: 0; pointer-events: none; transition: opacity var(--speed) ease;
     }
     .overlay.open { opacity: 1; pointer-events: auto; }
     
     .viewer {
-      background: var(--panel);
-      width: 90%; height: 90%; max-width: 1200px;
-      border-radius: 24px;
-      box-shadow: var(--shadow-lg);
-      display: grid; grid-template-columns: 1fr 360px;
-      overflow: hidden;
-      transform: scale(0.9) translateY(20px); opacity: 0;
-      transition: all var(--trans-speed) var(--trans-ease);
-      border: 1px solid rgba(255,255,255,0.1);
+      background: var(--panel); width: 90%; height: 90%; max-width: 1200px;
+      border-radius: 24px; box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+      display: grid; grid-template-columns: 1fr 360px; overflow: hidden;
+      transform: scale(0.9) translateY(20px); opacity: 0; transition: all var(--speed) var(--ease);
     }
-    .dark-mode .viewer { background: var(--panel); border: 1px solid rgba(255, 255, 255, 0.1); }
     .overlay.open .viewer { transform: scale(1) translateY(0); opacity: 1; }
-
-    .viewer .left { background: var(--bg); position: relative; padding: 0; }
-    .docframe { width: 100%; height: 100%; border: none; display: block; }
+    .viewer .left { background: var(--bg); position: relative; }
+    .docframe { width: 100%; height: 100%; border: none; }
+    .viewer .right { padding: 40px 32px; display: flex; flex-direction: column; gap: 12px; background: var(--panel); overflow-y: auto; }
     
-    .viewer .right { 
-        padding: 40px 32px; 
-        display: flex; flex-direction: column; gap: 12px; 
-        background: var(--panel);
-        overflow-y: auto;
-    }
+    .viewer .right .pill { display: inline-block; font-size: 12px; font-weight: 800; padding: 6px 12px; border-radius: 8px; letter-spacing: 0.5px; }
+    .viewer .title { font-size: 1.75rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; }
     
-    .viewer .right .pill-wrapper { margin-bottom: 8px; }
-    .viewer .right .pill { 
-        display: inline-block; font-size: 12px; font-weight: 800; 
-        padding: 6px 12px; border-radius: 8px; letter-spacing: 0.5px;
-    }
-    .viewer .right .title { 
-        font-size: 1.75rem; font-weight: 800; line-height: 1.2; 
-        color: var(--text); letter-spacing: -0.02em; 
-    }
-    
-    .viewer-meta { display: flex; flex-direction: column; gap: 0; margin-top: 12px; }
-    .kv { 
-        font-size: 0.95rem; color: var(--text-secondary); 
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); 
-    }
-    .dark-mode .kv { border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .kv span { font-weight: 500; }
+    .kv { font-size: 0.95rem; color: var(--text-sec); display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-soft); }
     .kv strong { color: var(--text); font-weight: 600; }
 
-    .button-group {
-      display: flex; flex-direction: column; gap: 12px;
-      margin-top: auto; padding-top: 24px;
-    }
+    .button-group { display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-top: 24px; }
     .styled-btn {
-      background: var(--bg); color: var(--text); 
-      border: 1px solid transparent; 
-      /* Reverted to 999px for pill shape */
-      border-radius: 999px;
-      padding: 14px 20px; display: flex; align-items: center; justify-content: center; 
-      gap: 10px; cursor: pointer;
-      /* Scope transition to prevent flex/width jitter */
-      transition: background 0.2s, transform 0.2s, box-shadow 0.2s; 
-      text-decoration: none; font-weight: 600; font-size: 1rem;
+      background: var(--bg); color: var(--text); border-radius: 999px; border: 1px solid transparent;
+      padding: 14px 20px; display: flex; align-items: center; justify-content: center; gap: 10px;
+      cursor: pointer; text-decoration: none; font-weight: 600; font-size: 1rem;
+      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
     }
     .dark-mode .styled-btn { background: rgba(255,255,255,0.05); }
-    .styled-btn:hover { transform: translateY(-2px); background: rgba(0,0,0,0.05); }
-    .dark-mode .styled-btn:hover { background: rgba(255,255,255,0.1); }
-    
-    .styled-btn.download-accent { 
-        background: var(--accent); color: white; 
-        box-shadow: 0 4px 14px var(--accent-glow);
-    }
-    .styled-btn.download-accent:hover { background: #1d4ed8; box-shadow: 0 6px 20px var(--accent-glow); }
-    
-    .sub-actions { display: flex; gap: 12px; }
-    .sub-actions > * { flex: 1; font-size: 0.9rem; padding: 12px; }
+    .styled-btn:hover { transform: translateY(-2px); background: var(--border-soft); }
+    .styled-btn.download-accent { background: var(--accent); color: white; box-shadow: 0 4px 14px var(--accent-glow); }
+    .styled-btn.download-accent:hover { background: var(--accent-hover); box-shadow: 0 6px 20px var(--accent-glow); }
+    .sub-actions { display: flex; gap: 12px; } .sub-actions > * { flex: 1; font-size: 0.9rem; padding: 12px; }
 
-    /* Notification */
     .popup-notification {
-      position: fixed;
-      bottom: 32px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: var(--panel);
-      padding: 12px 24px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: var(--shadow-lg);
-      color: var(--text);
-      font-weight: 600;
-      display: flex; align-items: center; gap: 10px;
-      opacity: 0; pointer-events: none;
-      transition: all 0.4s var(--trans-ease);
-      z-index: 1002;
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--panel); padding: 12px 24px; border-radius: 999px;
+      border: 1px solid var(--border); box-shadow: var(--shadow-lg);
+      color: var(--text); font-weight: 600; display: flex; align-items: center; gap: 10px;
+      opacity: 0; pointer-events: none; transition: all 0.4s var(--ease); z-index: 1002;
     }
     .popup-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .popup-notification .material-symbols-rounded.success-icon {
-      color: #22c55e; /* Green */
-      font-variation-settings: 'FILL' 1;
-    }
+    .success-icon { color: #22c55e; font-variation-settings: 'FILL' 1; }
 
-    /* Reverted Back Button Position */
     .back {
-      position: fixed; 
-      bottom: 24px; left: 24px; /* Bottom left corner */
-      z-index: 1010;
-      background: var(--panel); 
-      color: var(--text); border: 1px solid rgba(0,0,0,0.05);
-      height: 44px; padding: 0 18px; font-size: 0.95rem; font-weight: 600;
-      border-radius: 999px;
-      display: flex; align-items: center; gap: 8px;
-      cursor: pointer; transition: all var(--trans-speed) var(--trans-ease);
-      box-shadow: var(--shadow);
+      position: fixed; bottom: 24px; left: 24px; z-index: 1010;
+      background: var(--panel); color: var(--text); border: 1px solid var(--border-soft);
+      height: 44px; padding: 0 18px; font-weight: 600; border-radius: 999px;
+      display: flex; align-items: center; gap: 8px; cursor: pointer;
+      box-shadow: var(--shadow); transition: all var(--speed) var(--ease);
     }
-    .dark-mode .back { border: 1px solid rgba(255, 255, 255, 0.1); }
     .back:hover { transform: scale(1.05); box-shadow: var(--shadow-lg); }
 
-    .overlay-content { padding: 40px; overflow-y: auto; line-height: 1.6; font-size: 1.05rem; color: var(--text-secondary); }
+    .overlay-content { padding: 40px; overflow-y: auto; line-height: 1.6; font-size: 1.05rem; color: var(--text-sec); }
     .overlay-content h1, .overlay-content h2 { color: var(--text); margin-top: 1em; }
     .overlay-content a { color: var(--accent); }
 
-    footer {
-      background: transparent; color: var(--text-muted);
-      padding: 24px;
-      display: flex; 
-      justify-content: space-between;
-      align-items: center;
-      margin-top: auto; 
-      font-size: 14px;
-      font-weight: 500;
-    }
-    footer .left { 
-      display: flex; 
-      gap: 24px; 
-      align-items: center; 
-      flex-wrap: wrap; 
-    }
-    footer .right {
-      display: flex;
-      gap: 24px;
-      align-items: center;
-      flex-wrap: nowrap;
-    }
-    footer a { color: var(--text-muted); text-decoration: none; transition: color .2s; display: flex; align-items: center; gap: 6px; }
+    /* --- FOOTER --- */
+    footer { padding: 24px; display: flex; justify-content: space-between; align-items: center; margin-top: auto; font-size: 14px; font-weight: 500; color: var(--text-muted); }
+    footer .left, footer .right { display: flex; gap: 24px; align-items: center; }
+    footer a { color: inherit; text-decoration: none; display: flex; align-items: center; gap: 6px; }
     footer a:hover { color: var(--accent); }
-    footer svg { height: 18px; width: 18px; fill: currentColor; }
-    .total-views {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
+    .total-views { display: flex; align-items: center; gap: 6px; }
+
+    /* --- MOBILE --- */
     @media (max-width: 768px) {
-        .controls {
-            padding: 12px 1.5rem;
-        }
-        #typeBtn, #aiToggleBtn {
-            display: none;
-        }
-        .toggle {
-            display: none !important; 
-        }
-        .mobile-only-toggle {
-            display: flex !important;
-        }
-        #searchInput {
-            width:0px;
-        }
-        .search input {
-           padding: 0 2px 0 8px;
-        }
-        .search:focus-within #searchInput {
-            width: 100px;
-        }
+        .controls { padding: 12px 1.5rem; }
+        #typeBtn, #aiToggleBtn, .toggle { display: none !important; }
+        .mobile-only-toggle { display: flex !important; }
         
-        /* Fixed Mobile Overlay */
-        .viewer {
-            display: flex;
-            flex-direction: column; 
-            grid-template-columns: none; 
-            max-height: 100vh; 
-            width: 100%; height: 100%;
-            border-radius: 0; 
-            /* Start hidden downwards */
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0, 0, 0.2, 1);
-        }
-        .overlay.open .viewer { 
-            /* Slide up to view */
-            transform: translateY(0); 
-            opacity: 1;
-        }
-    
-        .viewer .left {
-            flex-grow: 1; 
-            min-height: 40vh;
-        }
-    
-        .viewer .right {
-            min-height: min-content; 
-            max-height: 60vh; 
-            overflow-y: auto;
-            padding: 24px;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
-            z-index: 10;
-        }
+        #searchInput { width: 0px; padding: 0 2px 0 8px; }
+        .search:focus-within #searchInput { width: 100px; }
         
-        .back { position: fixed; bottom: 24px; top: auto; left: 50%; transform: translateX(-50%); width: auto; box-shadow: var(--shadow-lg); }
+        /* Mobile Viewer Overlay Fix */
+        .viewer { display: flex; flex-direction: column; max-height: 100vh; width: 100%; height: 100%; border-radius: 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0,0,0.2,1); }
+        .overlay.open .viewer { transform: translateY(0); }
+        .viewer .left { flex-grow: 1; min-height: 40vh; }
+        .viewer .right { min-height: min-content; max-height: 60vh; overflow-y: auto; padding: 24px; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); z-index: 10; }
+        
+        .back { bottom: 24px; left: 50%; transform: translateX(-50%); width: auto; box-shadow: var(--shadow-lg); }
         .back:hover { transform: translateX(-50%) scale(1.05); }
     }
   </style>
 </head>
 <body>
-
   <header>
-      <img draggable = false src="resources/logo.svg" alt="OpenNotes Logo" class="header-logo" />
+      <img draggable="false" src="resources/logo.svg" alt="OpenNotes Logo" class="header-logo" />
       <p class="header-subtitle">
         the open platform for notes by
         <a href="https://ingenium.rf.gd" target="_blank" rel="noopener">
-          <img draggable = false src="resources/ingenium.png" alt="Ingenium Logo" />
+          <img draggable="false" src="resources/ingenium.png" alt="Ingenium Logo" />
         </a>
       </p>
   </header>
-
   
   <div class="controls-container">
     <div class="controls">
-      <div class="left">
+      <div class="grp left">
         <div class="sort-wrapper">
-          <button id="sortBtn" class="btn icon-only" title="Sort notes">
+          <button id="sortBtn" class="btn icon-only" title="Sort">
             <span class="material-symbols-rounded">filter_list</span>
           </button>
           <div id="sortDropdown" class="custom-dropdown">
@@ -569,80 +386,53 @@
           </div>
         </div>
         <button id="typeBtn" class="btn"><b>ALL</b></button>
-        <button id="aiToggleBtn" class="btn active-ai" title="Toggle AI Content">
-          <span class="material-symbols-rounded">auto_awesome</span>
-          <b>AI</b>
+        <button id="aiToggleBtn" class="btn active-ai" title="Toggle AI">
+          <span class="material-symbols-rounded">auto_awesome</span> <b>AI</b>
         </button>
       </div>
-      <div class="right">
+      <div class="grp right">
         <div class="search" role="search">
           <span class="material-symbols-rounded">search</span>
-          <input id="searchInput" type="text" placeholder="Search notes..." aria-label="Search notes" />
+          <input id="searchInput" type="text" placeholder="Search notes..." />
         </div>
-
-        <a href="https://opennotes.pages.dev/codeprep" target="_blank" rel="noopener" class="btn controls-promo-btn" title="CodePrep">
-          <b>\\:</b>
-        </a>
-
+        <a href="https://opennotes.pages.dev/codeprep" target="_blank" class="btn controls-promo-btn"><b>\\:</b></a>
         <button id="uploadBtn" class="btn icon-only" title="How to Upload" data-md="resources/upload.md">
           <span class="material-symbols-rounded">upload</span>
         </button>
-        
-        <button id="viewToggleMobile" class="btn icon-only mobile-only-toggle" title="Switch View Mode">
+        <button id="viewToggleMobile" class="btn icon-only mobile-only-toggle" title="View Mode">
           <span class="material-symbols-rounded">view_list</span> 
         </button>
-        <div class="toggle" role="tablist" aria-label="View mode">
-          <button id="gridBtn" class="btn active icon-only" aria-pressed="true" title="Grid view">
-            <span class="material-symbols-rounded">grid_view</span>
-          </button>
-          <button id="listBtn" class="btn icon-only" aria-pressed="false" title="List view">
-            <span class="material-symbols-rounded">view_list</span>
-          </button>
+        <div class="toggle">
+          <button id="gridBtn" class="btn active icon-only"><span class="material-symbols-rounded">grid_view</span></button>
+          <button id="listBtn" class="btn icon-only"><span class="material-symbols-rounded">view_list</span></button>
         </div>
       </div>
     </div>
   </div>
 
-  <main class="wrap">
-    <section id="itemsContainer" class="grid" aria-live="polite"></section>
-  </main>
+  <main class="wrap"><section id="itemsContainer" class="grid" aria-live="polite"></section></main>
   
+  <!-- OVERLAY -->
   <div id="overlay" class="overlay" aria-hidden="true">
-    <button id="backBtn" class="back" aria-label="Back">
-      <span class="material-symbols-rounded">arrow_back</span>
-      <span>Close</span>
-    </button>
-    <div class="viewer" role="dialog" aria-modal="true" aria-label="Document viewer">
-      <div class="left">
-        <iframe id="docFrame" class="docframe" title="Document preview"></iframe>
-      </div>
+    <button id="backBtn" class="back"><span class="material-symbols-rounded">arrow_back</span> Close</button>
+    <div class="viewer" role="dialog">
+      <div class="left"><iframe id="docFrame" class="docframe"></iframe></div>
       <div class="right">
         <div class="header-group">
             <div class="pill-wrapper"><span class="pill" id="ovFormat">PDF</span></div>
             <div class="title" id="ovTitle">Title</div>
         </div>
-        
         <div class="viewer-meta">
             <div class="kv"><span>Date</span> <strong id="ovDate">—</strong></div>
             <div class="kv"><span>Author</span> <strong id="ovAuthor">—</strong></div>
             <div class="kv"><span>Views</span> <strong id="ovViews">0</strong></div>
             <div class="kv"><span>Downloads</span> <strong id="ovDownloads">0</strong></div>
         </div>
-        
         <div class="button-group">
-          <button id="ovDownload" class="styled-btn download-accent">
-            <span class="material-symbols-rounded">download</span>
-            Download File
-          </button>
+          <button id="ovDownload" class="styled-btn download-accent"><span class="material-symbols-rounded">download</span> Download File</button>
           <div class="sub-actions">
-            <a id="ovOpenRaw" class="styled-btn" target="_blank" rel="noopener">
-                <span class="material-symbols-rounded">open_in_new</span>
-                Raw
-            </a>
-            <button id="ovShareBtn" class="styled-btn" title="Copy link">
-                <span class="material-symbols-rounded">share</span>
-                Share
-            </button>
+            <a id="ovOpenRaw" class="styled-btn" target="_blank"><span class="material-symbols-rounded">open_in_new</span> Raw</a>
+            <button id="ovShareBtn" class="styled-btn" title="Copy link"><span class="material-symbols-rounded">share</span> Share</button>
           </div>
         </div>
       </div>
@@ -650,493 +440,259 @@
   </div>
 
   <div id="infoOverlay" class="overlay" aria-hidden="true">
-    <button id="infoBackBtn" class="back" aria-label="Back">
-      <span class="material-symbols-rounded">arrow_back</span>
-      <span>Close</span>
-    </button>
+    <button id="infoBackBtn" class="back"><span class="material-symbols-rounded">arrow_back</span> Close</button>
     <div class="viewer" style="grid-template-columns: 1fr; max-width: 800px; height: 85vh;">
       <div class="overlay-content" id="infoContent"></div>
     </div>
   </div>
 
   <div id="popupNotification" class="popup-notification">
-    <span class="material-symbols-rounded success-icon">check_circle</span>
-    <span>Link copied successfully</span>
+    <span class="material-symbols-rounded success-icon">check_circle</span> <span>Link copied successfully</span>
   </div>
   
   <footer>
     <div class="left">
       <a href="#" class="info-link" data-md="resources/terms-privacy.md">Terms & Privacy</a>
-      <a href="#" class="info-link" data-md="resources/contact.md">Contact Us</a>
+      <a href="#" class="info-link" data-md="resources/contact.md">Contact</a>
       <a href="#" class="info-link" data-md="resources/about.md">About</a>
-      <a href="https://github.com/Tebby2008/OpenNotes" target="_blank" rel="noopener">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 96" fill="currentColor" class="icon"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/></svg>
-        Github
+      <a href="https://github.com/Tebby2008/OpenNotes" target="_blank">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 96" fill="currentColor" class="icon"><path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"></path></svg> Github 
       </a>
     </div>
     <div class="right">
-      <button id="darkModeToggle" class="dark-mode-toggle" title="Switch to Dark Mode">
-          <span class="material-symbols-rounded">light_mode</span>
-      </button>
-      <div class="total-views">
-        <span class="material-symbols-rounded">visibility</span>
-        <span id="websiteViews">0</span>
-      </div>
+      <button id="darkModeToggle" class="dark-mode-toggle" title="Toggle Theme"><span class="material-symbols-rounded">light_mode</span></button>
+      <div class="total-views"><span class="material-symbols-rounded">visibility</span><span id="websiteViews">0</span></div>
     </div>
   </footer>
 
   <script>
-      const REPO_OWNER = "Tebby2008";
-      const REPO_NAME  = "OpenNotes";
-      const BRANCH     = "main";
-      const API_URL = "https://open-notes.tebby2008-li.workers.dev";
-      const owner = window.__owner || REPO_OWNER;
-      const repo  = window.__repo  || REPO_NAME;
+      const REPO_OWNER = "Tebby2008", REPO_NAME = "OpenNotes", BRANCH = "main", API_URL = "https://open-notes.tebby2008-li.workers.dev";
+      const owner = window.__owner || REPO_OWNER, repo = window.__repo || REPO_NAME;
+      let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="updated-desc", currentFormat="all";
 
-      let allItems = [];
-      let viewMode = localStorage.getItem('openNotesViewMode') || 'grid';
-      let showAI = true;
-      let currentSort = "updated-desc";
-      let currentFormat = "all";
+      const els = {
+        container: document.getElementById("itemsContainer"),
+        search: document.getElementById("searchInput"),
+        gridBtn: document.getElementById("gridBtn"),
+        listBtn: document.getElementById("listBtn"),
+        typeBtn: document.getElementById("typeBtn"),
+        aiBtn: document.getElementById("aiToggleBtn"),
+        sortBtn: document.getElementById("sortBtn"),
+        sortDrop: document.getElementById("sortDropdown"),
+        overlay: document.getElementById("overlay"),
+        backBtn: document.getElementById("backBtn"),
+        frame: document.getElementById("docFrame"),
+        ovTitle: document.getElementById("ovTitle"),
+        ovFmt: document.getElementById("ovFormat"),
+        ovDate: document.getElementById("ovDate"),
+        ovAuth: document.getElementById("ovAuthor"),
+        ovView: document.getElementById("ovViews"),
+        ovDl: document.getElementById("ovDownloads"),
+        ovRaw: document.getElementById("ovOpenRaw"),
+        ovShare: document.getElementById("ovShareBtn"),
+        ovDown: document.getElementById("ovDownload"),
+        infoOver: document.getElementById("infoOverlay"),
+        infoBack: document.getElementById("infoBackBtn"),
+        infoCont: document.getElementById("infoContent"),
+        webViews: document.getElementById('websiteViews'),
+        themeTog: document.getElementById("darkModeToggle"),
+        popup: document.getElementById('popupNotification'),
+        mobTog: document.getElementById('viewToggleMobile')
+      };
 
-      const container = document.getElementById("itemsContainer");
-      const searchInput = document.getElementById("searchInput");
-      const gridBtn = document.getElementById("gridBtn");
-      const listBtn = document.getElementById("listBtn");
-      const typeBtn = document.getElementById("typeBtn");
-      const aiToggleBtn = document.getElementById("aiToggleBtn");
-      const sortBtn = document.getElementById("sortBtn");
-      const sortDropdown = document.getElementById("sortDropdown");
-      const overlay = document.getElementById("overlay");
-      const backBtn = document.getElementById("backBtn");
-      const docFrame = document.getElementById("docFrame");
-      const ovTitle = document.getElementById("ovTitle");
-      const ovFormat = document.getElementById("ovFormat");
-      const ovDate = document.getElementById("ovDate");
-      const ovAuthor = document.getElementById("ovAuthor");
-      const ovViews = document.getElementById("ovViews");
-      const ovDownloads = document.getElementById("ovDownloads");
-      const ovOpenRaw = document.getElementById("ovOpenRaw");
-      const ovShareBtn = document.getElementById("ovShareBtn");
-      const ovDownload = document.getElementById("ovDownload");
-      const infoOverlay = document.getElementById("infoOverlay");
-      const infoBackBtn = document.getElementById("infoBackBtn");
-      const infoContent = document.getElementById("infoContent");
-      const infoLinks = document.querySelectorAll('.info-link, #uploadBtn');
-      const websiteViewsEl = document.getElementById('websiteViews');
-      const darkModeToggle = document.getElementById("darkModeToggle");
-      const darkModeIcon = darkModeToggle.querySelector('.material-symbols-rounded');
-      const popupNotification = document.getElementById('popupNotification');
-      const searchIcon = document.querySelector('.search .material-symbols-rounded');
-      // NEW MOBILE TOGGLE VARIABLE
-      const viewToggleMobile = document.getElementById('viewToggleMobile');
-
-      const isDarkMode = localStorage.getItem('openNotesDarkMode') === 'true';
-      if (isDarkMode) {
-          document.body.classList.add('dark-mode');
-      }
-      darkModeIcon.textContent = isDarkMode ? 'light_mode' : 'dark_mode';
-      darkModeToggle.title = isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-
-      darkModeToggle.addEventListener('click', () => {
+      const isDark = localStorage.getItem('openNotesDarkMode') === 'true';
+      if (isDark) document.body.classList.add('dark-mode');
+      els.themeTog.querySelector('span').textContent = isDark ? 'light_mode' : 'dark_mode';
+      
+      els.themeTog.addEventListener('click', () => {
           document.body.classList.toggle('dark-mode');
-          const isDark = document.body.classList.contains('dark-mode');
-          localStorage.setItem('openNotesDarkMode', isDark);
-          darkModeIcon.textContent = isDark ? 'light_mode' : 'dark_mode';
-          darkModeToggle.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+          const d = document.body.classList.contains('dark-mode');
+          localStorage.setItem('openNotesDarkMode', d);
+          els.themeTog.querySelector('span').textContent = d ? 'light_mode' : 'dark_mode';
       });
 
-      if (viewMode === 'grid') {
-        gridBtn.classList.add("active"); gridBtn.setAttribute("aria-pressed", "true");
-        listBtn.classList.remove("active"); listBtn.setAttribute("aria-pressed", "false");
-      } else {
-        listBtn.classList.add("active"); listBtn.setAttribute("aria-pressed", "true");
-        gridBtn.classList.remove("active"); gridBtn.setAttribute("aria-pressed", "false");
-      }
-      if (searchIcon)
-      {
-         searchIcon.addEventListener("click", () => {
-             searchInput.focus(); // Programmatically focus the input field
-          });
-      }
+      const updateView = () => {
+        if (viewMode === 'grid') {
+          els.gridBtn.classList.add("active"); els.listBtn.classList.remove("active");
+        } else {
+          els.listBtn.classList.add("active"); els.gridBtn.classList.remove("active");
+        }
+        if(els.mobTog) els.mobTog.querySelector('span').textContent = viewMode === "grid" ? "view_list" : "grid_view";
+      };
+      updateView();
 
       const fmtDate = (iso) => !iso ? "—" : new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-      const stripExt = (name) => name.replace(/\.[^/.]+$/, "");
-      const extOf = (name) => (name.split('.').pop() || "").toLowerCase();
-
       const toggleOverlay = (el, state) => {
         document.body.style.overflow = state ? 'hidden' : '';
         el.setAttribute("aria-hidden", !state);
         state ? el.classList.add("open") : el.classList.remove("open");
-
-        // Update URL state when closing an overlay
-        if (!state) {
-            history.replaceState({}, '', '#');
-        }
+        if (!state) history.replaceState({}, '', '#');
+      };
+      const showPopup = (msg) => {
+        els.popup.querySelector('span:last-child').textContent = msg;
+        els.popup.classList.add('show');
+        setTimeout(() => els.popup.classList.remove('show'), 3000);
       };
 
-      const showPopup = (message) => {
-        popupNotification.querySelector('span:last-child').textContent = message;
-        popupNotification.classList.add('show');
-        setTimeout(() => {
-          popupNotification.classList.remove('show');
-        }, 3000);
+      const updateCounter = async (id, type) => {
+        try { const res = await fetch(`${API_URL}?type=note&noteId=${id}&counter=${type}`, { method: 'POST' }); if (res.ok) return await res.json(); } catch (e) {} return null;
       };
-
-      const updateCounter = async (itemPath, counterType) => {
-        try {
-          const res = await fetch(`${API_URL}?type=note&noteId=${itemPath}&counter=${counterType}`, { method: 'POST' });
-          if (res.ok) return await res.json();
-        } catch (e) { console.error(`Failed to increment ${counterType} count:`, e); }
-        return null;
-      };
-      
-      async function getNoteStats(noteIds) {
-        try {
-          const res = await fetch(`${API_URL}?type=stats&noteIds=${noteIds.join(',')}`);
-          if (res.ok) return await res.json();
-        } catch (e) { console.error('Failed to fetch note stats:', e); }
-        return {};
-      }
 
       async function fetchNotes() {
-        const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Failed to fetch notes_metadata.json.");
-        const metadata = await res.json();
-        
-        return metadata.map(meta => ({
-          name: meta.name,
-          title: stripExt(meta.name),
-          path: meta.path,
-          download_url: meta.download_url,
-          html_url: `https://github.com/${owner}/${repo}/blob/${BRANCH}/${encodeURIComponent(meta.path)}`,
-          thumbnail_url: meta.thumbnail_url,
-          format: extOf(meta.name),
-          updatedAt: meta.last_updated,
-          author: meta.author,
-          author_username: meta.author_username,
-          file_size: meta.file_size,
-          is_ai_generated: meta.is_ai_generated,
-          views: 0, downloads: 0,
-        })).filter(item => item.format === "pdf" || item.format === "docx");
+        const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`);
+        if (!res.ok) throw new Error("Metadata failed");
+        return (await res.json()).map(m => ({
+          name: m.name, title: m.name.replace(/\.[^/.]+$/, ""), path: m.path,
+          dl: m.download_url, thumb: m.thumbnail_url, fmt: (m.name.split('.').pop()||"").toLowerCase(),
+          upd: m.last_updated, auth: m.author, user: m.author_username,
+          ai: m.is_ai_generated, v: 0, d: 0
+        })).filter(i => i.fmt === "pdf" || i.fmt === "docx");
       }
 
       function render() {
-        const query = searchInput.value.trim().toLowerCase();
-        let list = allItems.filter(x => (showAI || !x.is_ai_generated) && (currentFormat === "all" || x.format === currentFormat) && x.title.toLowerCase().includes(query));
-
+        const q = els.search.value.trim().toLowerCase();
+        let list = allItems.filter(x => (showAI || !x.ai) && (currentFormat === "all" || x.fmt === currentFormat) && x.title.toLowerCase().includes(q));
+        
         list.sort((a,b) => {
-          switch(currentSort) {
-            case "title-asc": return a.title.localeCompare(b.title);
-            case "title-desc": return b.title.localeCompare(a.title);
-            case "format-asc": return a.format.localeCompare(b.format) || a.title.localeCompare(b.title);
-            case "updated-asc": return (new Date(a.updatedAt || 0)) - (new Date(b.updatedAt || 0));
-            default: return (new Date(b.updatedAt || 0)) - (new Date(a.updatedAt || 0));
-          }
+          if(currentSort==="title-asc") return a.title.localeCompare(b.title);
+          if(currentSort==="title-desc") return b.title.localeCompare(a.title);
+          if(currentSort==="format-asc") return a.fmt.localeCompare(b.fmt) || a.title.localeCompare(b.title);
+          if(currentSort==="updated-asc") return (new Date(a.upd||0)) - (new Date(b.upd||0));
+          return (new Date(b.upd||0)) - (new Date(a.upd||0));
         });
 
-        container.innerHTML = "";
-        container.className = viewMode === "grid" ? "grid" : "list";
-
-        list.forEach((it, index) => {
-          const element = viewMode === "grid" ? renderCard(it) : renderRow(it);
-          element.style.animationDelay = `${index * 50}ms`;
-          container.appendChild(element);
+        els.container.innerHTML = ""; els.container.className = viewMode;
+        list.forEach((it, i) => {
+          const el = document.createElement("article");
+          el.className = viewMode === "grid" ? "card" : "row";
+          el.style.animationDelay = `${i * 30}ms`;
+          const authHtml = (it.user && it.user.toLowerCase()==='tebby2008') 
+            ? `Chenyu Li <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>` 
+            : DOMPurify.sanitize(it.auth, {USE_PROFILES:{html:false}});
+            
+          el.innerHTML = `
+            <div class="thumb">
+              <img src="${it.thumb}" loading="lazy" onerror="this.style.display='none'">
+              ${viewMode==='grid'?`<span class="fmt-badge fmt-${it.fmt}">${it.fmt.toUpperCase()}</span>`:''}
+            </div>
+            ${viewMode==='grid'? `<div class="body">
+              <div class="title-line">${it.title.replace(/\(AI\)$/, '')}</div>
+              <div class="meta">
+                <span class="author-line">${authHtml}</span>
+                ${it.ai?`<span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>`:''}
+                <span class="dot"></span><span>${fmtDate(it.upd)}</span>
+              </div>
+              <div class="stats">
+                <span class="stat"><span class="material-symbols-rounded">visibility</span> <span data-v>${it.v}</span></span>
+                <span class="stat"><span class="material-symbols-rounded">download</span> <span data-d>${it.d}</span></span>
+              </div>
+            </div>` : `<div class="main">
+               <div class="cell"><div class="title-line">${it.title.replace(/\(AI\)$/, '')}</div></div>
+               <div class="cell">${authHtml} ${it.ai?`<span class="ai-tag" style="margin-left:4px"><span class="material-symbols-rounded" style="font-size:12px">auto_awesome</span>AI</span>`:''}</div>
+               <div class="cell">${fmtDate(it.upd)}</div>
+               <div class="cell"><span class="pill">${it.fmt.toUpperCase()}</span></div>
+            </div>
+            <div class="right-end" style="display:flex;gap:16px;padding-right:12px;color:var(--text-muted)">
+               <span class="stat"><span class="material-symbols-rounded">visibility</span> ${it.v}</span>
+               <span class="stat"><span class="material-symbols-rounded">download</span> ${it.d}</span>
+            </div>`}
+          `;
+          el.onclick = () => openOverlay(it);
+          els.container.appendChild(el);
         });
       }
+
+      function openOverlay(it) {
+        history.pushState({ note: it }, '', `#Notes/${encodeURIComponent(it.name)}`);
+        toggleOverlay(els.overlay, true);
+        els.ovTitle.textContent = it.title.replace(/\(AI\)$/, '');
+        els.ovFmt.textContent = it.fmt.toUpperCase();
+        els.ovFmt.style.background = it.fmt==='pdf'?'var(--bg-pdf)':'var(--bg-docx)';
+        els.ovFmt.style.color = it.fmt==='pdf'?'var(--c-pdf)':'var(--c-docx)';
+        
+        const authHtml = (it.user && it.user.toLowerCase()==='tebby2008') 
+            ? `Chenyu Li <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>` 
+            : DOMPurify.sanitize(it.auth, {USE_PROFILES:{html:false}});
+
+        els.ovDate.textContent = fmtDate(it.upd);
+        els.ovAuth.innerHTML = `${authHtml}${it.ai?` <span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>`:''}`;
+        els.ovRaw.href = els.frame.src = `view.html?file=${encodeURIComponent(it.dl)}`;
+        
+        els.ovView.textContent = it.v; els.ovDl.textContent = it.d;
+        updateCounter(it.path, 'views').then(d => { if(d){ it.v=d.views; it.d=d.downloads; els.ovView.textContent=d.views; els.ovDl.textContent=d.downloads; render(); }});
+        
+        els.ovShare.onclick = () => { navigator.clipboard.writeText(window.location.href).then(()=>showPopup('Link copied')).catch(()=>{}); };
+        els.ovDown.onclick = () => {
+          updateCounter(it.path, 'downloads').then(d => { if(d){ it.v=d.views; it.d=d.downloads; els.ovView.textContent=d.views; els.ovDl.textContent=d.downloads; render(); }});
+          const a = document.createElement("a"); a.href=it.dl; a.download=it.name; document.body.appendChild(a); a.click(); a.remove();
+        };
+      }
+
+      async function openInfo(md) {
+        history.pushState({ info: md }, '', `#/${md.split('/').pop()}`);
+        toggleOverlay(els.infoOver, true);
+        els.infoCont.innerHTML = "Loading...";
+        try {
+            const r = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${md}`);
+            els.infoCont.innerHTML = DOMPurify.sanitize(marked.parse(await r.text()));
+        } catch (e) { els.infoCont.innerHTML = "Failed to load."; }
+      }
+
+      els.gridBtn.onclick = () => { viewMode="grid"; localStorage.setItem('openNotesViewMode','grid'); updateView(); render(); };
+      els.listBtn.onclick = () => { viewMode="list"; localStorage.setItem('openNotesViewMode','list'); updateView(); render(); };
+      if(els.mobTog) els.mobTog.onclick = () => { viewMode = viewMode==="grid"?"list":"grid"; localStorage.setItem('openNotesViewMode',viewMode); updateView(); render(); };
       
-      const getAuthorHtml = (item) => {
-        let authorName = item.author || 'Unknown';
-        const sanitizedAuthorName = DOMPurify.sanitize(authorName, { USE_PROFILES: { html: false } });
-        const verifiedBadge = `<span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
-        if (item.author_username && item.author_username.toLowerCase() === 'tebby2008') {
-          return `<span class="author-line">Chenyu Li ${verifiedBadge}</span>`;
-        }
-        return `<span class="author-line">${sanitizedAuthorName}</span>`;
+      els.aiBtn.onclick = () => { showAI=!showAI; els.aiBtn.classList.toggle("active-ai"); render(); };
+      const types=["ALL","PDF","DOCX"]; let tidx=0;
+      els.typeBtn.onclick = () => { tidx=(tidx+1)%3; els.typeBtn.querySelector('b').textContent=types[tidx]; currentFormat=types[tidx].toLowerCase(); render(); };
+      
+      els.search.addEventListener("input", render);
+      document.querySelector('.search .material-symbols-rounded').onclick = () => els.search.focus();
+      els.backBtn.onclick = () => toggleOverlay(els.overlay, false);
+      els.overlay.onclick = (e) => { if(e.target===els.overlay) toggleOverlay(els.overlay,false); };
+      els.infoBack.onclick = () => toggleOverlay(els.infoOver, false);
+      els.infoOver.onclick = (e) => { if(e.target===els.infoOver) toggleOverlay(els.infoOver,false); };
+      document.onkeydown = (e) => { if(e.key==="Escape") { toggleOverlay(els.overlay,false); toggleOverlay(els.infoOver,false); } };
+      
+      document.querySelectorAll('.info-link, #uploadBtn').forEach(l => l.onclick = (e) => { e.preventDefault(); openInfo(l.dataset.md); });
+      
+      els.sortBtn.onclick = (e) => { e.stopPropagation(); els.sortDrop.classList.toggle("open"); };
+      els.sortDrop.querySelectorAll(".option").forEach(o => o.onclick = () => {
+         els.sortDrop.querySelectorAll(".option").forEach(x=>x.classList.remove("active"));
+         o.classList.add("active"); currentSort=o.dataset.sort; render();
+         els.sortBtn.classList.toggle("active-sort", o.dataset.sort!=="updated-desc");
+      });
+      document.onclick = (e) => { if(!els.sortBtn.contains(e.target) && !els.sortDrop.contains(e.target)) els.sortDrop.classList.remove("open"); };
+
+      // 3D Tilt - Desktop Only
+      if (window.matchMedia("(hover: hover)").matches) {
+          els.container.onmousemove = e => {
+              const c = e.target.closest('.card, .row'); if(!c) return;
+              const r = c.getBoundingClientRect(), x = e.clientX-r.left, y = e.clientY-r.top;
+              c.style.transform = `translateY(-8px) scale(1.02) rotateX(${(y-r.height/2)/25}deg) rotateY(${((r.width/2)-x)/25}deg)`;
+              c.style.setProperty('--glow-x',`${x}px`); c.style.setProperty('--glow-y',`${y}px`);
+          };
+          els.container.onmouseleave = () => els.container.querySelectorAll('.card,.row').forEach(c=>c.style.transform='');
+      }
+
+      window.onpopstate = (e) => {
+          if(e.state?.note) openOverlay(e.state.note);
+          else if(e.state?.info) openInfo(e.state.info);
+          else { toggleOverlay(els.overlay,false); toggleOverlay(els.infoOver,false); }
       };
 
-      function renderCard(it) {
-        const card = document.createElement("article");
-        card.className = "card";
-        card.innerHTML = `
-          <div class="thumb">
-            <img src="${it.thumbnail_url}" alt="Thumbnail for ${it.title}" loading="lazy" onerror="this.style.display='none'">
-            <span class="fmt-badge fmt-${it.format}">${it.format.toUpperCase()}</span>
-          </div>
-          <div class="body">
-            <div class="title-line">${it.title.replace(/\(AI\)(?=[^()]*)$/, '')}</div>
-            <div class="meta">
-              ${getAuthorHtml(it)}
-              ${it.is_ai_generated ? `<span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>` : ''}
-              <span class="dot"></span>
-              <span>${fmtDate(it.updatedAt)}</span>
-            </div>
-            <div class="stats">
-              <span class="stat"><span class="material-symbols-rounded">visibility</span> <span data-view>${it.views || 0}</span></span>
-              <span class="stat"><span class="material-symbols-rounded">download</span> <span data-dl>${it.downloads || 0}</span></span>
-            </div>
-          </div>
-        `;
-        card.addEventListener("click", () => openOverlay(it));
-        return card;
-      }
-      
-      function renderRow(it) {
-        const row = document.createElement("article");
-        row.className = "row";
-        row.innerHTML = `
-          <div class="thumb">
-            <img src="${it.thumbnail_url}" alt="Thumbnail for ${it.title}" loading="lazy" onerror="this.style.display='none'">
-          </div>
-          <div class="main">
-            <div class="cell"><div class="title-line">${it.title.replace(/\(AI\)(?=[^()]*)$/, '')}</div></div>
-            <div class="cell muted">${getAuthorHtml(it)} ${it.is_ai_generated ? `<span class="ai-tag" style="padding: 2px 6px;"><span class="material-symbols-rounded" style="font-size:12px;">auto_awesome</span>AI</span>` : ''}</div>
-            <div class="cell muted">${fmtDate(it.updatedAt)}</div>
-            <div class="cell"><span class="pill">${it.format.toUpperCase()}</span></div>
-          </div>
-          <div class="right-end">
-            <span class="stat muted"><span class="material-symbols-rounded">visibility</span> <span data-view>${it.views || 0}</span></span>
-            <span class="stat muted"><span class="material-symbols-rounded">download</span> <span data-dl>${it.downloads || 0}</span></span>
-          </div>
-        `;
-        row.addEventListener("click", () => openOverlay(it));
-        return row;
-      }
-
-      function openOverlay(item) {
-        // Use hash-based routing for GitHub Pages
-        history.pushState({ note: item }, '', `#Notes/${encodeURIComponent(item.name)}`);
-        
-        toggleOverlay(overlay, true);
-        ovTitle.textContent = item.title.replace(/\(AI\)(?=[^()]*)$/, '');
-        ovFormat.textContent = item.format.toUpperCase();
-        
-        // Updated Color Logic for Overlay Pill
-        ovFormat.className = `pill fmt-${item.format}`;
-        if(item.format === 'pdf') {
-            ovFormat.style.color = 'var(--pdf-main-color)';
-            ovFormat.style.backgroundColor = 'var(--pdf-bg-color)';
-        } else {
-            ovFormat.style.color = 'var(--docx-main-color)';
-            ovFormat.style.backgroundColor = 'var(--docx-bg-color)';
-        }
-
-        ovDate.textContent = fmtDate(item.updatedAt);
-        ovAuthor.innerHTML = `${getAuthorHtml(item)}${item.is_ai_generated ? ` <span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>` : ''}`;
-        ovOpenRaw.href = `view.html?file=${encodeURIComponent(item.download_url)}`;
-        docFrame.src = `view.html?file=${encodeURIComponent(item.download_url)}`;
-        ovViews.textContent = item.views || 0;
-        ovDownloads.textContent = item.downloads || 0;
-        
-        updateCounter(item.path, 'views').then(data => {
-          if (data) {
-            item.views = data.views; item.downloads = data.downloads;
-            ovViews.textContent = data.views; ovDownloads.textContent = data.downloads;
-            render();
-          }
-        });
-
-        ovShareBtn.onclick = async () => {
-          try {
-            await navigator.clipboard.writeText(window.location.href);
-            showPopup('Link copied to clipboard');
-          } catch (err) {
-            console.error('Failed to copy text: ', err);
-            showPopup('Failed to copy link');
-          }
-        };
-
-        ovDownload.onclick = async () => {
-          const data = await updateCounter(item.path, 'downloads');
-          if (data) {
-            item.views = data.views; item.downloads = data.downloads;
-            ovViews.textContent = data.views; ovDownloads.textContent = data.downloads;
-            render();
-          }
-          const a = document.createElement("a");
-          a.href = item.download_url; a.download = item.name;
-          document.body.appendChild(a); a.click(); a.remove();
-        };
-      }
-
-      async function openInfoOverlay(mdFile) {
-        // Use hash-based routing for GitHub Pages
-        history.pushState({ info: mdFile }, '', `#/${mdFile.split('/').pop()}`);
-        
-        toggleOverlay(infoOverlay, true);
-        infoContent.innerHTML = "Loading...";
-        try {
-            const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${mdFile}`;
-            const response = await fetch(url);
-            infoContent.innerHTML = DOMPurify.sanitize(marked.parse(await response.text()));
-        } catch (e) { infoContent.innerHTML = `Failed to load content: ${e.message}`; }
-      }
-
-      gridBtn.addEventListener("click", () => {
-        viewMode = "grid"; localStorage.setItem('openNotesViewMode', 'grid');
-        gridBtn.classList.add("active"); gridBtn.setAttribute("aria-pressed", "true");
-        listBtn.classList.remove("active"); listBtn.setAttribute("aria-pressed", "false");
-        render();
-      });
-      listBtn.addEventListener("click", () => {
-        viewMode = "list"; localStorage.setItem('openNotesViewMode', 'list');
-        listBtn.classList.add("active"); listBtn.setAttribute("aria-pressed", "true");
-        gridBtn.classList.remove("active"); gridBtn.setAttribute("aria-pressed", "false");
-        render();
-      });
-      
-      // NEW MOBILE VIEW TOGGLE LOGIC
-      if (viewToggleMobile) {
-        viewToggleMobile.addEventListener("click", () => {
-          // Toggle viewMode: grid -> list, list -> grid
-          viewMode = viewMode === "grid" ? "list" : "grid"; 
-          localStorage.setItem('openNotesViewMode', viewMode);
-          
-          // Update the icon to show the NEXT view mode (if current is grid, show list icon, and vice versa)
-          const icon = viewToggleMobile.querySelector('.material-symbols-rounded');
-          icon.textContent = viewMode === "grid" ? "view_list" : "grid_view";
-
-          // Sync desktop buttons' state for robustness (though they are hidden)
-          if (viewMode === 'grid') {
-            gridBtn.classList.add("active"); listBtn.classList.remove("active");
-          } else {
-            listBtn.classList.add("active"); gridBtn.classList.remove("active");
-          }
-          
-          render();
-        });
-      }
-      
-      aiToggleBtn.addEventListener("click", () => {
-        showAI = !showAI;
-        aiToggleBtn.classList.toggle("active-ai");
-        render();
-      });
-      const types = ["ALL", "PDF", "DOCX"]; let idx = 0;
-      typeBtn.addEventListener("click", () => {
-        idx = (idx + 1) % types.length;
-        const currentType = types[idx];
-        typeBtn.querySelector('b').textContent = currentType;
-        currentFormat = currentType.toLowerCase();
-        render();
-      });
-      searchInput.addEventListener("input", render);
-      backBtn.addEventListener("click", () => toggleOverlay(overlay, false));
-      overlay.addEventListener("click", (e) => { if (e.target === overlay) toggleOverlay(overlay, false); });
-      infoBackBtn.addEventListener("click", () => toggleOverlay(infoOverlay, false));
-      infoOverlay.addEventListener("click", (e) => { if (e.target === infoOverlay) toggleOverlay(infoOverlay, false); });
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-            if (overlay.classList.contains("open")) toggleOverlay(overlay, false);
-            if (infoOverlay.classList.contains("open")) toggleOverlay(infoOverlay, false);
-        }
-      });
-      infoLinks.forEach(link => {
-          link.addEventListener('click', (e) => {
-              e.preventDefault();
-              openInfoOverlay(link.dataset.md);
-          });
-      });
-      
-      sortBtn.addEventListener("click", () => sortDropdown.classList.toggle("open"));
-      sortDropdown.querySelectorAll(".option").forEach(opt => {
-        opt.addEventListener("click", () => {
-          sortDropdown.querySelectorAll(".option").forEach(o => o.classList.remove("active"));
-          opt.classList.add("active");
-          currentSort = opt.dataset.sort;
-          render();
-          sortDropdown.classList.remove("open");
-          sortBtn.classList.toggle("active-sort", opt.dataset.sort !== "updated-desc");
-        });
-      });
-      document.addEventListener("click", e => {
-        if (!sortBtn.contains(e.target) && !sortDropdown.contains(e.target)) {
-          sortDropdown.classList.remove("open");
-        }
-      });
-      
-      function add3dInteraction() {
-        // Disable 3D tilt on touch devices to prevent tap interference
-        if (!window.matchMedia("(hover: hover)").matches) return;
-
-        container.addEventListener('mousemove', e => {
-          const card = e.target.closest('.card, .row');
-          if (!card) return;
-          const rect = card.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const centerX = rect.width / 2;
-          const centerY = rect.height / 2;
-          const rotateX = (y - centerY) / 25;
-          const rotateY = (centerX - x) / 25;
-          card.style.transform = `translateY(-8px) scale(1.02) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-          card.style.setProperty('--glow-x', `${x}px`);
-          card.style.setProperty('--glow-y', `${y}px`);
-        });
-        container.addEventListener('mouseleave', e => {
-          const cards = container.querySelectorAll('.card, .row');
-          cards.forEach(card => card.style.transform = '');
-        });
-      }
-      
-      // Handle initial URL on page load and popstate event using hash
-      function handleUrlState() {
-        const hash = window.location.hash;
-        if (hash.startsWith('#Notes/')) {
-            const noteName = decodeURIComponent(hash.substring('#Notes/'.length));
-            const note = allItems.find(item => item.name === noteName);
-            if (note) {
-                openOverlay(note);
-            }
-        } else if (hash.endsWith('.md')) {
-            const mdFile = `resources/${hash.substring(2)}`;
-            openInfoOverlay(mdFile);
-        }
-      }
-
-      window.addEventListener('popstate', (event) => {
-          const state = event.state;
-          if (state && state.note) {
-              openOverlay(state.note);
-          } else if (state && state.info) {
-              openInfoOverlay(state.info);
-          } else {
-              if (overlay.classList.contains('open')) toggleOverlay(overlay, false);
-              if (infoOverlay.classList.contains('open')) toggleOverlay(infoOverlay, false);
-          }
-      });
-
-      (async function init() {
+      (async function() {
         try {
           allItems = await fetchNotes();
-          const noteIds = allItems.map(item => item.path);
-          if (noteIds.length > 0) {
-              const stats = await getNoteStats(noteIds);
-              allItems.forEach(item => {
-                  if (stats[item.path]) {
-                      item.views = stats[item.path].views;
-                      item.downloads = stats[item.path].downloads;
-                  }
-              });
+          const ids = allItems.map(i=>i.path);
+          if(ids.length) { const s = await async function(){ try{return await(await fetch(`${API_URL}?type=stats&noteIds=${ids.join(',')}`)).json()}catch{return{}} }(); 
+            allItems.forEach(i=>{ if(s[i.path]){i.v=s[i.path].views;i.d=s[i.path].downloads} }); 
           }
-          const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
-          if(res.ok) websiteViewsEl.textContent = (await res.json()).views;
-          
-          // NEW: Initialize the mobile toggle icon
-          if (viewToggleMobile) {
-            const icon = viewToggleMobile.querySelector('.material-symbols-rounded');
-            // If the current mode is grid, the toggle should show the list icon (the one it switches to)
-            icon.textContent = viewMode === "grid" ? "view_list" : "grid_view";
-          }
-          
+          fetch(`${API_URL}?type=website`,{method:'POST'}).then(r=>r.json()).then(d=>els.webViews.textContent=d.views).catch(()=>{});
           render();
-          add3dInteraction();
-          handleUrlState();
-        } catch(e) {
-          console.error(e);
-          container.innerHTML = `<p>Couldn't load notes. Please check the repository settings and try again.</p>`;
-        }
+          if(location.hash.startsWith('#Notes/')) { const n=decodeURIComponent(location.hash.substr(7)); const it=allItems.find(i=>i.name===n); if(it) openOverlay(it); }
+          else if(location.hash.endsWith('.md')) openInfo(`resources/${location.hash.substr(2)}`);
+        } catch(e) { els.container.innerHTML="<p>Failed to load.</p>"; }
       })();
   </script>
 </body>
