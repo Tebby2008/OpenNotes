@@ -623,7 +623,7 @@
       els.drawer.type.textContent = n.fmt.toUpperCase();
       els.drawer.views.textContent = n.v; els.drawer.downloads.textContent = n.d;
       
-      els.drawer.frame.src = `view.html?file=${encodeURIComponent(n.dl)}`;
+      els.drawer.frame.src = `https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/view.html?file=${encodeURIComponent(n.dl)}`;
       els.drawer.dlBtn.href = n.dl; els.drawer.dlBtn.download = n.name;
       els.drawer.rawBtn.onclick = () => window.open(n.dl, '_blank');
       
