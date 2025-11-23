@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>OpenNotes | Dashboard</title>
+  <title>OpenNotes | BETA TESTING</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <meta name="description" content="Open platform for notes.">
 
@@ -665,8 +665,7 @@
       
       els.drawer.frame.src = `https://opennotes.pages.dev/view.html?file=${encodeURIComponent(n.dl)}`;
       els.drawer.dlBtn.href = n.dl; els.drawer.dlBtn.download = n.name;
-      els.drawer.rawBtn.onclick = () => window.open(n.dl, '_blank');
-      
+      els.drawer.rawBtn.onclick = () => window.open(els.drawer.frame.src, '_blank');      
       els.drawer.dlBtn.onclick = () => {
          fetch(`${API_URL}?type=note&noteId=${n.path}&counter=downloads`, {method:'POST'})
             .then(r=>r.json()).then(d => { if(d){ n.d=d.downloads; els.drawer.downloads.textContent = d.downloads; render(); }});
