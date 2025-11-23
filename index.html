@@ -325,6 +325,10 @@
     .total-views { display: flex; align-items: center; gap: 6px; }
 
     @media (max-width: 768px) {
+        footer .left { 
+            flex-wrap: wrap; 
+            row-gap: 8px; 
+        }
         .controls { padding: 12px 1.5rem; }
         #typeBtn, #aiToggleBtn, .toggle { display: none !important; }
         .mobile-only-toggle { display: flex !important; }
@@ -377,7 +381,7 @@
             box-shadow: none; border: 1px solid transparent; 
             background: rgba(0,0,0,0.05);
         }
-        .dark-mode .back { background: rgba(255,255,255,0.1); }
+         .dark-mode .back { background: rgba(255,255,255,0.1); }
         .back:hover { transform: scale(1.05); }
 
         .styled-btn span:last-child, .back span:last-child { display: none; }
