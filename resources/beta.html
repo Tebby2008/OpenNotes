@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>OpenNotes - Notes made open</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="manifest" href="/resources/manifest-index.json">
+  <link rel="apple-touch-icon" href="/resources/icon-square.png">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js"></script>
+  <style>
+    :root {
+      /* Palette - Fluid & Modern */
+      --font-main: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      
+      --bg-base: #f2f4f8;
+      --bg-surface: #ffffff;
+      --bg-glass: rgba(255, 255, 255, 0.75);
+      --bg-glass-strong: rgba(255, 255, 255, 0.9);
+      
+      --text-main: #0f172a;
+      --text-secondary: #64748b;
+      --text-tertiary: #94a3b8;
+      
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-soft: #eff6ff;
+      --accent-glow: rgba(37, 99, 235, 0.25);
+      
+      --gold: #d97706;
+      --gold-soft: #fffbeb;
+      --gold-glow: rgba(245, 158, 11, 0.3);
+
+      --border-light: rgba(0, 0, 0, 0.06);
+      
+      /* Elevations */
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
+      --shadow-md: 0 12px 24px -6px rgba(0,0,0,0.06), 0 4px 8px -4px rgba(0,0,0,0.03);
+      --shadow-lg: 0 20px 40px -8px rgba(0,0,0,0.1), 0 8px 16px -6px rgba(0,0,0,0.05);
+      --shadow-float: 0 20px 50px rgba(0,0,0,0.12);
+      
+      /* Animation */
+      --ease-fluid: cubic-bezier(0.34, 1.56, 0.64, 1); /* Springy */
+      --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+      --trans-fast: 0.25s var(--ease-smooth);
+      --trans-med: 0.4s var(--ease-fluid);
+      
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      --radius-pill: 9999px;
+
+      /* Files */
+      --pdf-color: #ef4444;
+      --pdf-bg: #fef2f2;
+      --docx-color: #3b82f6;
+      --docx-bg: #eff6ff;
+    }
+
+    .dark-mode {
+      --bg-base: #020617; /* Deep Navy Black */
+      --bg-surface: #0f172a;
+      --bg-glass: rgba(15, 23, 42, 0.75);
+      --bg-glass-strong: rgba(15, 23, 42, 0.9);
+      
+      --text-main: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-tertiary: #64748b;
+      
+      --accent: #60a5fa;
+      --accent-hover: #93c5fd;
+      --accent-soft: rgba(37, 99, 235, 0.15);
+      --accent-glow: rgba(96, 165, 250, 0.2);
+      
+      --gold: #fbbf24;
+      --gold-soft: rgba(245, 158, 11, 0.15);
+      
+      --border-light: rgba(255, 255, 255, 0.08);
+      
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+      --shadow-md: 0 12px 24px -6px rgba(0,0,0,0.4);
+      --shadow-lg: 0 20px 40px -8px rgba(0,0,0,0.5);
+      --shadow-float: 0 20px 50px rgba(0,0,0,0.6);
+
+      --pdf-color: #f87171;
+      --pdf-bg: rgba(239, 68, 68, 0.15);
+      --docx-color: #60a5fa;
+      --docx-bg: rgba(59, 130, 246, 0.15);
+    }
+
+    /* Reset & Base */
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-main);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      background-image: 
+        radial-gradient(circle at 0% 0%, var(--accent-glow), transparent 40%),
+        radial-gradient(circle at 100% 100%, var(--gold-glow), transparent 40%);
+      background-attachment: fixed;
+    }
+
+    /* Typography */
+    h1, h2, h3, p { margin: 0; }
+    a { text-decoration: none; color: inherit; }
+    button { font-family: inherit; }
+
+    /* Icons */
+    .material-symbols-rounded {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      font-size: 20px;
+    }
+    .material-symbols-filled { font-variation-settings: 'FILL' 1; }
+
+    /* --- Header & Layout --- */
+    header {
+      padding: 3rem 1.5rem 1.5rem;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+    .header-logo {
+      height: 48px;
+      width: auto;
+      margin-bottom: 0.75rem;
+      transition: filter 0.3s ease;
+    }
+    /* Logo fix for dark/light mode */
+    body:not(.dark-mode) .header-logo, 
+    body:not(.dark-mode) .header-subtitle img {
+      filter: invert(1) brightness(0.2); 
+    }
+    .header-subtitle {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-glass);
+      padding: 6px 16px;
+      border-radius: var(--radius-pill);
+      backdrop-filter: blur(8px);
+    }
+    .header-subtitle img { height: 18px; vertical-align: middle; opacity: 0.8; }
+
+    /* --- Controls Bar (The "Command Center") --- */
+    .controls-container {
+      position: sticky;
+      top: 20px;
+      z-index: 100;
+      padding: 0 1.5rem 1.5rem;
+      pointer-events: none; /* Let clicks pass through empty space */
+      display: flex;
+      justify-content: center;
+    }
+
+    .controls {
+      pointer-events: auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--bg-glass-strong);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-md);
+      border-radius: var(--radius-pill);
+      padding: 6px;
+      width: 100%;
+      max-width: 900px;
+      transition: transform var(--trans-fast), box-shadow var(--trans-fast);
+    }
+    
+    /* Control Groups */
+    .controls .left, .controls .right { display: flex; align-items: center; gap: 8px; }
+
+    /* Buttons (Chips) */
+    .btn {
+      background: transparent;
+      color: var(--text-secondary);
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all var(--trans-fast);
+      height: 40px;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--border-light); color: var(--text-main); transform: translateY(-1px); }
+    .btn:active { transform: scale(0.96); }
+    
+    .btn.icon-only { padding: 8px; width: 40px; justify-content: center; }
+
+    /* Active States */
+    .btn.active { background: var(--bg-surface); color: var(--text-main); box-shadow: var(--shadow-sm); }
+    .btn.active-ai { 
+      background: var(--gold-soft); color: var(--gold); 
+      box-shadow: 0 0 0 1px var(--gold-glow);
+    }
+    .btn.active-sort { background: var(--accent-soft); color: var(--accent); }
+    
+    .btn b { font-weight: 700; letter-spacing: 0.5px; }
+
+    /* Search Bar */
+    .search {
+      display: flex; 
+      align-items: center; 
+      background: var(--bg-surface);
+      border-radius: var(--radius-pill); 
+      padding-left: 14px;
+      border: 1px solid transparent; 
+      transition: all var(--trans-med);
+      height: 40px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .search:focus-within { 
+      box-shadow: 0 0 0 2px var(--accent), var(--shadow-sm); 
+      background: var(--bg-surface);
+      width: 240px; /* Expand on focus */
+    }
+    .search input {
+      height: 100%; 
+      background: transparent; 
+      border: none; 
+      outline: none;
+      color: var(--text-main); 
+      font: inherit; 
+      font-weight: 500;
+      padding: 0 14px 0 8px; 
+      width: 140px; 
+      transition: width var(--trans-med);
+    }
+    .search input::placeholder { color: var(--text-tertiary); }
+    .search .material-symbols-outlined { color: var(--text-tertiary); font-size: 20px; }
+
+    /* View Toggle Group */
+    .toggle {
+      display: flex;
+      background: var(--border-light);
+      padding: 3px;
+      border-radius: var(--radius-pill);
+      gap: 2px;
+    }
+    .toggle .btn {
+      height: 34px; width: 34px; padding: 0;
+      background: transparent; box-shadow: none;
+      color: var(--text-secondary);
+    }
+    .toggle .btn.active {
+      background: var(--bg-surface);
+      color: var(--text-main);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Mobile Only Toggle */
+    .mobile-only-toggle { display: none !important; }
+
+    /* Sort Dropdown */
+    .sort-wrapper { position: relative; }
+    .custom-dropdown {
+      position: absolute; 
+      top: calc(100% + 12px); 
+      left: 0; 
+      background: var(--bg-glass-strong); 
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md); 
+      box-shadow: var(--shadow-lg); 
+      z-index: 200; 
+      display: flex; 
+      flex-direction: column; 
+      min-width: 180px; 
+      padding: 6px;
+      opacity: 0; 
+      pointer-events: none;
+      transform: translateY(10px) scale(0.95); 
+      transform-origin: top left;
+      transition: all var(--trans-fast);
+    }
+    .custom-dropdown.open { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+    .custom-dropdown .option { 
+      padding: 10px 14px; 
+      cursor: pointer; 
+      border-radius: var(--radius-sm); 
+      font-weight: 500; 
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      transition: 0.2s; 
+    }
+    .custom-dropdown .option:hover { background: var(--border-light); color: var(--text-main); }
+    .custom-dropdown .option.active { background: var(--accent-soft); color: var(--accent); }
+
+    /* --- Content Grid --- */
+    .wrap { padding: 0 24px 64px; max-width: 1400px; margin: 0 auto; }
+    .grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+      gap: 24px; 
+      perspective: 1000px; 
+    }
+    .list { display: flex; flex-direction: column; gap: 12px; }
+
+    /* --- Cards --- */
+    .card, .row {
+      --glow-opacity: 0;
+      --glow-x: 50%; --glow-y: 50%;
+      position: relative;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light); /* Subtle border for definition */
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      transition: all var(--trans-med);
+      overflow: hidden;
+      cursor: pointer;
+      will-change: transform, box-shadow;
+      /* Animation Entry */
+      opacity: 0; transform: translateY(20px);
+      animation: entry-fade 0.6s var(--ease-fluid) forwards;
+    }
+    
+    @keyframes entry-fade {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card:hover, .row:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: var(--shadow-lg);
+      border-color: transparent;
+      z-index: 5;
+    }
+    /* Glow Effect Overlay */
+    .card::after, .row::after {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(600px circle at var(--glow-x) var(--glow-y), var(--bg-glass), transparent 40%);
+      opacity: var(--glow-opacity); transition: opacity 0.3s;
+      z-index: 2; mix-blend-mode: overlay;
+    }
+    .card:hover { --glow-opacity: 0.3; }
+
+    /* Card Thumb */
+    .thumb {
+      background: var(--border-light);
+      height: 180px; 
+      width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; 
+      position: relative;
+    }
+    .thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.6s var(--ease-fluid);
+    }
+    .card:hover .thumb img { transform: scale(1.1); }
+    
+    /* Format Badge */
+    .fmt-badge {
+      position: absolute; bottom: 10px; right: 10px; z-index: 3;
+      padding: 4px 10px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-glass-strong);
+      backdrop-filter: blur(4px);
+      box-shadow: var(--shadow-sm);
+    }
+    .fmt-pdf { color: var(--pdf-color); background: var(--pdf-bg); }
+    .fmt-docx { color: var(--docx-color); background: var(--docx-bg); }
+
+    /* Card Body */
+    .body { padding: 16px 20px 20px; position: relative; z-index: 3; }
+    .title-line { 
+      font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; 
+      line-height: 1.4; color: var(--text-main);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    
+    .meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--text-tertiary); font-size: 0.85rem; }
+    .meta .dot { width: 3px; height: 3px; border-radius: 50%; background: currentColor; opacity: 0.5; }
+    
+    .author-line { font-weight: 500; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+    
+    .ai-tag {
+      background: var(--gold-soft); color: var(--gold);
+      font-size: 10px; font-weight: 700; padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      display: inline-flex; align-items: center; gap: 4px;
+      border: 1px solid rgba(245, 158, 11, 0.1);
+    }
+    .verified-tag .material-symbols-outlined { color: var(--accent); font-size: 16px; font-variation-settings: 'FILL' 1; }
+
+    .stats { 
+      margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-light);
+      display: flex; gap: 16px; color: var(--text-tertiary); font-size: 0.85rem; font-weight: 600;
+    }
+    .stat { display: flex; align-items: center; gap: 6px; }
+    .stat .material-symbols-outlined { font-size: 18px; }
+
+    /* --- List View (Row) --- */
+    .row { 
+      display: grid; grid-template-columns: 90px 1fr auto; 
+      gap: 16px; padding: 12px; align-items: center; 
+      height: auto;
+    }
+    .row .thumb { height: 90px; width: 90px; border-radius: var(--radius-sm); }
+    .row .main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .row .title-line { font-size: 1.05rem; margin: 0; }
+    .row .pill { display: none; } /* Hide format pill in row, show in thumb? Or just rely on thumb */
+    .row .thumb .fmt-badge { inset: auto auto 4px 4px; font-size: 9px; padding: 2px 6px; }
+    
+    .right-end { display: flex; gap: 16px; padding-right: 12px; }
+    
+    /* --- Overlays (Dialogs) --- */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .overlay.open { opacity: 1; pointer-events: auto; }
+    
+    .viewer {
+      background: var(--bg-surface);
+      width: 90%; height: 90%; max-width: 1200px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-float);
+      display: grid; grid-template-columns: 1fr 360px;
+      overflow: hidden;
+      transform: scale(0.95) translateY(20px);
+      transition: transform 0.4s var(--ease-fluid);
+      border: 1px solid var(--border-light);
+    }
+    .overlay.open .viewer { transform: scale(1) translateY(0); }
+
+    .viewer .left { background: var(--bg-base); position: relative; }
+    .docframe { width: 100%; height: 100%; border: none; display: block; }
+    
+    .viewer .right { 
+      padding: 32px; 
+      display: flex; flex-direction: column; gap: 16px; 
+      background: var(--bg-surface);
+      overflow-y: auto;
+    }
+    
+    /* Overlay Typography */
+    .viewer .title { font-size: 1.75rem; font-weight: 800; line-height: 1.2; letter-spacing: -0.5px; }
+    .kv { font-size: 0.95rem; color: var(--text-secondary); display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding: 8px 0; }
+    .kv strong { color: var(--text-main); font-weight: 600; }
+    
+    /* Overlay Buttons */
+    .button-group { display: grid; gap: 12px; margin-top: auto; padding-top: 24px; }
+    .styled-btn {
+      background: var(--bg-base); color: var(--text-main);
+      border: none; border-radius: var(--radius-pill);
+      padding: 14px; font-weight: 600; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .styled-btn:hover { background: var(--border-light); transform: translateY(-2px); }
+    .styled-btn.download-accent { 
+      background: var(--accent); color: white; 
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+    .styled-btn.download-accent:hover { background: var(--accent-hover); box-shadow: 0 8px 20px var(--accent-glow); }
+
+    /* Overlay Back Button */
+    .back {
+      position: absolute; top: 24px; left: 24px; z-index: 1010;
+      background: var(--bg-surface); color: var(--text-main);
+      border: 1px solid var(--border-light);
+      height: 44px; padding: 0 16px; border-radius: var(--radius-pill);
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 600; cursor: pointer;
+      box-shadow: var(--shadow-md);
+      transition: all 0.2s;
+    }
+    .back:hover { transform: scale(1.05); }
+
+    /* Info Overlay (Markdown) */
+    .overlay-content { 
+      padding: 40px; line-height: 1.7; color: var(--text-secondary); font-size: 1.05rem; 
+    }
+    .overlay-content h1, .overlay-content h2 { color: var(--text-main); margin-bottom: 1rem; }
+    .overlay-content a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 2px; }
+
+    /* Notification Toast */
+    .popup-notification {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--bg-surface); color: var(--text-main);
+      padding: 12px 24px; border-radius: var(--radius-pill);
+      box-shadow: var(--shadow-float); border: 1px solid var(--border-light);
+      display: flex; align-items: center; gap: 10px; font-weight: 600;
+      opacity: 0; pointer-events: none; transition: all 0.4s var(--ease-fluid);
+      z-index: 2000;
+    }
+    .popup-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .success-icon { color: #22c55e; }
+
+    /* Footer */
+    footer {
+      max-width: 900px; margin: 0 auto;
+      padding: 40px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--text-tertiary); font-size: 0.9rem; font-weight: 500;
+      border-top: 1px solid var(--border-light);
+    }
+    footer .left, footer .right { display: flex; align-items: center; gap: 20px; }
+    footer a:hover { color: var(--accent); }
+    .dark-mode-toggle { 
+      background: var(--bg-surface); border: 1px solid var(--border-light);
+      height: 36px; width: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--text-secondary);
+      transition: transform 0.2s;
+    }
+    .dark-mode-toggle:hover { color: var(--gold); transform: rotate(15deg); }
+
+    /* --- Mobile Responsive --- */
+    @media (max-width: 768px) {
+      header { padding: 2rem 1rem 1rem; }
+      
+      .controls-container { padding: 0 1rem 1rem; top: 10px; }
+      .controls { 
+        padding: 8px; flex-direction: column; gap: 8px; align-items: stretch; 
+        border-radius: var(--radius-lg);
+      }
+      
+      /* Mobile Toolbar Layout */
+      .controls .left { 
+        order: 2; overflow-x: auto; padding-bottom: 4px; 
+        -webkit-overflow-scrolling: touch; 
+        scrollbar-width: none; /* Hide scrollbar */
+        mask-image: linear-gradient(to right, black 90%, transparent 100%);
+      }
+      .controls .left::-webkit-scrollbar { display: none; }
+      
+      .controls .right { order: 1; width: 100%; justify-content: space-between; }
+      
+      .search { flex: 1; width: auto; margin-right: 8px; }
+      .search:focus-within { width: auto; }
+      
+      .mobile-only-toggle { display: flex !important; }
+      .toggle { display: none !important; } /* Hide desktop toggle */
+      
+      /* Hide "CodePrep" and "Upload" text on mobile, just icons? 
+         Or move them. Current design: Icons only is fine. */
+      .controls-promo-btn { display: none; } /* Save space */
+
+      .wrap { padding: 0 16px 80px; }
+      
+      /* Mobile Viewer */
+      .viewer { 
+        width: 100%; height: 100%; max-height: none; border-radius: 0;
+        grid-template-columns: 1fr; grid-template-rows: 1fr auto;
+      }
+      .viewer .right { 
+        max-height: 60vh; border-top: 1px solid var(--border-light); 
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.1); 
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        z-index: 10;
+      }
+      .viewer .left { height: auto; }
+      .back { top: auto; bottom: 20px; left: 50%; transform: translateX(-50%); width: auto; }
+      .back:hover { transform: translateX(-50%) scale(1.05); }
+      
+      footer { flex-direction: column; gap: 24px; text-align: center; }
+      footer .left { flex-direction: column; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+      <img draggable="false" src="resources/logo.svg" alt="OpenNotes Logo" class="header-logo" />
+      <div class="header-subtitle">
+        by
+        <a href="https://ingenium.rf.gd" target="_blank" rel="noopener">
+          <img draggable="false" src="resources/ingenium.png" alt="Ingenium Logo" />
+        </a>
+      </div>
+  </header>
+
+  <div class="controls-container">
+    <div class="controls">
+      <!-- Top Row on Mobile: Search + Actions -->
+      <div class="right">
+        <div class="search" role="search">
+          <span class="material-symbols-rounded">search</span>
+          <input id="searchInput" type="text" placeholder="Search..." aria-label="Search notes" />
+        </div>
+
+        <a href="https://opennotes.pages.dev/codeprep" target="_blank" rel="noopener" class="btn controls-promo-btn" title="CodePrep">
+          <b>\\:</b>
+        </a>
+
+        <button id="uploadBtn" class="btn icon-only" title="How to Upload" data-md="resources/upload.md">
+          <span class="material-symbols-rounded">upload</span>
+        </button>
+        
+        <!-- Mobile Toggle Switch -->
+        <button id="viewToggleMobile" class="btn icon-only mobile-only-toggle" title="Switch View Mode">
+          <span class="material-symbols-rounded">view_list</span> 
+        </button>
+
+        <!-- Desktop Toggle Group -->
+        <div class="toggle" role="tablist" aria-label="View mode">
+          <button id="gridBtn" class="btn icon-only active" aria-pressed="true" title="Grid view">
+            <span class="material-symbols-rounded">grid_view</span>
+          </button>
+          <button id="listBtn" class="btn icon-only" aria-pressed="false" title="List view">
+            <span class="material-symbols-rounded">view_list</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom Row on Mobile: Filters -->
+      <div class="left">
+        <div class="sort-wrapper">
+          <button id="sortBtn" class="btn" title="Sort notes">
+            <span class="material-symbols-rounded">sort</span>
+            Sort
+          </button>
+          <div id="sortDropdown" class="custom-dropdown">
+            <div data-sort="updated-desc" class="option active">Last updated ↓</div>
+            <div data-sort="updated-asc" class="option">Last updated ↑</div>
+            <div data-sort="title-asc" class="option">Title A→Z</div>
+            <div data-sort="title-desc" class="option">Title Z→A</div>
+            <div data-sort="format-asc" class="option">Format A→Z</div>
+          </div>
+        </div>
+        
+        <button id="typeBtn" class="btn">
+            <span class="material-symbols-rounded">description</span>
+            <b>ALL</b>
+        </button>
+        
+        <button id="aiToggleBtn" class="btn active-ai" title="Toggle AI Content">
+          <span class="material-symbols-rounded material-symbols-filled">auto_awesome</span>
+          <b>AI</b>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <section id="itemsContainer" class="grid" aria-live="polite"></section>
+  </main>
+  
+  <div id="overlay" class="overlay" aria-hidden="true">
+    <button id="backBtn" class="back" aria-label="Back">
+      <span class="material-symbols-rounded">arrow_back</span>
+      <span>Close</span>
+    </button>
+    <div class="viewer" role="dialog" aria-modal="true" aria-label="Document viewer">
+      <div class="left">
+        <iframe id="docFrame" class="docframe" title="Document preview"></iframe>
+      </div>
+      <div class="right">
+        <div>
+          <span class="pill" id="ovFormat" style="display:inline-block; margin-bottom:8px; font-size:12px; font-weight:700; padding:4px 8px; border-radius:4px; background:var(--border-light);">PDF</span>
+          <div class="title" id="ovTitle">Title</div>
+        </div>
+        
+        <div style="display:flex; flex-direction:column; gap:4px;">
+            <div class="kv"><span>Date</span> <strong id="ovDate">—</strong></div>
+            <div class="kv"><span>Author</span> <strong id="ovAuthor">—</strong></div>
+            <div class="kv"><span>Views</span> <strong id="ovViews">0</strong></div>
+            <div class="kv"><span>Downloads</span> <strong id="ovDownloads">0</strong></div>
+        </div>
+
+        <div class="button-group">
+          <button id="ovDownload" class="styled-btn download-accent">
+            <span class="material-symbols-rounded">download</span>
+            Download File
+          </button>
+          <div style="display:flex; gap:12px;">
+              <a id="ovOpenRaw" class="styled-btn" target="_blank" rel="noopener" style="flex:1;">
+                <span class="material-symbols-rounded">open_in_new</span>
+                Raw
+              </a>
+              <button id="ovShareBtn" class="styled-btn" title="Copy link" style="flex:1;">
+                <span class="material-symbols-rounded">share</span>
+                Share
+              </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="infoOverlay" class="overlay" aria-hidden="true">
+    <button id="infoBackBtn" class="back" aria-label="Back">
+      <span class="material-symbols-rounded">arrow_back</span>
+      <span>Close</span>
+    </button>
+    <div class="viewer" style="grid-template-columns: 1fr; max-width: 800px; height: 85vh;">
+      <div class="overlay-content" id="infoContent"></div>
+    </div>
+  </div>
+
+  <div id="popupNotification" class="popup-notification">
+    <span class="material-symbols-rounded success-icon">check_circle</span>
+    <span>Link copied successfully</span>
+  </div>
+  
+  <footer>
+    <div class="left">
+      <a href="#" class="info-link" data-md="resources/terms-privacy.md">Terms & Privacy</a>
+      <a href="#" class="info-link" data-md="resources/contact.md">Contact</a>
+      <a href="#" class="info-link" data-md="resources/about.md">About</a>
+      <a href="https://github.com/Tebby2008/OpenNotes" target="_blank" rel="noopener">
+        <!-- Github Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.66-3.81-1.455-3.81-1.455-.54-1.38-1.335-1.755-1.335-1.755-1.095-.75.09-.735.09-.735 1.2.09 1.845 1.23 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        Github
+      </a>
+    </div>
+    <div class="right">
+      <div class="total-views" title="Total Website Views">
+        <span class="material-symbols-rounded">visibility</span>
+        <span id="websiteViews">...</span>
+      </div>
+      <button id="darkModeToggle" class="dark-mode-toggle" title="Switch Theme">
+          <span class="material-symbols-rounded">light_mode</span>
+      </button>
+    </div>
+  </footer>
+
+  <script>
+      const REPO_OWNER = "Tebby2008";
+      const REPO_NAME  = "OpenNotes";
+      const BRANCH     = "main";
+      const API_URL = "https://open-notes.tebby2008-li.workers.dev";
+      const owner = window.__owner || REPO_OWNER;
+      const repo  = window.__repo  || REPO_NAME;
+
+      let allItems = [];
+      let viewMode = localStorage.getItem('openNotesViewMode') || 'grid';
+      let showAI = true;
+      let currentSort = "updated-desc";
+      let currentFormat = "all";
+
+      const container = document.getElementById("itemsContainer");
+      const searchInput = document.getElementById("searchInput");
+      const gridBtn = document.getElementById("gridBtn");
+      const listBtn = document.getElementById("listBtn");
+      const typeBtn = document.getElementById("typeBtn");
+      const aiToggleBtn = document.getElementById("aiToggleBtn");
+      const sortBtn = document.getElementById("sortBtn");
+      const sortDropdown = document.getElementById("sortDropdown");
+      const overlay = document.getElementById("overlay");
+      const backBtn = document.getElementById("backBtn");
+      const docFrame = document.getElementById("docFrame");
+      const ovTitle = document.getElementById("ovTitle");
+      const ovFormat = document.getElementById("ovFormat");
+      const ovDate = document.getElementById("ovDate");
+      const ovAuthor = document.getElementById("ovAuthor");
+      const ovViews = document.getElementById("ovViews");
+      const ovDownloads = document.getElementById("ovDownloads");
+      const ovOpenRaw = document.getElementById("ovOpenRaw");
+      const ovShareBtn = document.getElementById("ovShareBtn");
+      const ovDownload = document.getElementById("ovDownload");
+      const infoOverlay = document.getElementById("infoOverlay");
+      const infoBackBtn = document.getElementById("infoBackBtn");
+      const infoContent = document.getElementById("infoContent");
+      const infoLinks = document.querySelectorAll('.info-link, #uploadBtn');
+      const websiteViewsEl = document.getElementById('websiteViews');
+      const darkModeToggle = document.getElementById("darkModeToggle");
+      const darkModeIcon = darkModeToggle.querySelector('.material-symbols-rounded');
+      const popupNotification = document.getElementById('popupNotification');
+      const searchIcon = document.querySelector('.search .material-symbols-rounded');
+      const viewToggleMobile = document.getElementById('viewToggleMobile');
+
+      const isDarkMode = localStorage.getItem('openNotesDarkMode') === 'true';
+      if (isDarkMode) {
+          document.body.classList.add('dark-mode');
+      }
+      darkModeIcon.textContent = isDarkMode ? 'light_mode' : 'dark_mode';
+      
+      darkModeToggle.addEventListener('click', () => {
+          document.body.classList.toggle('dark-mode');
+          const isDark = document.body.classList.contains('dark-mode');
+          localStorage.setItem('openNotesDarkMode', isDark);
+          darkModeIcon.textContent = isDark ? 'light_mode' : 'dark_mode';
+      });
+
+      if (viewMode === 'grid') {
+        gridBtn.classList.add("active"); gridBtn.setAttribute("aria-pressed", "true");
+        listBtn.classList.remove("active"); listBtn.setAttribute("aria-pressed", "false");
+      } else {
+        listBtn.classList.add("active"); listBtn.setAttribute("aria-pressed", "true");
+        gridBtn.classList.remove("active"); gridBtn.setAttribute("aria-pressed", "false");
+      }
+      if (searchIcon) {
+         searchIcon.addEventListener("click", () => searchInput.focus());
+      }
+
+      const fmtDate = (iso) => !iso ? "—" : new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      const stripExt = (name) => name.replace(/\.[^/.]+$/, "");
+      const extOf = (name) => (name.split('.').pop() || "").toLowerCase();
+
+      const toggleOverlay = (el, state) => {
+        document.body.style.overflow = state ? 'hidden' : '';
+        el.setAttribute("aria-hidden", !state);
+        state ? el.classList.add("open") : el.classList.remove("open");
+
+        if (!state) history.replaceState({}, '', '#');
+      };
+
+      const showPopup = (message) => {
+        popupNotification.querySelector('span:last-child').textContent = message;
+        popupNotification.classList.add('show');
+        setTimeout(() => { popupNotification.classList.remove('show'); }, 3000);
+      };
+
+      const updateCounter = async (itemPath, counterType) => {
+        try {
+          const res = await fetch(`${API_URL}?type=note&noteId=${itemPath}&counter=${counterType}`, { method: 'POST' });
+          if (res.ok) return await res.json();
+        } catch (e) { console.error(`Failed to increment ${counterType}:`, e); }
+        return null;
+      };
+      
+      async function getNoteStats(noteIds) {
+        try {
+          const res = await fetch(`${API_URL}?type=stats&noteIds=${noteIds.join(',')}`);
+          if (res.ok) return await res.json();
+        } catch (e) { console.error('Failed stats:', e); }
+        return {};
+      }
+
+      async function fetchNotes() {
+        const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Failed to fetch metadata.");
+        const metadata = await res.json();
+        
+        return metadata.map(meta => ({
+          name: meta.name,
+          title: stripExt(meta.name),
+          path: meta.path,
+          download_url: meta.download_url,
+          html_url: `https://github.com/${owner}/${repo}/blob/${BRANCH}/${encodeURIComponent(meta.path)}`,
+          thumbnail_url: meta.thumbnail_url,
+          format: extOf(meta.name),
+          updatedAt: meta.last_updated,
+          author: meta.author,
+          author_username: meta.author_username,
+          file_size: meta.file_size,
+          is_ai_generated: meta.is_ai_generated,
+          views: 0, downloads: 0,
+        })).filter(item => item.format === "pdf" || item.format === "docx");
+      }
+
+      function render() {
+        const query = searchInput.value.trim().toLowerCase();
+        let list = allItems.filter(x => (showAI || !x.is_ai_generated) && (currentFormat === "all" || x.format === currentFormat) && x.title.toLowerCase().includes(query));
+
+        list.sort((a,b) => {
+          switch(currentSort) {
+            case "title-asc": return a.title.localeCompare(b.title);
+            case "title-desc": return b.title.localeCompare(a.title);
+            case "format-asc": return a.format.localeCompare(b.format) || a.title.localeCompare(b.title);
+            case "updated-asc": return (new Date(a.updatedAt || 0)) - (new Date(b.updatedAt || 0));
+            default: return (new Date(b.updatedAt || 0)) - (new Date(a.updatedAt || 0));
+          }
+        });
+
+        container.innerHTML = "";
+        container.className = viewMode === "grid" ? "grid" : "list";
+
+        list.forEach((it, index) => {
+          const element = viewMode === "grid" ? renderCard(it) : renderRow(it);
+          element.style.animationDelay = `${index * 40}ms`;
+          container.appendChild(element);
+        });
+      }
+      
+      const getAuthorHtml = (item) => {
+        let authorName = item.author || 'Unknown';
+        const sanitizedAuthorName = DOMPurify.sanitize(authorName, { USE_PROFILES: { html: false } });
+        const verifiedBadge = `<span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+        if (item.author_username && item.author_username.toLowerCase() === 'tebby2008') {
+          return `<span class="author-line">${sanitizedAuthorName} ${verifiedBadge}</span>`;
+        }
+        return `<span class="author-line">${sanitizedAuthorName}</span>`;
+      };
+
+      function renderCard(it) {
+        const card = document.createElement("article");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="thumb">
+            <img src="${it.thumbnail_url}" alt="${it.title}" loading="lazy" onerror="this.style.display='none'">
+            <span class="fmt-badge fmt-${it.format}">${it.format.toUpperCase()}</span>
+          </div>
+          <div class="body">
+            <div class="title-line">${it.title.replace(/\(AI\)(?=[^()]*)$/, '')}</div>
+            <div class="meta">
+              ${getAuthorHtml(it)}
+              ${it.is_ai_generated ? `<span class="ai-tag"><span class="material-symbols-rounded" style="font-size:12px;">auto_awesome</span>AI</span>` : ''}
+              <span class="dot"></span>
+              <span>${fmtDate(it.updatedAt)}</span>
+            </div>
+            <div class="stats">
+              <span class="stat"><span class="material-symbols-rounded">visibility</span> <span data-view>${it.views || 0}</span></span>
+              <span class="stat"><span class="material-symbols-rounded">download</span> <span data-dl>${it.downloads || 0}</span></span>
+            </div>
+          </div>
+        `;
+        card.addEventListener("click", () => openOverlay(it));
+        return card;
+      }
+      
+      function renderRow(it) {
+        const row = document.createElement("article");
+        row.className = "row";
+        row.innerHTML = `
+          <div class="thumb">
+            <img src="${it.thumbnail_url}" alt="${it.title}" loading="lazy" onerror="this.style.display='none'">
+            <span class="fmt-badge fmt-${it.format}">${it.format.toUpperCase()}</span>
+          </div>
+          <div class="main">
+            <div class="title-line">${it.title.replace(/\(AI\)(?=[^()]*)$/, '')}</div>
+            <div class="meta">
+                ${getAuthorHtml(it)} ${it.is_ai_generated ? `<span class="ai-tag"><span class="material-symbols-rounded" style="font-size:12px;">auto_awesome</span>AI</span>` : ''}
+                <span class="dot"></span>
+                <span>${fmtDate(it.updatedAt)}</span>
+            </div>
+          </div>
+          <div class="right-end">
+            <span class="stat muted"><span class="material-symbols-rounded">visibility</span> <span data-view>${it.views || 0}</span></span>
+            <span class="stat muted"><span class="material-symbols-rounded">download</span> <span data-dl>${it.downloads || 0}</span></span>
+          </div>
+        `;
+        row.addEventListener("click", () => openOverlay(it));
+        return row;
+      }
+
+      function openOverlay(item) {
+        history.pushState({ note: item }, '', `#Notes/${encodeURIComponent(item.name)}`);
+        
+        toggleOverlay(overlay, true);
+        ovTitle.textContent = item.title.replace(/\(AI\)(?=[^()]*)$/, '');
+        ovFormat.textContent = item.format.toUpperCase();
+        ovFormat.className = `pill fmt-${item.format}`; // Helper styling
+        ovFormat.style.color = `var(--${item.format}-color)`;
+        ovFormat.style.background = `var(--${item.format}-bg)`;
+        
+        ovDate.textContent = fmtDate(item.updatedAt);
+        ovAuthor.innerHTML = `${getAuthorHtml(item)}${item.is_ai_generated ? ` <span class="ai-tag"><span class="material-symbols-rounded" style="font-size:12px;">auto_awesome</span>AI</span>` : ''}`;
+        ovOpenRaw.href = `view.html?file=${encodeURIComponent(item.download_url)}`;
+        docFrame.src = `view.html?file=${encodeURIComponent(item.download_url)}`;
+        ovViews.textContent = item.views || 0;
+        ovDownloads.textContent = item.downloads || 0;
+        
+        updateCounter(item.path, 'views').then(data => {
+          if (data) {
+            item.views = data.views; item.downloads = data.downloads;
+            ovViews.textContent = data.views; ovDownloads.textContent = data.downloads;
+            render();
+          }
+        });
+
+        ovShareBtn.onclick = async () => {
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            showPopup('Link copied to clipboard');
+          } catch (err) {
+            console.error('Failed copy', err);
+            showPopup('Failed to copy link');
+          }
+        };
+
+        ovDownload.onclick = async () => {
+          const data = await updateCounter(item.path, 'downloads');
+          if (data) {
+            item.views = data.views; item.downloads = data.downloads;
+            ovViews.textContent = data.views; ovDownloads.textContent = data.downloads;
+            render();
+          }
+          const a = document.createElement("a");
+          a.href = item.download_url; a.download = item.name;
+          document.body.appendChild(a); a.click(); a.remove();
+        };
+      }
+
+      async function openInfoOverlay(mdFile) {
+        history.pushState({ info: mdFile }, '', `#/${mdFile.split('/').pop()}`);
+        toggleOverlay(infoOverlay, true);
+        infoContent.innerHTML = "Loading...";
+        try {
+            const url = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${mdFile}`;
+            const response = await fetch(url);
+            infoContent.innerHTML = DOMPurify.sanitize(marked.parse(await response.text()));
+        } catch (e) { infoContent.innerHTML = `Failed to load content.`; }
+      }
+
+      gridBtn.addEventListener("click", () => {
+        viewMode = "grid"; localStorage.setItem('openNotesViewMode', 'grid');
+        gridBtn.classList.add("active"); gridBtn.setAttribute("aria-pressed", "true");
+        listBtn.classList.remove("active"); listBtn.setAttribute("aria-pressed", "false");
+        render();
+      });
+      listBtn.addEventListener("click", () => {
+        viewMode = "list"; localStorage.setItem('openNotesViewMode', 'list');
+        listBtn.classList.add("active"); listBtn.setAttribute("aria-pressed", "true");
+        gridBtn.classList.remove("active"); gridBtn.setAttribute("aria-pressed", "false");
+        render();
+      });
+      
+      if (viewToggleMobile) {
+        viewToggleMobile.addEventListener("click", () => {
+          viewMode = viewMode === "grid" ? "list" : "grid"; 
+          localStorage.setItem('openNotesViewMode', viewMode);
+          const icon = viewToggleMobile.querySelector('.material-symbols-rounded');
+          icon.textContent = viewMode === "grid" ? "view_list" : "grid_view";
+          
+          if (viewMode === 'grid') {
+            gridBtn.classList.add("active"); listBtn.classList.remove("active");
+          } else {
+            listBtn.classList.add("active"); gridBtn.classList.remove("active");
+          }
+          render();
+        });
+      }
+      
+      aiToggleBtn.addEventListener("click", () => {
+        showAI = !showAI;
+        aiToggleBtn.classList.toggle("active-ai");
+        render();
+      });
+      
+      const types = ["ALL", "PDF", "DOCX"]; let idx = 0;
+      typeBtn.addEventListener("click", () => {
+        idx = (idx + 1) % types.length;
+        const currentType = types[idx];
+        typeBtn.querySelector('b').textContent = currentType;
+        currentFormat = currentType.toLowerCase();
+        render();
+      });
+      searchInput.addEventListener("input", render);
+      
+      backBtn.addEventListener("click", () => toggleOverlay(overlay, false));
+      overlay.addEventListener("click", (e) => { if (e.target === overlay) toggleOverlay(overlay, false); });
+      infoBackBtn.addEventListener("click", () => toggleOverlay(infoOverlay, false));
+      infoOverlay.addEventListener("click", (e) => { if (e.target === infoOverlay) toggleOverlay(infoOverlay, false); });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+            if (overlay.classList.contains("open")) toggleOverlay(overlay, false);
+            if (infoOverlay.classList.contains("open")) toggleOverlay(infoOverlay, false);
+        }
+      });
+      infoLinks.forEach(link => {
+          link.addEventListener('click', (e) => {
+              e.preventDefault();
+              openInfoOverlay(link.dataset.md);
+          });
+      });
+      
+      sortBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          sortDropdown.classList.toggle("open");
+      });
+      sortDropdown.querySelectorAll(".option").forEach(opt => {
+        opt.addEventListener("click", () => {
+          sortDropdown.querySelectorAll(".option").forEach(o => o.classList.remove("active"));
+          opt.classList.add("active");
+          currentSort = opt.dataset.sort;
+          render();
+          sortDropdown.classList.remove("open");
+          sortBtn.classList.toggle("active-sort", opt.dataset.sort !== "updated-desc");
+        });
+      });
+      document.addEventListener("click", e => {
+        if (!sortBtn.contains(e.target) && !sortDropdown.contains(e.target)) {
+          sortDropdown.classList.remove("open");
+        }
+      });
+      
+      // Fluid 3D Tilt Effect
+      function add3dInteraction() {
+        container.addEventListener('mousemove', e => {
+          const card = e.target.closest('.card, .row');
+          if (!card) return;
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          
+          card.style.setProperty('--glow-x', `${x}px`);
+          card.style.setProperty('--glow-y', `${y}px`);
+          
+          // Subtle rotation
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+          const rotateX = ((y - centerY) / 20).toFixed(2);
+          const rotateY = ((centerX - x) / 20).toFixed(2);
+          
+          card.style.transform = `translateY(-6px) scale(1.02) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        
+        container.addEventListener('mouseleave', () => {
+           const hovered = document.querySelectorAll('.card:hover, .row:hover');
+           hovered.forEach(h => h.style.transform = '');
+        }, true);
+      }
+      
+      function handleUrlState() {
+        const hash = window.location.hash;
+        if (hash.startsWith('#Notes/')) {
+            const noteName = decodeURIComponent(hash.substring('#Notes/'.length));
+            const note = allItems.find(item => item.name === noteName);
+            if (note) openOverlay(note);
+        } else if (hash.endsWith('.md')) {
+            openInfoOverlay(`resources/${hash.substring(2)}`);
+        }
+      }
+
+      window.addEventListener('popstate', (event) => {
+          const state = event.state;
+          if (state && state.note) openOverlay(state.note);
+          else if (state && state.info) openInfoOverlay(state.info);
+          else {
+              if (overlay.classList.contains('open')) toggleOverlay(overlay, false);
+              if (infoOverlay.classList.contains('open')) toggleOverlay(infoOverlay, false);
+          }
+      });
+
+      (async function init() {
+        try {
+          allItems = await fetchNotes();
+          const noteIds = allItems.map(item => item.path);
+          if (noteIds.length > 0) {
+              const stats = await getNoteStats(noteIds);
+              allItems.forEach(item => {
+                  if (stats[item.path]) {
+                      item.views = stats[item.path].views;
+                      item.downloads = stats[item.path].downloads;
+                  }
+              });
+          }
+          const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
+          if(res.ok) websiteViewsEl.textContent = (await res.json()).views;
+          
+          if (viewToggleMobile) {
+            const icon = viewToggleMobile.querySelector('.material-symbols-rounded');
+            icon.textContent = viewMode === "grid" ? "view_list" : "grid_view";
+          }
+          
+          render();
+          add3dInteraction();
+          handleUrlState();
+        } catch(e) {
+          console.error(e);
+          container.innerHTML = `<p style="text-align:center; padding:2rem; color:var(--text-tertiary);">Unable to load notes. Please try again later.</p>`;
+        }
+      })();
+  </script>
+</body>
+</html>
