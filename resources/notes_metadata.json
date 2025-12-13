@@ -253,14 +253,14 @@
     "is_ai_generated": false
   },
   {
-    "name": "test1 (by testing).docx",
-    "path": "Notes/test1 (by testing).docx",
-    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/test1%20(by%20testing).docx",
-    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/test1%20(by%20testing)_docx.jpg",
-    "author": "testing",
+    "name": "Spanish Essay P2 (by test).pdf",
+    "path": "Notes/Spanish Essay P2 (by test).pdf",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/Spanish%20Essay%20P2%20(by%20test).pdf",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/Spanish%20Essay%20P2%20(by%20test)_pdf.jpg",
+    "author": "test",
     "author_username": null,
-    "last_updated": "2025-12-13T17:40:00Z",
-    "file_size": "5.23 MiB",
+    "last_updated": "2025-12-13T17:51:31Z",
+    "file_size": "5.94 MiB",
     "is_ai_generated": false
   }
 ]
