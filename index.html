@@ -871,7 +871,7 @@
         try {
           allItems = await fetchNotes();
           const ids = allItems.map(i=>i.path);
-          if(ids.length) { const s = await async function(){ try{return await(await fetch(`${API_URL}?type=stats&noteIds=${ids.join('/')}`)).json()}catch{return{}} }(); 
+          if(ids.length) { const s = await async function(){ try{return await(await fetch(`${API_URL}?type=stats&noteIds=${ids.join(':')}`)).json()}catch{return{}} }(); 
             allItems.forEach(i=>{ if(s[i.path]){i.v=s[i.path].views;i.d=s[i.path].downloads} }); 
           }
           fetch(`${API_URL}?type=website`,{method:'POST'}).then(r=>r.json()).then(d=>els.webViews.textContent=d.views).catch(()=>{});
