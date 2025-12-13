@@ -264,14 +264,25 @@
     "is_ai_generated": false
   },
   {
+    "name": "test1 (by tebbytebby) (1).pdf",
+    "path": "Notes/test1 (by tebbytebby) (1).pdf",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/test1%20(by%20tebbytebby)%20(1).pdf",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/test1%20(by%20tebbytebby)%20(1)_pdf.jpg",
+    "author": "tebbytebby",
+    "author_username": null,
+    "last_updated": "2025-12-13T04:42:14Z",
+    "file_size": "14.81 MiB",
+    "is_ai_generated": false
+  },
+  {
     "name": "test1 (by tebbytebby).pdf",
     "path": "Notes/test1 (by tebbytebby).pdf",
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/test1%20(by%20tebbytebby).pdf",
     "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/test1%20(by%20tebbytebby)_pdf.jpg",
-    "author": "tebbytebby",
+    "author": "github-actions[bot]",
     "author_username": null,
-    "last_updated": "2025-12-13T04:35:04Z",
-    "file_size": "14.81 MiB",
+    "last_updated": "2025-12-13T04:36:25Z",
+    "file_size": "8.05 MiB",
     "is_ai_generated": false
   },
   {
