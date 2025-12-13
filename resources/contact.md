@@ -1,4 +1,13 @@
 # Contact Us
-Thank you for your interest in contacting us.<br><br>
-Unfortunately we do not have a formal contact system for now. You may choose to get in touch with us through the issues tab on our GitHub page.
-Alternatively, if you wish to contact us through our parent non-profit organization, you can do so by sending an email to ingenium_support@googlegroups.com.
+
+If you have an questions, suggestions, or need to report an issue associated with our platform, please reach out with us through one of the following methods:
+1. Email us by contacting through our parent non-profit organization: ingenium_support@googlegroups.com.
+2. Open an issue on our <a href="https://github.com/Tebby2008/OpenNotes/issues" target="_blank">GitHub repository</a>
+
+---
+## Report Copyright Issues
+If you suspect a file was uploaded without the intellectual property owner's permission or if one of your works is on this site without your permission, please contact us via email and include:
+1. The link to the file on OpenNotes.
+2. A proof of your ownership or description of original work.
+
+ We will immediately remove any infringing content once ownership has been verified.
