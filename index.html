@@ -14,6 +14,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="manifest" href="/resources/manifest-index.json">
   <link rel="apple-touch-icon" href="/resources/icon-square.png">
+
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js" defer></script>
 
@@ -608,6 +610,8 @@
                 </label>
             </div>
 
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAACGcLC657zYbkp6o" data-theme="light" style="margin-bottom: 16px;"></div>
+
             <button type="submit" id="submitUploadBtn" class="styled-btn download-accent" style="width:100%; justify-content:center; margin-top:16px;">
                 <span class="material-symbols-rounded">upload</span>
                 <span>Upload Note</span>
@@ -917,82 +921,104 @@
 
       // 4. Submit Logic
       uploadEls.form.onsubmit = async (e) => {
-          e.preventDefault();
-          const file = uploadEls.file.files[0];
-          if (!file) return;
+        e.preventDefault();
+        const file = uploadEls.file.files[0];
+        if (!file) return;
 
-          uploadEls.submit.classList.add('btn-loading');
-          uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
-          uploadEls.status.textContent = "Preparing file...";
+        // A. Check Turnstile Token
+        // The widget creates a hidden input named "cf-turnstile-response"
+        const formData = new FormData(uploadEls.form);
+        const turnstileToken = formData.get('cf-turnstile-response');
 
-          try {
-              // A. Clean Inputs
-              // Allow alphanumeric, spaces, dashes, parentheses
-              const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
-              
-              const safeTitle = cleanText(uploadEls.title.value);
-              const safeAuthor = cleanText(uploadEls.author.value);
-              const ext = file.name.split('.').pop(); // pdf or docx
+        if (!turnstileToken) {
+            alert("Please complete the human verification check.");
+            return;
+        }
 
-              // B. Construct Base Filename: "Title (by Author).pdf"
-              let baseName = `${safeTitle} (by ${safeAuthor})`;
-              let finalFileName = `${baseName}.${ext}`;
+        // UI: Loading State
+        uploadEls.submit.classList.add('btn-loading');
+        uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
+        uploadEls.status.textContent = "Processing file...";
 
-              // C. Check for Duplicates (Client-Side)
-              // We check against 'allItems' which acts as our cache of existing files
-              let counter = 1;
-              while (allItems.some(item => item.name === finalFileName)) {
-                  finalFileName = `${baseName} (${counter}).${ext}`;
-                  counter++;
-              }
-              
-              console.log("Generated unique filename:", finalFileName);
+        try {
+            // B. Sanitization
+            // Clean inputs (allow alphanumeric, spaces, dashes, parens)
+            const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
+            
+            const safeTitle = cleanText(uploadEls.title.value);
+            const safeAuthor = cleanText(uploadEls.author.value);
+            const ext = file.name.split('.').pop(); // e.g., "pdf"
 
-              // D. Convert to Base64
-              uploadEls.status.textContent = "Processing file...";
-              const toBase64 = file => new Promise((resolve, reject) => {
-                  const reader = new FileReader();
-                  reader.readAsDataURL(file);
-                  reader.onload = () => resolve(reader.result.split(',')[1]); 
-                  reader.onerror = error => reject(error);
-              });
-              const base64Content = await toBase64(file);
+            // C. Generate Unique Filename: "Title (by Author).pdf"
+            let baseName = `${safeTitle} (by ${safeAuthor})`;
+            let finalFileName = `${baseName}.${ext}`;
 
-              // E. Send to Worker
-              uploadEls.status.textContent = "Sending to GitHub...";
-              const payload = {
-                  fileName: finalFileName, // Uniqueness guaranteed by frontend
-                  fileContent: base64Content,
-                  author: safeAuthor, 
-                  isAi: uploadEls.aiCheck.checked
-              };
+            // Check against local 'allItems' cache to avoid duplicates
+            // If "Note (by Bob).pdf" exists, try "Note (by Bob) (1).pdf"
+            let counter = 1;
+            while (allItems.some(item => item.name === finalFileName)) {
+                finalFileName = `${baseName} (${counter}).${ext}`;
+                counter++;
+            }
+            
+            console.log("Unique Filename:", finalFileName);
 
-              const response = await fetch(`${API_URL}?type=upload`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(payload)
-              });
+            // D. Convert File to Base64
+            const toBase64 = file => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]); // Strip "data:application/pdf;base64,"
+                reader.onerror = error => reject(error);
+            });
 
-              const result = await response.json();
-              if (!response.ok) throw new Error(result.error || "Upload failed");
+            uploadEls.status.textContent = "Encoding file...";
+            const base64Content = await toBase64(file);
 
-              showPopup("Upload successful! It will appear shortly.");
-              toggleOverlay(uploadEls.overlay, false);
-              
-              // Reset
-              uploadEls.form.reset();
-              uploadEls.drop.classList.remove('has-file');
-              uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX";
-              uploadEls.aiBtn.classList.remove('active-ai');
+            // E. Send to Worker
+            uploadEls.status.textContent = "Sending to GitHub...";
+            
+            const payload = {
+                fileName: finalFileName,
+                fileContent: base64Content,
+                author: safeAuthor, 
+                isAi: uploadEls.aiCheck.checked,
+                token: turnstileToken // Send token for verification
+            };
 
-          } catch (err) {
-              console.error(err);
-              alert("Error: " + err.message);
-          } finally {
-              uploadEls.submit.classList.remove('btn-loading');
-              uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
-              uploadEls.status.textContent = "";
-          }
+            const response = await fetch(`${API_URL}?type=upload`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Upload failed");
+            }
+
+            // F. Success Handling
+            showPopup("Upload successful! It will appear after processing.");
+            toggleOverlay(uploadEls.overlay, false);
+            
+            // Reset Form and Turnstile
+            uploadEls.form.reset();
+            uploadEls.drop.classList.remove('has-file');
+            uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX";
+            uploadEls.aiBtn.classList.remove('active-ai');
+            
+            // Reset Turnstile widget (important if user uploads again)
+            if (window.turnstile) window.turnstile.reset(); 
+
+        } catch (err) {
+            console.error(err);
+            alert("Error: " + err.message);
+        } finally {
+            // Restore Button State
+            uploadEls.submit.classList.remove('btn-loading');
+            uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
+            uploadEls.status.textContent = "";
+        }
       };
   </script>
 </body>
