@@ -39,7 +39,7 @@ You must <b>represent</b> and <b>warrant</b> that:
 ### Copyright Infringement
 
 
-We respect intellectual property rights and the personal identity rights of others\. If you suspect any content reproduced and distributed by the Platform has been uploaded without permission or violates your trademark, copyright, identity, or privacy rights, please <a href="https://opennotes.pages.dev/#/contact.md" target="_blank">contact us</a> and you may request the immediate removal of any infringing material\.
+We respect intellectual property rights and the personal identity rights of others\. If you suspect any content reproduced and distributed by the Platform has been uploaded without permission or violates your trademark, copyright, identity, or privacy rights, please [contact us](contact.md) and you may request the immediate removal of any infringing material\.
 
 ### Prohibited Content
 
@@ -63,11 +63,11 @@ We reserve the right to remove any suspected content and ban users at our sole d
 
 ### Upload Irreversibility
 
-Due to the restrictive nature of our open file processing system, any uploaded notes cannot be modified or deleted by the user once uploaded\. Please ensure that files are final and your author name is correct and accurate to the best of your knowledge before submission\. If you need a file to be removed for a specific important reason, including the accidental uploads of personal data, you must make a request by <a href="https://opennotes.pages.dev/#/contact.md" target="_blank">contacting us</a>\.
+Due to the restrictive nature of our open file processing system, any uploaded notes cannot be modified or deleted by the user once uploaded\. Please ensure that files are final and your author name is correct and accurate to the best of your knowledge before submission\. If you need a file to be removed for a specific important reason, including the accidental uploads of personal data, you must make a request by [contacting us](contact.md)\.
 
 ### Permitted Use of Content
 
-The source\-code components of this Platform within our <a href="https://github.com/Tebby2008/OpenNotes/" target="_blank">GitHub repository</a> is licensed under the <b>MIT License</b>\.
+The source\-code components of this Platform within our [GitHub repository](https://github.com/Tebby2008/OpenNotes/) is licensed under the <b>MIT License</b>\.
 
 Our goal is to spread knowledge and education, yet we equally wish to respect the authors who choose to upload their work\.
 
@@ -111,7 +111,7 @@ We believe in the minimal collection of our user's personal data\. We promise to
 The Platform relies on Third\-Party Services to function properly\. This includes:
 
 
-* <b>GitHub:</b> We use GitHub as our primary file storage system for notes and other resources\. Everything is kept open\-source and public uploads are stored in a public repository\. For more information please check our <a href="https://github.com/Tebby2008/OpenNotes/" target="_blank">repo</a>\.
+* <b>GitHub:</b> We use GitHub as our primary file storage system for notes and other resources\. Everything is kept open\-source and public uploads are stored in a public repository\. For more information please check our [repo](https://github.com/Tebby2008/OpenNotes/)\.
 * <b>Cloudflare:</b> We use Cloudflare for site hosting, security processing \(Turnstile\), and HTTP request processing \(Workers\)
 * <b>Upstash Redis:</b> We use Upstash Redis to store notes and site views and downloads\.
 * <b>Google Gemini:</b> We use Google Gemini only in our CodePrep sub\-service to process and compile Java code and offer explanations with an AI\-powered advisor\.
@@ -125,12 +125,12 @@ We do not use cookies for advertisements and tracking\. We use local storage onl
 
 Parts of this Platform and service was produced with the help of AI\-powered tools\. Should you upload a file without an "AI" tag, you must certify that the content uploaded is your <b>original</b>, <b>human</b> work and does not contain any AI generated work\.
 
-Additionally, you may not use any part of this website or its associated resources in our <a href="https://github.com/Tebby2008/OpenNotes/" target="_blank">GitHub repository</a> for the purposes of training or fine\-tuning any AI model or large language model\.
+Additionally, you may not use any part of this website or its associated resources in our [GitHub repository](https://github.com/Tebby2008/OpenNotes/) for the purposes of training or fine\-tuning any AI model or large language model\.
 
 ---
 ## General Inquiries
 
-For general inquires, feature requests, or bug reports, please contact us through the methods listed <a href="https://opennotes.pages.dev/#/contact.md" target="_blank">here</a>\.
+For general inquires, feature requests, or bug reports, please contact us through the methods listed [here](contact.md)\.
 
 
 
