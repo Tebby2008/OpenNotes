@@ -854,7 +854,24 @@
       els.infoBack.onclick = () => toggleOverlay(els.infoOver, false);
       els.infoOver.onclick = (e) => { if(e.target===els.infoOver) toggleOverlay(els.infoOver,false); };
       document.onkeydown = (e) => { if(e.key==="Escape") { toggleOverlay(els.overlay,false); toggleOverlay(els.infoOver,false); } };
-      
+      els.infoCont.addEventListener('click', (e) => {
+        const link = e.target.closest('a');
+        
+        if (!link || !link.getAttribute('href')) return;
+
+        const href = link.getAttribute('href');
+
+        if (href.endsWith('.md')) {
+            e.preventDefault();
+            
+            let targetPath = href;
+            if (!targetPath.includes('/') && !targetPath.startsWith('http')) {
+                targetPath = `resources/${href}`;
+            }
+
+            openInfo(targetPath);
+        }
+    });
 
       document.querySelectorAll('.info-link').forEach(l => l.onclick = (e) => { 
           e.preventDefault(); 
