@@ -9,40 +9,69 @@ function formatBytes(bytes, decimals = 2) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
 }
 
+function appendLog(message, level = 'INFO', event = 'Metadata') {
+    const logPath = path.join('resources', 'system_log.md');
+    const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+    
+    // Define icons based on level
+    let icon = '🔵';
+    if (level === 'ADD') icon = '✨';
+    if (level === 'DEL') icon = '❌';
+
+    const logLine = `| ${date} | ${icon} ${level} | ${event} | ${message} |\n`;
+    
+    try {
+        fs.appendFileSync(logPath, logLine);
+    } catch (e) {
+        console.error("Could not write to log:", e);
+    }
+}
+
 async function generateNotesData() {
     try {
         const { Octokit } = await import('@octokit/rest');
         const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
         const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
         const notesPath = 'Notes';
+        const metadataPath = path.join('resources', 'notes_metadata.json');
+
+        // 1. Load Previous Metadata (for diff logging)
+        let oldFiles = new Set();
+        try {
+            if (fs.existsSync(metadataPath)) {
+                const rawOld = fs.readFileSync(metadataPath, 'utf8');
+                const oldJson = JSON.parse(rawOld);
+                oldJson.forEach(item => oldFiles.add(item.name));
+            }
+        } catch (e) {
+            console.log("No previous metadata found, starting fresh.");
+        }
 
         console.log(`Scanning notes in ${owner}/${repo}/${notesPath}...`);
 
-        // 1. Get list of all current files
+        // 2. Get list of all current files from GitHub API
         const { data: fileData } = await octokit.repos.getContent({
             owner, repo, path: notesPath, ref: 'main',
         });
 
         const notesMetadata = [];
+        const currentFiles = new Set();
 
         for (const file of fileData) {
             if (file.type === 'file') {
-                // 2. Fetch the LAST 10 COMMITS for this file
-                // We need history because the very last commit might be the "Compression Bot"
+                currentFiles.add(file.name);
+
+                // Fetch commit history
                 const { data: commitsData } = await octokit.repos.listCommits({
                     owner, repo, path: file.path, per_page: 10,
                 });
 
-                // Default values (from the very latest commit, usually the bot or the file state)
                 let lastUpdated = commitsData[0].commit.author.date;
-                
-                // Variables to determine
                 let authorDisplay = "Unknown";
                 let authorUsername = null;
-                let isAiGenerated = file.name.includes('(AI)'); // Fallback to filename check
+                let isAiGenerated = file.name.includes('(AI)');
 
-                // 3. Search history for the "Source of Truth"
-                // We look for the commit that introduced the Metadata Message
+                // Search history for Worker Metadata
                 let metadataFound = false;
                 const metadataRegex = /Author:\s*([^|]+)\|\s*AI:\s*(true|false)/i;
 
@@ -51,39 +80,34 @@ async function generateNotesData() {
                     const match = msg.match(metadataRegex);
 
                     if (match) {
-                        // FOUND IT! This is the upload commit from the Worker.
-                        // We use this data regardless of who compressed it later.
                         authorDisplay = match[1].trim();
                         isAiGenerated = (match[2].toLowerCase() === 'true');
-                        
-                        // Worker uploads have no GitHub username linked
                         authorUsername = null; 
-                        
                         metadataFound = true;
-                        break; // Stop looking, we found the definitive info
+                        break; 
                     }
                 }
 
-                // 4. Fallback: Direct GitHub Upload (Web/Desktop)
-                // If we didn't find the special worker message, we assume it's a normal user upload.
                 if (!metadataFound) {
-                    // Find the most recent commit that IS NOT a bot
                     const realUserCommit = commitsData.find(c => 
                         c.commit.author.name !== 'github-actions[bot]' && 
                         c.commit.author.name !== 'NotesPlatformBot'
-                    ) || commitsData[0]; // If all are bots, take the first one
+                    ) || commitsData[0]; 
 
                     authorDisplay = realUserCommit.commit.author.name;
                     if (realUserCommit.author && realUserCommit.author.login) {
                         authorUsername = realUserCommit.author.login;
-                        // If display name is generic, use username
                         if (!authorDisplay || authorDisplay === "GitHub Action") {
                             authorDisplay = authorUsername;
                         }
                     }
                 }
 
-                // --- THUMBNAIL LOGIC ---
+                // Check if this is a NEW file
+                if (!oldFiles.has(file.name)) {
+                    appendLog(`New note added: **${file.name}** by ${authorDisplay}`, 'ADD', 'New Entry');
+                }
+
                 const fileNameWithoutExt = path.basename(file.name);
                 const thumbnailName = fileNameWithoutExt.replace(/\.([^.]+)$/, '_$1');
                 const thumbnailUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/resources/thumbnails/${encodeURIComponent(thumbnailName)}.jpg`;
@@ -102,10 +126,17 @@ async function generateNotesData() {
             }
         }
 
-        const targetPath = path.join('resources', 'notes_metadata.json');
-        fs.writeFileSync(targetPath, JSON.stringify(notesMetadata, null, 2));
-        
-        console.log(`Successfully generated ${targetPath}!`);
+        // 3. Check for DELETED files
+        oldFiles.forEach(oldName => {
+            if (!currentFiles.has(oldName)) {
+                appendLog(`Note deleted from repo: **${oldName}**`, 'DEL', 'Removal');
+            }
+        });
+
+        // 4. Save
+        fs.writeFileSync(metadataPath, JSON.stringify(notesMetadata, null, 2));
+        console.log(`Successfully generated ${metadataPath}!`);
+
     } catch (error) {
         console.error('Failed to generate notes data:', error);
         process.exit(1);
