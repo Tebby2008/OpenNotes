@@ -384,6 +384,22 @@
     /* Button Loading State */
     .btn-loading { opacity: 0.7; pointer-events: none; }
     .btn-loading span:first-child { animation: spin 1s linear infinite; }
+    /* Error state for the Popup */
+    .popup-notification.error {
+        background-color: #fef2f2; /* Light Red */
+        border: 1px solid #ef4444; /* Red Border */
+        color: #991b1b; /* Dark Red Text */
+    }
+    /* Change icon color in error state */
+    .popup-notification.error .success-icon {
+        color: #ef4444; 
+    }
+    /* Red outline for invalid text inputs */
+    .input-error {
+        border: 2px solid #ef4444 !important;
+        outline: none;
+    }
+    
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
     @media (max-width: 768px) {
@@ -712,8 +728,20 @@
         state ? el.classList.add("open") : el.classList.remove("open");
         if (!state) history.replaceState({}, '', '#');
       };
-      const showPopup = (msg) => {
-        els.popup.querySelector('span:last-child').textContent = msg;
+      const showPopup = (msg, type = 'success') => {
+        const icon = els.popup.querySelector('.material-symbols-rounded');
+        const text = els.popup.querySelector('span:last-child');
+        
+        text.textContent = msg;
+
+        if (type === 'error') {
+            els.popup.classList.add('error');
+            icon.textContent = 'cancel'; // Changes checkmark to X
+        } else {
+            els.popup.classList.remove('error');
+            icon.textContent = 'check_circle'; // Back to checkmark
+        }
+
         els.popup.classList.add('show');
         setTimeout(() => els.popup.classList.remove('show'), 3000);
       };
@@ -805,7 +833,7 @@
         els.ovView.textContent = it.v; els.ovDl.textContent = it.d;
         updateCounter(it.path, 'views').then(d => { if(d){ it.v=d.views; it.d=d.downloads; els.ovView.textContent=d.views; els.ovDl.textContent=d.downloads; render(); }});
         
-        els.ovShare.onclick = () => { navigator.clipboard.writeText(window.location.href).then(()=>showPopup('Link copied')).catch(()=>{}); };
+        els.ovShare.onclick = () => { navigator.clipboard.writeText(window.location.href).then(()=>showPopup('Link copied', 'success')).catch(()=>{}); };
         els.ovDown.onclick = () => {
           updateCounter(it.path, 'downloads').then(d => { if(d){ it.v=d.views; it.d=d.downloads; els.ovView.textContent=d.views; els.ovDl.textContent=d.downloads; render(); }});
           const a = document.createElement("a"); a.href=it.dl; a.download=it.name; document.body.appendChild(a); a.click(); a.remove();
@@ -928,18 +956,69 @@
               uploadEls.title.value = cleanName;
           }
       };
-      uploadEls.file.addEventListener('change', (e) => handleFile(e.target.files[0]));
 
+      // 1. File Validation (Type & Length)
+      uploadEls.file.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          // 1. Check Extension
+          const lowerName = file.name.toLowerCase();
+          if (!lowerName.endsWith('.pdf') && !lowerName.endsWith('.docx')) {
+              showPopup("Invalid file type. Only .pdf and .docx allowed.", "error");
+              this.value = ''; // Clear input
+              uploadEls.drop.classList.remove('has-file');
+              uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
+              return;
+          }
+
+          // 2. Run standard handler (this auto-fills the title)
+          handleFile(file);
+
+          // 3. Check if the AUTO-FILLED title is too long
+          if (uploadEls.title.value.length > 100) {
+              uploadEls.title.classList.add('input-error');
+              showPopup("Title is too long. Please shorten it.", "error");
+          } else {
+              uploadEls.title.classList.remove('input-error');
+          }
+      });
+
+      // 2. Author Name Validation (Visual Feedback)
+      uploadEls.author.addEventListener('input', function() {
+          if (this.value.length > 40) {
+              this.classList.add('input-error');
+          } else {
+              this.classList.remove('input-error');
+          }
+      });
+      uploadEls.title.addEventListener('input', function() {
+          if (this.value.length > 100) {
+              this.classList.add('input-error');
+          } else {
+              this.classList.remove('input-error');
+          }
+      });
       uploadEls.form.onsubmit = async (e) => {
         e.preventDefault();
         const file = uploadEls.file.files[0];
-        if (!file) return;
+        
+        if (!file) {
+            showPopup("Please select a file.", "error");
+            return;
+        }
+        
+        // Check if EITHER input has the red error outline
+        if (uploadEls.author.classList.contains('input-error') || uploadEls.title.classList.contains('input-error')) {
+            showPopup("Please keep the highlighted fields shorter.", "error");
+            return;
+        }
 
         const formData = new FormData(uploadEls.form);
         const turnstileToken = formData.get('cf-turnstile-response');
 
         if (!turnstileToken) {
-            alert("Please complete the human verification check.");
+            showPopup("Please complete the human verification.", "error");
             return;
         }
 
@@ -954,6 +1033,10 @@
             const safeAuthor = cleanText(uploadEls.author.value);
             const ext = file.name.split('.').pop();
 
+            // Final Backend Sanity Check for Length
+            if (safeTitle.length > 100) throw new Error("Title too long");
+            if (safeAuthor.length > 40) throw new Error("Author name too long");
+
             let baseName = `${safeTitle} (by ${safeAuthor})`;
             let finalFileName = `${baseName}.${ext}`;
 
@@ -962,8 +1045,6 @@
                 finalFileName = `${baseName} (${counter}).${ext}`;
                 counter++;
             }
-            
-            console.log("Unique Filename:", finalFileName);
 
             const toBase64 = file => new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -972,9 +1053,7 @@
                 reader.onerror = error => reject(error);
             });
 
-            uploadEls.status.textContent = "Processing file...";
             const base64Content = await toBase64(file);
-
             uploadEls.status.textContent = "Uploading to servers...";
             
             const payload = {
@@ -994,22 +1073,25 @@
             const result = await response.json();
 
             if (!response.ok) {
+                // This displays the error from the worker (e.g., "File already exists")
                 throw new Error(result.error || "Upload failed");
             }
 
-            showPopup("Upload successful! It will appear after processing.");
+            showPopup("Upload successful!", "success");
             toggleOverlay(uploadEls.overlay, false);
             
             uploadEls.form.reset();
             uploadEls.drop.classList.remove('has-file');
             uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
             uploadEls.aiBtn.classList.remove('active-ai');
+            uploadEls.author.classList.remove('input-error');
             
             if (window.turnstile) window.turnstile.reset(); 
 
         } catch (err) {
             console.error(err);
-            alert("Error: " + err.message);
+            // Display the error using the Red Cross UI
+            showPopup(err.message, "error");
         } finally {
             uploadEls.submit.classList.remove('btn-loading');
             uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
