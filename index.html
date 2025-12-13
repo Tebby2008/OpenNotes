@@ -574,7 +574,7 @@
         <form id="uploadForm">
             <div class="file-drop-area" id="dropArea">
                 <span class="material-symbols-rounded icon">cloud_upload</span>
-                <span class="file-msg">Drag & drop or click to upload file (PDF/DOCX)</span>
+                <span class="file-msg">Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)</span>
                 <input class="file-input" type="file" id="fileInput" accept=".pdf,.docx" required>
                 <div id="filePreview" class="file-preview"></div>
             </div>
@@ -871,7 +871,7 @@
         try {
           allItems = await fetchNotes();
           const ids = allItems.map(i=>i.path);
-          if(ids.length) { const s = await async function(){ try{return await(await fetch(`${API_URL}?type=stats&noteIds=${ids.join(',')}`)).json()}catch{return{}} }(); 
+          if(ids.length) { const s = await async function(){ try{return await(await fetch(`${API_URL}?type=stats&noteIds=${ids.join('/')}`)).json()}catch{return{}} }(); 
             allItems.forEach(i=>{ if(s[i.path]){i.v=s[i.path].views;i.d=s[i.path].downloads} }); 
           }
           fetch(`${API_URL}?type=website`,{method:'POST'}).then(r=>r.json()).then(d=>els.webViews.textContent=d.views).catch(()=>{});
@@ -921,7 +921,7 @@
               return;
           }
           uploadEls.drop.classList.add('has-file');
-          uploadEls.msg.innerHTML = `<strong>${file.name}</strong> (${(file.size/1024/1024).toFixed(2)} MB)`;
+          uploadEls.msg.innerHTML = `<strong>${file.name}</strong> (${(file.size/1024/1024).toFixed(2)} MiB)`;
           
           if (!uploadEls.title.value) {
               let cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
@@ -1002,7 +1002,7 @@
             
             uploadEls.form.reset();
             uploadEls.drop.classList.remove('has-file');
-            uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX";
+            uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
             uploadEls.aiBtn.classList.remove('active-ai');
             
             if (window.turnstile) window.turnstile.reset(); 
