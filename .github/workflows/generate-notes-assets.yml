@@ -32,10 +32,10 @@ jobs:
       - name: Install Node Deps
         run: npm install @octokit/rest
 
-      # --- 1. SMART COMPRESSION (Only New/Modified files) ---
-      # We keep this strictly incremental to save CPU (don't re-compress old files)
+      # --- 1. SMART COMPRESSION (Bot Uploads Only) ---
       - name: Compress New/Modified PDFs
         run: |
+          # Detect changed PDFs
           CHANGED_PDFS=$(git diff --name-only --diff-filter=AM HEAD^ HEAD | grep "^Notes/.*\.pdf$" || true)
           
           if [ -z "$CHANGED_PDFS" ]; then
@@ -43,18 +43,34 @@ jobs:
           else
             echo "$CHANGED_PDFS" | while read -r file; do
               if [ -f "$file" ]; then
-                 size=$(stat -c%s "$file")
-                 if [ $size -gt 2000000 ]; then
-                    echo "Compressing $file..."
-                    gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook \
-                       -dNOPAUSE -dQUIET -dBATCH -sOutputFile="compressed_temp.pdf" "$file"
-                    
-                    new_size=$(stat -c%s "compressed_temp.pdf")
-                    if [ $new_size -lt $size ]; then
-                       mv "compressed_temp.pdf" "$file"
-                    else
-                       rm "compressed_temp.pdf"
-                    fi
+                 
+                 # CHECK: Who uploaded this?
+                 # %cn gets the Committer Name of the last commit that touched this file
+                 UPLOADER=$(git log -1 --format='%cn' -- "$file")
+                 
+                 echo "File: $file | Uploaded by: $UPLOADER"
+
+                 # Only proceed if the uploader is your Worker Bot
+                 if [[ "$UPLOADER" == "NotesPlatformBot" ]]; then
+                     
+                     size=$(stat -c%s "$file")
+                     if [ $size -gt 2000000 ]; then
+                        echo ">> Bot upload detected > 2MB. Compressing..."
+                        
+                        gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook \
+                           -dNOPAUSE -dQUIET -dBATCH -sOutputFile="compressed_temp.pdf" "$file"
+                        
+                        new_size=$(stat -c%s "compressed_temp.pdf")
+                        if [ $new_size -lt $size ]; then
+                           mv "compressed_temp.pdf" "$file"
+                        else
+                           rm "compressed_temp.pdf"
+                        fi
+                     else
+                        echo ">> Bot upload, but file is small. Skipping."
+                     fi
+                 else
+                     echo ">> Manual upload by user. Skipping compression."
                  fi
               fi
             done
