@@ -550,7 +550,7 @@
         // Fetch Note Stats
         const ids = state.notes.map(n => n.path);
         if(ids.length) {
-            const s = await fetch(`${API_URL}?type=stats&noteIds=${ids.join(',')}`).then(res=>res.json()).catch(()=>({}));
+            const s = await fetch(`${API_URL}?type=stats&noteIds=${ids.join(':')}`).then(res=>res.json()).catch(()=>({}));
             state.notes.forEach(n => { if(s[n.path]) { n.v = s[n.path].views; n.d = s[n.path].downloads; }});
         }
 
