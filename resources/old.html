@@ -575,7 +575,7 @@
       
       async function getNoteStats(noteIds) {
         try {
-          const res = await fetch(`${API_URL}?type=stats&noteIds=${noteIds.join(',')}`);
+          const res = await fetch(`${API_URL}?type=stats&noteIds=${noteIds.join(':')}`);
           if (res.ok) return await res.json();
         } catch (e) {
           console.error('Failed to fetch note stats:', e);
@@ -998,6 +998,7 @@
       })();
   </script>
 </body>
+
 
 
 
