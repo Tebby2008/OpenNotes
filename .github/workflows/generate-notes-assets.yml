@@ -17,12 +17,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0 # Need full history for author detection
 
       - name: Install Tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y ghostscript poppler-utils unoconv imagemagick
+          # Added clamav and clamav-daemon
+          sudo apt-get install -y ghostscript poppler-utils unoconv imagemagick clamav clamav-daemon
+          
+          # Update virus definitions (can take a moment)
+          sudo freshclam
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -32,81 +36,116 @@ jobs:
       - name: Install Node Deps
         run: npm install @octokit/rest
 
-      # --- 1. SMART COMPRESSION (Bot Uploads Only) ---
+      # --- 0. PREPARE LOG FILE ---
+      - name: Init Log
+        run: |
+          mkdir -p resources
+          LOG_FILE="resources/system_log.md"
+          if [ ! -f "$LOG_FILE" ]; then
+            echo "| Date (UTC) | Level | Event | Details |" > "$LOG_FILE"
+            echo "|---|---|---|---|" >> "$LOG_FILE"
+          fi
+
+      # --- 1. SECURITY SCAN (Priority #1) ---
+      - name: Virus Scan & Removal
+        run: |
+          LOG_FILE="resources/system_log.md"
+          DATE=$(date -u +"%Y-%m-%d %H:%M")
+          
+          echo "Starting ClamAV Scan..."
+          
+          if [ -s infected_list.txt ]; then
+            echo "⚠️ VIRUS DETECTED"
+            
+            while IFS= read -r line; do
+              # line format is usually: filename: VirusName FOUND
+              FILE=$(echo "$line" | cut -d: -f1)
+              VIRUS=$(echo "$line" | cut -d: -f2 | sed 's/ FOUND//')
+              
+              # Get Uploader Info from Git
+              UPLOADER=$(git log -1 --format='%cn (%ce)' -- "$FILE")
+              UPLOAD_DATE=$(git log -1 --format='%cd' -- "$FILE")
+              
+              echo "Deleting infected file: $FILE ($VIRUS)"
+              
+              # Log to file
+              echo "| $DATE | 🔴 **VIRUS** | Detected & Deleted | File: \`$FILE\` <br> Virus: \`$VIRUS\` <br> Uploader: $UPLOADER <br> Date: $UPLOAD_DATE |" >> "$LOG_FILE"
+              
+              # Delete the file
+              sudo rm -f "$FILE"
+              
+            done < infected_list.txt
+            
+            # Remove the temp list
+            rm infected_list.txt
+            
+            # Configure git to commit this removal immediately so subsequent steps don't fail
+            git config --global user.email "security@tebby.io"
+            git config --global user.name "SecurityBot"
+            git add Notes/ resources/system_log.md
+            git commit -m "Security: Removed infected files [skip ci]"
+          else
+            echo "✅ No viruses found."
+          fi
+
+      # --- 2. SMART COMPRESSION ---
       - name: Compress New/Modified PDFs
         run: |
-          # Detect changed PDFs
+          LOG_FILE="resources/system_log.md"
+          DATE=$(date -u +"%Y-%m-%d %H:%M")
+          
           CHANGED_PDFS=$(git diff --name-only --diff-filter=AM HEAD^ HEAD | grep "^Notes/.*\.pdf$" || true)
           
-          if [ -z "$CHANGED_PDFS" ]; then
-            echo "No new PDFs to compress."
-          else
+          if [ ! -z "$CHANGED_PDFS" ]; then
             echo "$CHANGED_PDFS" | while read -r file; do
               if [ -f "$file" ]; then
-                 
-                 # CHECK: Who uploaded this?
-                 # %cn gets the Committer Name of the last commit that touched this file
                  UPLOADER=$(git log -1 --format='%cn' -- "$file")
                  
-                 echo "File: $file | Uploaded by: $UPLOADER"
-
-                 # Only proceed if the uploader is your Worker Bot
                  if [[ "$UPLOADER" == "NotesPlatformBot" ]]; then
-                     
                      size=$(stat -c%s "$file")
                      if [ $size -gt 2000000 ]; then
-                        echo ">> Bot upload detected > 2MB. Compressing..."
-                        
-                        gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook \
-                           -dNOPAUSE -dQUIET -dBATCH -sOutputFile="compressed_temp.pdf" "$file"
+                        echo "Compressing $file..."
+                        gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile="compressed_temp.pdf" "$file"
                         
                         new_size=$(stat -c%s "compressed_temp.pdf")
                         if [ $new_size -lt $size ]; then
                            mv "compressed_temp.pdf" "$file"
+                           SAVED=$(( ($size - $new_size) / 1024 ))
+                           echo "| $DATE | 🟡 COMPRESS | Optimization | File: \`$file\` <br> Saved: ${SAVED}KB |" >> "$LOG_FILE"
                         else
                            rm "compressed_temp.pdf"
                         fi
-                     else
-                        echo ">> Bot upload, but file is small. Skipping."
                      fi
-                 else
-                     echo ">> Manual upload by user. Skipping compression."
                  fi
               fi
             done
           fi
 
-      # --- 2. THUMBNAILS (Generate Missing + Update Changed) ---
-      - name: Generate & Restore Thumbnails
+      # --- 3. THUMBNAILS ---
+      - name: Generate Thumbnails
         run: |
           mkdir -p resources/thumbnails
+          LOG_FILE="resources/system_log.md"
+          DATE=$(date -u +"%Y-%m-%d %H:%M")
           
-          # Get list of changed files (for updates)
           CHANGED_FILES=$(git diff --name-only --diff-filter=AM HEAD^ HEAD || true)
 
-          # Loop through ALL notes (to catch missing thumbnails)
           find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) | while read -r NOTE; do
-            
-            # Calculate expected thumbnail path
             NOTE_NAME=$(basename "$NOTE" | sed 's/\(.*\)\./\1_/')
             THUMBNAIL_PATH="resources/thumbnails/${NOTE_NAME}.jpg"
-            
             GENERATE=false
+            REASON=""
 
-            # Condition A: Thumbnail is completely missing (Restores your deleted ones)
             if [[ ! -f "$THUMBNAIL_PATH" ]]; then
-              echo "[Restoring] Missing thumbnail for: $NOTE"
               GENERATE=true
+              REASON="Missing"
+            elif echo "$CHANGED_FILES" | grep -Fq "$NOTE"; then
+              GENERATE=true
+              REASON="Updated"
             fi
 
-            # Condition B: Note was just updated (Updates existing thumbnail)
-            if echo "$CHANGED_FILES" | grep -Fq "$NOTE"; then
-              echo "[Updating] Note file changed: $NOTE"
-              GENERATE=true
-            fi
-
-            # Execute Generation
             if [ "$GENERATE" = true ]; then
+                echo "Generating thumb for $NOTE..."
                 if [[ "$NOTE" == *.pdf ]]; then
                   pdftocairo -jpeg -singlefile -scale-to 600 "$NOTE" "${THUMBNAIL_PATH%.jpg}"
                 elif [[ "$NOTE" == *.docx ]]; then
@@ -114,18 +153,20 @@ jobs:
                   pdftocairo -jpeg -singlefile -scale-to 600 temp.pdf "${THUMBNAIL_PATH%.jpg}"
                   rm temp.pdf
                 fi
-                
-                # Optimize JPG
                 if [[ -f "${THUMBNAIL_PATH%.jpg}.jpg" ]]; then
                   mogrify -quality 70 "${THUMBNAIL_PATH%.jpg}.jpg"
+                  # Log the generation
+                  echo "| $DATE | 🟢 THUMB | Generated | File: \`$NOTE\` <br> Reason: $REASON |" >> "$LOG_FILE"
                 fi
             fi
           done
 
-      # --- 3. CLEANUP ORPHANS ---
-      # This deletes thumbnails for notes that were ACTUALLY deleted from the repo
+      # --- 4. CLEANUP ORPHANS ---
       - name: Cleanup Orphaned Thumbnails
         run: |
+          LOG_FILE="resources/system_log.md"
+          DATE=$(date -u +"%Y-%m-%d %H:%M")
+          
           touch valid_thumbnails.txt
           find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) | while read -r NOTE; do
             NOTE_NAME=$(basename "$NOTE" | sed 's/\(.*\)\./\1_/')
@@ -136,13 +177,13 @@ jobs:
             [ -e "$THUMBNAIL" ] || continue
             FILENAME=$(basename "$THUMBNAIL")
             if ! grep -Fxq "$FILENAME" valid_thumbnails.txt; then
-              echo "Deleting orphan thumbnail: $FILENAME"
               rm "$THUMBNAIL"
+              echo "| $DATE | 🗑️ CLEANUP | Deleted Thumbnail | File: \`$FILENAME\` (Original note deleted) |" >> "$LOG_FILE"
             fi
           done
           rm valid_thumbnails.txt
 
-      # --- 4. METADATA JSON ---
+      # --- 5. METADATA JSON ---
       - name: Generate Metadata JSON
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -150,7 +191,7 @@ jobs:
         run: |
           node .github/workflows/generate-notes-metadata.js
 
-      # --- 5. COMMIT ---
+      # --- 6. COMMIT ---
       - name: Commit changes
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
