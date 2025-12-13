@@ -304,7 +304,8 @@
       opacity: 0; pointer-events: none; transition: all 0.4s var(--ease); z-index: 1002;
     }
     .popup-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .success-icon { color: #22c55e; font-variation-settings: 'FILL' 1; }
+    .notifcation-icon { color: #22c55e; font-variation-settings: 'FILL' 1; }
+    .popup-notification.error .notifcation-icon { color: #ef4444; }
 
     .back {
       position: fixed; bottom: 24px; left: 24px; z-index: 1010;
@@ -383,14 +384,6 @@
 
     .btn-loading { opacity: 0.7; pointer-events: none; }
     .btn-loading span:first-child { animation: spin 1s linear infinite; }
-    .popup-notification.error {
-        background-color: #fef2f2; 
-        border: 1px solid #ef4444; 
-        color: #991b1b;
-    }
-    .popup-notification.error .success-icon {
-        color: #ef4444; 
-    }
     .input-error {
         border: 2px solid #ef4444 !important;
         outline: none;
@@ -563,7 +556,7 @@
   </div>
 
   <div id="popupNotification" class="popup-notification">
-    <span class="material-symbols-rounded success-icon">check_circle</span> <span>Link copied successfully</span>
+    <span class="material-symbols-rounded notifcation-icon">check_circle</span> <span>Link copied successfully</span>
   </div>
   
   <div id="uploadOverlay" class="overlay" aria-hidden="true">
@@ -940,7 +933,7 @@
           if (!file) return;
           const limit = 35 * 1024 * 1024;
           if (file.size > limit) {
-              alert("File too large. Please compress under 35MB.");
+              showPopup("File too large. Please compress under 35MB.", "error");
               uploadEls.file.value = "";
               return;
           }
