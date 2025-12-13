@@ -1,4 +1,4 @@
-name: Process Notes (Fixed & Safe)
+name: Generate Notes Assets
 
 on:
   push:
