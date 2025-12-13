@@ -882,15 +882,13 @@
           status: document.getElementById('uploadStatus')
       };
 
-      // 1. Open/Close Upload Overlay
-      // IMPORTANT: Removing the data-md behavior for this specific button
       uploadEls.btn.onclick = (e) => { 
-        toggleOverlay(uploadEls.overlay, true); 
+          e.preventDefault(); 
+          toggleOverlay(uploadEls.overlay, true); 
       };
       uploadEls.back.onclick = () => toggleOverlay(uploadEls.overlay, false);
       uploadEls.overlay.onclick = (e) => { if(e.target===uploadEls.overlay) toggleOverlay(uploadEls.overlay,false); };
 
-      // 2. AI Toggle Logic
       uploadEls.aiBtn.onclick = () => {
           uploadEls.aiCheck.checked = !uploadEls.aiCheck.checked;
           const isAi = uploadEls.aiCheck.checked;
@@ -898,68 +896,77 @@
           uploadEls.aiBtn.querySelector('span:last-child').textContent = isAi ? "Yes (AI)" : "No";
       };
 
-      // 3. File Input Handling (Auto-fill title, size check)
       const handleFile = (file) => {
           if (!file) return;
-          
-          // Limit Check: 50MB (GitHub/Cloudflare Safe Limit)
-          const limit = 50 * 1024 * 1024; 
+          const limit = 35 * 1024 * 1024; // 50MB
           if (file.size > limit) {
-              alert("File is too large! Please compress it to under 50MB using the link provided.");
-              uploadEls.file.value = ""; // Clear input
+              alert("File too large. Please compress under 35MB.");
+              uploadEls.file.value = "";
               return;
           }
-
-          // Visual Feedback
           uploadEls.drop.classList.add('has-file');
           uploadEls.msg.innerHTML = `<strong>${file.name}</strong> (${(file.size/1024/1024).toFixed(2)} MB)`;
           
-          // Auto-fill Title if empty
           if (!uploadEls.title.value) {
-              // Remove extension and underscores
+              // Auto-fill title from filename
               let cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
               uploadEls.title.value = cleanName;
           }
       };
-
       uploadEls.file.addEventListener('change', (e) => handleFile(e.target.files[0]));
 
-      // 4. Submit Logic (Base64 -> Worker)
+      // 4. Submit Logic
       uploadEls.form.onsubmit = async (e) => {
+          e.preventDefault();
           const file = uploadEls.file.files[0];
           if (!file) return;
 
-          // UI Loading State
           uploadEls.submit.classList.add('btn-loading');
           uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
-          uploadEls.status.textContent = "Processing file... this may take a moment.";
+          uploadEls.status.textContent = "Preparing file...";
 
           try {
-              // Convert to Base64
+              // A. Clean Inputs
+              // Allow alphanumeric, spaces, dashes, parentheses
+              const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
+              
+              const safeTitle = cleanText(uploadEls.title.value);
+              const safeAuthor = cleanText(uploadEls.author.value);
+              const ext = file.name.split('.').pop(); // pdf or docx
+
+              // B. Construct Base Filename: "Title (by Author).pdf"
+              let baseName = `${safeTitle} (by ${safeAuthor})`;
+              let finalFileName = `${baseName}.${ext}`;
+
+              // C. Check for Duplicates (Client-Side)
+              // We check against 'allItems' which acts as our cache of existing files
+              let counter = 1;
+              while (allItems.some(item => item.name === finalFileName)) {
+                  finalFileName = `${baseName} (${counter}).${ext}`;
+                  counter++;
+              }
+              
+              console.log("Generated unique filename:", finalFileName);
+
+              // D. Convert to Base64
+              uploadEls.status.textContent = "Processing file...";
               const toBase64 = file => new Promise((resolve, reject) => {
                   const reader = new FileReader();
                   reader.readAsDataURL(file);
-                  reader.onload = () => resolve(reader.result.split(',')[1]); // Remove "data:app/pdf;base64," prefix
+                  reader.onload = () => resolve(reader.result.split(',')[1]); 
                   reader.onerror = error => reject(error);
               });
-
               const base64Content = await toBase64(file);
 
-              // Prepare Payload
-              // We construct the filename using the User's Title to keep it clean on GitHub
-              const cleanExt = file.name.split('.').pop();
-
-              const safeFilename = uploadEls.title.value.replace(/[^a-zA-Z0-9\-\s\(\)\.]/g, '').trim() + '.' + cleanExt;
-
+              // E. Send to Worker
+              uploadEls.status.textContent = "Sending to GitHub...";
               const payload = {
-                  fileName: safeFilename,
+                  fileName: finalFileName, // Uniqueness guaranteed by frontend
                   fileContent: base64Content,
-                  author: uploadEls.author.value.trim() || "Anonymous", // Send name text
+                  author: safeAuthor, 
                   isAi: uploadEls.aiCheck.checked
               };
 
-              // Send to Cloudflare Worker
-              // Using the API_URL defined at the top of your script
               const response = await fetch(`${API_URL}?type=upload`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -967,14 +974,12 @@
               });
 
               const result = await response.json();
-
               if (!response.ok) throw new Error(result.error || "Upload failed");
 
-              // Success!
-              showPopup("Upload successful! It will appear after approval/processing.");
+              showPopup("Upload successful! It will appear shortly.");
               toggleOverlay(uploadEls.overlay, false);
               
-              // Reset Form
+              // Reset
               uploadEls.form.reset();
               uploadEls.drop.classList.remove('has-file');
               uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX";
@@ -982,9 +987,8 @@
 
           } catch (err) {
               console.error(err);
-              alert("Error uploading: " + err.message);
+              alert("Error: " + err.message);
           } finally {
-              // Reset UI
               uploadEls.submit.classList.remove('btn-loading');
               uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
               uploadEls.status.textContent = "";
