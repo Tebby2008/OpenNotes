@@ -2,7 +2,7 @@
 
 If you have an questions, suggestions, or need to report an issue associated with our platform, please reach out with us through one of the following methods:
 1. Email us by contacting through our parent non-profit organization: ingenium_support@googlegroups.com.
-2. Open an issue on our <a href="https://github.com/Tebby2008/OpenNotes/issues" target="_blank">GitHub repository</a>
+2. Open an issue on our [GitHub repository](https://github.com/Tebby2008/OpenNotes/issues).
 
 ---
 ## Report Copyright Issues
