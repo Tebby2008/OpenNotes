@@ -566,7 +566,7 @@
         <div class="notice-box">
           <span class="material-symbols-rounded" style="color:var(--accent)">info</span>
           <span>
-            <strong>Pro Tip:</strong> Before uploading, please compress your PDF to ensure fast loading. 
+            <strong>Note:</strong> Before uploading, please compress your PDF. 
             <a href="https://www.adobe.com/acrobat/online/compress-pdf.html" target="_blank" rel="noopener">Use Adobe Compressor &nearr;</a>
           </span>
         </div>
@@ -574,14 +574,14 @@
         <form id="uploadForm">
             <div class="file-drop-area" id="dropArea">
                 <span class="material-symbols-rounded icon">cloud_upload</span>
-                <span class="file-msg">Drag & drop or click to upload PDF/DOCX</span>
+                <span class="file-msg">Drag & drop or click to upload file (PDF/DOCX)</span>
                 <input class="file-input" type="file" id="fileInput" accept=".pdf,.docx" required>
                 <div id="filePreview" class="file-preview"></div>
             </div>
 
             <div class="input-group">
                 <label>Title</label>
-                <input type="text" id="upTitle" placeholder="e.g. Quantum Physics Unit 1" required class="styled-input">
+                <input type="text" id="upTitle" placeholder="e.g. Physics Unit 1" required class="styled-input">
             </div>
 
             <div class="row-inputs">
@@ -602,11 +602,15 @@
             <div class="legal-section">
                 <label class="checkbox-label">
                     <input type="checkbox" required>
-                    <span>I agree to the <a href="#" data-md="resources/terms-privacy.md">Terms of Service</a> and Privacy Policy.</span>
+                    <span>I agree to the <a href="https://opennotes.pages.dev/resources/terms-privacy.md" target="_blank">Terms of Service</a> and Privacy Policy.</span>
                 </label>
                 <label class="checkbox-label">
                     <input type="checkbox" required>
-                    <span>I certify that this content does not violate any copyrights and is safe for work.</span>
+                    <span>I confirm the uploaded content is my own original work and does not violate any copyright agreements.</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" required>
+                    <span>I certify the uploaded content is safe for work, appropriate for a general audience in the presence of users under the age of 18 and does not contain any sexually explicit, violent, hateful, illicit, or other inappropriate material.</span>
                 </label>
             </div>
 
@@ -902,7 +906,7 @@
 
       const handleFile = (file) => {
           if (!file) return;
-          const limit = 35 * 1024 * 1024; // 50MB
+          const limit = 35 * 1024 * 1024;
           if (file.size > limit) {
               alert("File too large. Please compress under 35MB.");
               uploadEls.file.value = "";
@@ -912,21 +916,17 @@
           uploadEls.msg.innerHTML = `<strong>${file.name}</strong> (${(file.size/1024/1024).toFixed(2)} MB)`;
           
           if (!uploadEls.title.value) {
-              // Auto-fill title from filename
               let cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
               uploadEls.title.value = cleanName;
           }
       };
       uploadEls.file.addEventListener('change', (e) => handleFile(e.target.files[0]));
 
-      // 4. Submit Logic
       uploadEls.form.onsubmit = async (e) => {
         e.preventDefault();
         const file = uploadEls.file.files[0];
         if (!file) return;
 
-        // A. Check Turnstile Token
-        // The widget creates a hidden input named "cf-turnstile-response"
         const formData = new FormData(uploadEls.form);
         const turnstileToken = formData.get('cf-turnstile-response');
 
@@ -935,26 +935,20 @@
             return;
         }
 
-        // UI: Loading State
         uploadEls.submit.classList.add('btn-loading');
         uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
         uploadEls.status.textContent = "Processing file...";
 
         try {
-            // B. Sanitization
-            // Clean inputs (allow alphanumeric, spaces, dashes, parens)
             const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
             
             const safeTitle = cleanText(uploadEls.title.value);
             const safeAuthor = cleanText(uploadEls.author.value);
-            const ext = file.name.split('.').pop(); // e.g., "pdf"
+            const ext = file.name.split('.').pop();
 
-            // C. Generate Unique Filename: "Title (by Author).pdf"
             let baseName = `${safeTitle} (by ${safeAuthor})`;
             let finalFileName = `${baseName}.${ext}`;
 
-            // Check against local 'allItems' cache to avoid duplicates
-            // If "Note (by Bob).pdf" exists, try "Note (by Bob) (1).pdf"
             let counter = 1;
             while (allItems.some(item => item.name === finalFileName)) {
                 finalFileName = `${baseName} (${counter}).${ext}`;
@@ -963,26 +957,24 @@
             
             console.log("Unique Filename:", finalFileName);
 
-            // D. Convert File to Base64
             const toBase64 = file => new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result.split(',')[1]); // Strip "data:application/pdf;base64,"
+                reader.onload = () => resolve(reader.result.split(',')[1]);
                 reader.onerror = error => reject(error);
             });
 
-            uploadEls.status.textContent = "Encoding file...";
+            uploadEls.status.textContent = "Processing file...";
             const base64Content = await toBase64(file);
 
-            // E. Send to Worker
-            uploadEls.status.textContent = "Sending to GitHub...";
+            uploadEls.status.textContent = "Uploading to servers...";
             
             const payload = {
                 fileName: finalFileName,
                 fileContent: base64Content,
                 author: safeAuthor, 
                 isAi: uploadEls.aiCheck.checked,
-                token: turnstileToken // Send token for verification
+                token: turnstileToken 
             };
 
             const response = await fetch(`${API_URL}?type=upload`, {
@@ -997,24 +989,20 @@
                 throw new Error(result.error || "Upload failed");
             }
 
-            // F. Success Handling
             showPopup("Upload successful! It will appear after processing.");
             toggleOverlay(uploadEls.overlay, false);
             
-            // Reset Form and Turnstile
             uploadEls.form.reset();
             uploadEls.drop.classList.remove('has-file');
             uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX";
             uploadEls.aiBtn.classList.remove('active-ai');
             
-            // Reset Turnstile widget (important if user uploads again)
             if (window.turnstile) window.turnstile.reset(); 
 
         } catch (err) {
             console.error(err);
             alert("Error: " + err.message);
         } finally {
-            // Restore Button State
             uploadEls.submit.classList.remove('btn-loading');
             uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
             uploadEls.status.textContent = "";
