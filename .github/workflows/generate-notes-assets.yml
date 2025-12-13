@@ -24,8 +24,9 @@ jobs:
           sudo apt-get update
           # Added clamav and clamav-daemon
           sudo apt-get install -y ghostscript poppler-utils unoconv imagemagick clamav clamav-daemon
-          
-          # Update virus definitions (can take a moment)
+
+          sudo systemctl stop clamav-freshclam
+
           sudo freshclam
 
       - name: Setup Node
