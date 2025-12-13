@@ -32,14 +32,19 @@ async function generateNotesData() {
 
                 const lastCommit = commitsData[0];
                 const commitMsg = lastCommit.commit.message;
-                const committerName = lastCommit.commit.author.name;
+                const committerName = lastCommit.commit.author.name; // Git config name
+                const githubUser = lastCommit.author; // GitHub API user object (contains login)
 
-                // --- NEW AUTHOR DETECTION LOGIC ---
+                // Initialize variables
                 let authorDisplay = committerName;
+                let authorUsername = null; 
                 let isAiGenerated = file.name.includes('(AI)');
 
                 // Check if the file was uploaded by our Worker Bot
-                if (committerName === 'NotesPlatformBot' || committerName === 'github-actions[bot]') {
+                const isBot = committerName === 'NotesPlatformBot' || committerName === 'github-actions[bot]';
+
+                if (isBot) {
+                    // --- CASE 1: Uploaded via Cloudflare Worker ---
                     // Try to regex the info from the commit message
                     // Expected format: "Upload: file.pdf | Author: Bob | AI: true"
                     const authorMatch = commitMsg.match(/Author:\s*([^|]+)/);
@@ -51,9 +56,21 @@ async function generateNotesData() {
                     if (aiMatch && aiMatch[1]) {
                         isAiGenerated = (aiMatch[1].toLowerCase() === 'true');
                     }
+                    // authorUsername remains NULL here to indicate "Guest/External Upload"
+                } else {
+                    // --- CASE 2: Direct GitHub Upload (Web/Desktop) ---
+                    // If a GitHub user exists, capture their username
+                    if (githubUser && githubUser.login) {
+                        authorUsername = githubUser.login;
+                    }
+                    // Fallback: If committerName is generic, try to use login as display name
+                    if (!authorDisplay && authorUsername) {
+                        authorDisplay = authorUsername;
+                    }
                 }
                 
-                if (!authorDisplay) authorDisplay = lastCommit.author ? lastCommit.author.login : "Unknown";
+                // Final safety fallback
+                if (!authorDisplay) authorDisplay = "Unknown";
 
                 // --- THUMBNAIL LOGIC ---
                 const fileNameWithoutExt = path.basename(file.name);
@@ -65,7 +82,8 @@ async function generateNotesData() {
                     path: file.path,
                     download_url: file.download_url,
                     thumbnail_url: thumbnailUrl,
-                    author: authorDisplay, // Uses the parsed name
+                    author: authorDisplay,          // The display name (e.g., "John" or "Tebby")
+                    author_username: authorUsername, // The GitHub handle (e.g., "tebby2008") or null
                     last_updated: lastCommit.commit.author.date,
                     file_size: formatBytes(file.size),
                     is_ai_generated: isAiGenerated,
