@@ -1,4 +1,4 @@
-name: Generate Notes Assets
+name: Process Notes (Fixed & Safe)
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # CRITICAL: We need the previous commit to detect changes
+          fetch-depth: 2 # Needed for git diff
 
       - name: Install Tools
         run: |
@@ -32,25 +32,18 @@ jobs:
       - name: Install Node Deps
         run: npm install @octokit/rest
 
-      # --- 1. SMART COMPRESSION (Only changed files) ---
+      # --- 1. SMART COMPRESSION (Only New/Modified files) ---
       - name: Compress New/Modified PDFs
         run: |
-          # Get list of changed PDF files in Notes/ directory
-          # 'git diff' checks differences between previous commit (HEAD^) and current (HEAD)
+          # Detect changed PDFs
           CHANGED_PDFS=$(git diff --name-only --diff-filter=AM HEAD^ HEAD | grep "^Notes/.*\.pdf$" || true)
           
           if [ -z "$CHANGED_PDFS" ]; then
             echo "No new PDFs detected. Skipping compression."
           else
-            echo "Detected changed PDFs:"
-            echo "$CHANGED_PDFS"
-            
-            # Loop through them using newline as separator
             echo "$CHANGED_PDFS" | while read -r file; do
               if [ -f "$file" ]; then
-                 echo "Processing: $file"
-                 
-                 # 2MB Limit Check
+                 # Only compress if > 2MB
                  size=$(stat -c%s "$file")
                  if [ $size -gt 2000000 ]; then
                     echo "Compressing $file..."
@@ -59,35 +52,33 @@ jobs:
                     
                     new_size=$(stat -c%s "compressed_temp.pdf")
                     if [ $new_size -lt $size ]; then
-                       echo "Compression saved space ($size -> $new_size). Replacing."
+                       echo "Compression saved space. Replacing."
                        mv "compressed_temp.pdf" "$file"
                     else
-                       echo "No gain. Keeping original."
                        rm "compressed_temp.pdf"
                     fi
-                 else
-                    echo "File under 2MB. Skipping compression."
                  fi
               fi
             done
           fi
 
-      # --- 2. SMART THUMBNAILS (Only changed files + Missing ones) ---
-      - name: Generate Thumbnails
+      # --- 2. SMART THUMBNAILS (Generation + Safe Cleanup) ---
+      - name: Generate & Cleanup Thumbnails
         run: |
           mkdir -p resources/thumbnails
           
-          # A. Handle NEW files (Incremental)
-          # We look for ANY changed file in Notes (PDF or DOCX)
+          # A. GENERATE MISSING/UPDATED THUMBNAILS
+          # Check changed files (incremental)
           CHANGED_FILES=$(git diff --name-only --diff-filter=AM HEAD^ HEAD | grep "^Notes/.*\.\(pdf\|docx\)$" || true)
 
           if [ -n "$CHANGED_FILES" ]; then
             echo "$CHANGED_FILES" | while read -r NOTE; do
               if [ -f "$NOTE" ]; then
+                # Logic: Replace last dot with underscore
                 NOTE_NAME=$(basename "$NOTE" | sed 's/\(.*\)\./\1_/')
                 THUMBNAIL_PATH="resources/thumbnails/${NOTE_NAME}.jpg"
                 
-                echo "Generating/Updating thumbnail for: $NOTE"
+                echo "Generating thumbnail for: $NOTE"
                 if [[ "$NOTE" == *.pdf ]]; then
                   pdftocairo -jpeg -singlefile -scale-to 600 "$NOTE" "${THUMBNAIL_PATH%.jpg}"
                 elif [[ "$NOTE" == *.docx ]]; then
@@ -96,6 +87,7 @@ jobs:
                   rm temp.pdf
                 fi
                 
+                # Compress thumbnail image
                 if [[ -f "${THUMBNAIL_PATH%.jpg}.jpg" ]]; then
                   mogrify -quality 70 "${THUMBNAIL_PATH%.jpg}.jpg"
                 fi
@@ -103,19 +95,31 @@ jobs:
             done
           fi
 
-          # B. Cleanup Orphans (Fast & Safe)
-          # Removes thumbnails for notes that were deleted
-          find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) > existing_notes.txt
+          # B. SAFE CLEANUP (The Fix)
+          # 1. Generate a list of all valid thumbnail names based on current Notes
+          touch valid_thumbnails.txt
+          find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) | while read -r NOTE; do
+            # Use exact same naming logic as generation
+            NOTE_NAME=$(basename "$NOTE" | sed 's/\(.*\)\./\1_/')
+            echo "${NOTE_NAME}.jpg" >> valid_thumbnails.txt
+          done
+
+          # 2. Delete actual thumbnails NOT in the valid list
           for THUMBNAIL in resources/thumbnails/*.jpg; do
-            NOTE_NAME=$(basename "$THUMBNAIL" .jpg | sed 's/\(.*\)_/\1./')
-            if ! grep -q "Notes/${NOTE_NAME}.pdf" existing_notes.txt && ! grep -q "Notes/${NOTE_NAME}.docx" existing_notes.txt; then
-              echo "Deleting orphan: $THUMBNAIL"
+            [ -e "$THUMBNAIL" ] || continue # Skip if folder empty
+            
+            FILENAME=$(basename "$THUMBNAIL")
+            
+            # grep -F (Fixed string) -x (Exact line) -q (Quiet)
+            # This handles spaces, brackets, and symbols correctly
+            if ! grep -Fxq "$FILENAME" valid_thumbnails.txt; then
+              echo "Deleting orphan thumbnail: $FILENAME"
               rm "$THUMBNAIL"
             fi
           done
-          rm existing_notes.txt
+          rm valid_thumbnails.txt
 
-      # --- 3. METADATA JSON (Always Full Scan for Safety) ---
+      # --- 3. METADATA JSON (Full Scan) ---
       - name: Generate Metadata JSON
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -129,13 +133,12 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
-          # Add only tracked folders to avoid adding random temp files
           git add Notes/ resources/
           
           if [[ -n $(git status --porcelain) ]]; then
-            git commit -m "Auto: Optimized Notes & Assets [skip ci]"
+            git commit -m "Auto: Processed Notes & Cleaned Assets [skip ci]"
             git pull --rebase
             git push
           else
-            echo "No changes needed."
+            echo "No changes."
           fi
