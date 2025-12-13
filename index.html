@@ -381,20 +381,16 @@
     .checkbox-label input { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; }
     .checkbox-label a { color: var(--text); text-decoration: underline; }
 
-    /* Button Loading State */
     .btn-loading { opacity: 0.7; pointer-events: none; }
     .btn-loading span:first-child { animation: spin 1s linear infinite; }
-    /* Error state for the Popup */
     .popup-notification.error {
-        background-color: #fef2f2; /* Light Red */
-        border: 1px solid #ef4444; /* Red Border */
-        color: #991b1b; /* Dark Red Text */
+        background-color: #fef2f2; 
+        border: 1px solid #ef4444; 
+        color: #991b1b;
     }
-    /* Change icon color in error state */
     .popup-notification.error .success-icon {
         color: #ef4444; 
     }
-    /* Red outline for invalid text inputs */
     .input-error {
         border: 2px solid #ef4444 !important;
         outline: none;
@@ -736,10 +732,10 @@
 
         if (type === 'error') {
             els.popup.classList.add('error');
-            icon.textContent = 'cancel'; // Changes checkmark to X
+            icon.textContent = 'cancel';
         } else {
             els.popup.classList.remove('error');
-            icon.textContent = 'check_circle'; // Back to checkmark
+            icon.textContent = 'check_circle';
         }
 
         els.popup.classList.add('show');
@@ -957,43 +953,38 @@
           }
       };
 
-      // 1. File Validation (Type & Length)
       uploadEls.file.addEventListener('change', function(e) {
           const file = e.target.files[0];
           if (!file) return;
 
-          // 1. Check Extension
           const lowerName = file.name.toLowerCase();
           if (!lowerName.endsWith('.pdf') && !lowerName.endsWith('.docx')) {
               showPopup("Invalid file type. Only .pdf and .docx allowed.", "error");
-              this.value = ''; // Clear input
+              this.value = ''; 
               uploadEls.drop.classList.remove('has-file');
               uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
               return;
           }
 
-          // 2. Run standard handler (this auto-fills the title)
           handleFile(file);
 
-          // 3. Check if the AUTO-FILLED title is too long
-          if (uploadEls.title.value.length > 100) {
+          if (uploadEls.title.value.length > 60) {
               uploadEls.title.classList.add('input-error');
-              showPopup("Title is too long. Please shorten it.", "error");
+              showPopup("Title length exceeds 60 characters. Please keep it shorter.", "error");
           } else {
               uploadEls.title.classList.remove('input-error');
           }
       });
 
-      // 2. Author Name Validation (Visual Feedback)
       uploadEls.author.addEventListener('input', function() {
-          if (this.value.length > 40) {
+          if (this.value.length > 25) {
               this.classList.add('input-error');
           } else {
               this.classList.remove('input-error');
           }
       });
       uploadEls.title.addEventListener('input', function() {
-          if (this.value.length > 100) {
+          if (this.value.length > 60) {
               this.classList.add('input-error');
           } else {
               this.classList.remove('input-error');
@@ -1008,7 +999,6 @@
             return;
         }
         
-        // Check if EITHER input has the red error outline
         if (uploadEls.author.classList.contains('input-error') || uploadEls.title.classList.contains('input-error')) {
             showPopup("Please keep the highlighted fields shorter.", "error");
             return;
@@ -1033,9 +1023,8 @@
             const safeAuthor = cleanText(uploadEls.author.value);
             const ext = file.name.split('.').pop();
 
-            // Final Backend Sanity Check for Length
-            if (safeTitle.length > 100) throw new Error("Title too long");
-            if (safeAuthor.length > 40) throw new Error("Author name too long");
+            if (safeTitle.length > 60) throw new Error("Title too long");
+            if (safeAuthor.length > 25) throw new Error("Author name too long");
 
             let baseName = `${safeTitle} (by ${safeAuthor})`;
             let finalFileName = `${baseName}.${ext}`;
@@ -1073,7 +1062,6 @@
             const result = await response.json();
 
             if (!response.ok) {
-                // This displays the error from the worker (e.g., "File already exists")
                 throw new Error(result.error || "Upload failed");
             }
 
@@ -1090,7 +1078,6 @@
 
         } catch (err) {
             console.error(err);
-            // Display the error using the Red Cross UI
             showPopup(err.message, "error");
         } finally {
             uploadEls.submit.classList.remove('btn-loading');
