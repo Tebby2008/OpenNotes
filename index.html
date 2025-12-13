@@ -324,6 +324,66 @@
     footer svg { width: 18px; height: 18px; fill: currentColor; }
     .total-views { display: flex; align-items: center; gap: 6px; }
 
+    .upload-viewer {
+        display: flex; flex-direction: column; 
+        max-width: 600px; height: auto; max-height: 90vh;
+        background: var(--panel); 
+        padding: 0;
+    }
+    .upload-header {
+        padding: 32px 32px 20px;
+        border-bottom: 1px solid var(--border-soft);
+    }
+    .upload-body {
+        padding: 32px;
+        overflow-y: auto;
+    }
+
+    .notice-box {
+        background: var(--bg-docx); color: var(--text-sec);
+        padding: 12px 16px; border-radius: 12px; font-size: 0.9rem;
+        display: flex; gap: 10px; align-items: start; margin-bottom: 24px;
+        line-height: 1.5;
+    }
+    .notice-box a { color: var(--accent); text-decoration: none; font-weight: 600; }
+
+    .file-drop-area {
+        position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+        width: 100%; padding: 40px 20px;
+        border: 2px dashed var(--text-muted); border-radius: 16px;
+        background: rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer;
+        margin-bottom: 24px;
+    }
+    .file-drop-area:hover { background: rgba(0,0,0,0.04); border-color: var(--accent); }
+    .file-drop-area.has-file { border-style: solid; border-color: var(--accent); background: var(--bg-docx); }
+    
+    .file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+    .file-drop-area .icon { font-size: 48px; color: var(--text-muted); margin-bottom: 10px; }
+    .file-msg { color: var(--text-sec); font-weight: 500; text-align: center; }
+    
+    .styled-input {
+        width: 100%; background: rgba(0,0,0,0.03); border: 1px solid transparent;
+        border-radius: 12px; padding: 12px 16px; font-family: inherit; color: var(--text);
+        font-size: 1rem; transition: 0.2s;
+    }
+    .dark-mode .styled-input { background: rgba(255,255,255,0.08); }
+    .styled-input:focus { background: var(--panel); box-shadow: 0 0 0 3px var(--accent-glow); outline: none; }
+
+    .input-group { margin-bottom: 20px; }
+    .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: var(--text-sec); }
+    
+    .row-inputs { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    .legal-section { margin: 20px 0; display: flex; flex-direction: column; gap: 12px; }
+    .checkbox-label { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; font-size: 0.9rem; color: var(--text-sec); line-height: 1.4; }
+    .checkbox-label input { margin-top: 3px; accent-color: var(--accent); width: 16px; height: 16px; }
+    .checkbox-label a { color: var(--text); text-decoration: underline; }
+
+    /* Button Loading State */
+    .btn-loading { opacity: 0.7; pointer-events: none; }
+    .btn-loading span:first-child { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
     @media (max-width: 768px) {
         footer .left { 
             flex-wrap: wrap; 
@@ -439,7 +499,7 @@
           <input id="searchInput" type="text" placeholder="Search notes..." />
         </div>
         <a href="https://opennotes.pages.dev/codeprep" target="_blank" class="btn controls-promo-btn"><b>\\:</b></a>
-        <button id="uploadBtn" class="btn icon-only" title="How to Upload" data-md="resources/upload.md">
+        <button id="uploadBtn" class="btn icon-only" title="Upload Note">
           <span class="material-symbols-rounded">upload</span>
         </button>
         <button id="viewToggleMobile" class="btn icon-only mobile-only-toggle" title="View Mode">
@@ -492,6 +552,72 @@
     <span class="material-symbols-rounded success-icon">check_circle</span> <span>Link copied successfully</span>
   </div>
   
+  <div id="uploadOverlay" class="overlay" aria-hidden="true">
+    <button id="uploadBackBtn" class="back"><span class="material-symbols-rounded">arrow_back</span> <span>Close</span></button>
+    <div class="viewer upload-viewer">
+      <div class="upload-header">
+        <div class="title">Contribute a Note</div>
+        <p style="color:var(--text-sec); margin-top:8px;">Help grow the library by adding your notes.</p>
+      </div>
+
+      <div class="upload-body">
+        <div class="notice-box">
+          <span class="material-symbols-rounded" style="color:var(--accent)">info</span>
+          <span>
+            <strong>Pro Tip:</strong> Before uploading, please compress your PDF to ensure fast loading. 
+            <a href="https://www.adobe.com/acrobat/online/compress-pdf.html" target="_blank" rel="noopener">Use Adobe Compressor &nearr;</a>
+          </span>
+        </div>
+
+        <form id="uploadForm">
+            <div class="file-drop-area" id="dropArea">
+                <span class="material-symbols-rounded icon">cloud_upload</span>
+                <span class="file-msg">Drag & drop or click to upload PDF/DOCX</span>
+                <input class="file-input" type="file" id="fileInput" accept=".pdf,.docx" required>
+                <div id="filePreview" class="file-preview"></div>
+            </div>
+
+            <div class="input-group">
+                <label>Title</label>
+                <input type="text" id="upTitle" placeholder="e.g. Quantum Physics Unit 1" required class="styled-input">
+            </div>
+
+            <div class="row-inputs">
+                <div class="input-group" style="flex:1">
+                    <label>Author</label>
+                    <input type="text" id="upAuthor" placeholder="Your Name or Alias" class="styled-input" required>
+                </div>
+                
+                <div class="input-group" style="width: auto;">
+                    <label>AI Generated?</label>
+                    <button type="button" id="upAiToggle" class="btn" style="height: 42px; border: 1px solid var(--border-soft);">
+                        <span class="material-symbols-rounded">auto_awesome</span> <span>No</span>
+                    </button>
+                    <input type="checkbox" id="upAiCheck" style="display:none">
+                </div>
+            </div>
+
+            <div class="legal-section">
+                <label class="checkbox-label">
+                    <input type="checkbox" required>
+                    <span>I agree to the <a href="#" data-md="resources/terms-privacy.md">Terms of Service</a> and Privacy Policy.</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" required>
+                    <span>I certify that this content does not violate any copyrights and is safe for work.</span>
+                </label>
+            </div>
+
+            <button type="submit" id="submitUploadBtn" class="styled-btn download-accent" style="width:100%; justify-content:center; margin-top:16px;">
+                <span class="material-symbols-rounded">upload</span>
+                <span>Upload Note</span>
+            </button>
+            <div id="uploadStatus" style="text-align:center; margin-top:10px; font-size:0.9rem; color:var(--text-muted); min-height: 20px;"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <footer>
     <div class="left">
       <a href="#" class="info-link" data-md="resources/terms-privacy.md">Terms & Privacy</a>
@@ -696,8 +822,11 @@
       els.infoOver.onclick = (e) => { if(e.target===els.infoOver) toggleOverlay(els.infoOver,false); };
       document.onkeydown = (e) => { if(e.key==="Escape") { toggleOverlay(els.overlay,false); toggleOverlay(els.infoOver,false); } };
       
-      document.querySelectorAll('.info-link, #uploadBtn').forEach(l => l.onclick = (e) => { e.preventDefault(); openInfo(l.dataset.md); });
-      
+
+      document.querySelectorAll('.info-link').forEach(l => l.onclick = (e) => { 
+          e.preventDefault(); 
+          openInfo(l.dataset.md); 
+      });
       els.sortBtn.onclick = (e) => { e.stopPropagation(); els.sortDrop.classList.toggle("open"); };
       els.sortDrop.querySelectorAll(".option").forEach(o => o.onclick = () => {
          els.sortDrop.querySelectorAll(".option").forEach(x=>x.classList.remove("active"));
@@ -735,6 +864,132 @@
           else if(location.hash.endsWith('.md')) openInfo(`resources/${location.hash.substr(2)}`);
         } catch(e) { els.container.innerHTML="<p>Failed to load.</p>"; }
       })();
+
+
+      const uploadEls = {
+          btn: document.getElementById('uploadBtn'),
+          overlay: document.getElementById('uploadOverlay'),
+          back: document.getElementById('uploadBackBtn'),
+          form: document.getElementById('uploadForm'),
+          file: document.getElementById('fileInput'),
+          drop: document.getElementById('dropArea'),
+          msg: document.querySelector('.file-msg'),
+          title: document.getElementById('upTitle'),
+          author: document.getElementById('upAuthor'),
+          aiBtn: document.getElementById('upAiToggle'),
+          aiCheck: document.getElementById('upAiCheck'),
+          submit: document.getElementById('submitUploadBtn'),
+          status: document.getElementById('uploadStatus')
+      };
+
+      // 1. Open/Close Upload Overlay
+      // IMPORTANT: Removing the data-md behavior for this specific button
+      uploadEls.btn.onclick = (e) => { 
+        toggleOverlay(uploadEls.overlay, true); 
+      };
+      uploadEls.back.onclick = () => toggleOverlay(uploadEls.overlay, false);
+      uploadEls.overlay.onclick = (e) => { if(e.target===uploadEls.overlay) toggleOverlay(uploadEls.overlay,false); };
+
+      // 2. AI Toggle Logic
+      uploadEls.aiBtn.onclick = () => {
+          uploadEls.aiCheck.checked = !uploadEls.aiCheck.checked;
+          const isAi = uploadEls.aiCheck.checked;
+          uploadEls.aiBtn.classList.toggle('active-ai', isAi);
+          uploadEls.aiBtn.querySelector('span:last-child').textContent = isAi ? "Yes (AI)" : "No";
+      };
+
+      // 3. File Input Handling (Auto-fill title, size check)
+      const handleFile = (file) => {
+          if (!file) return;
+          
+          // Limit Check: 50MB (GitHub/Cloudflare Safe Limit)
+          const limit = 50 * 1024 * 1024; 
+          if (file.size > limit) {
+              alert("File is too large! Please compress it to under 50MB using the link provided.");
+              uploadEls.file.value = ""; // Clear input
+              return;
+          }
+
+          // Visual Feedback
+          uploadEls.drop.classList.add('has-file');
+          uploadEls.msg.innerHTML = `<strong>${file.name}</strong> (${(file.size/1024/1024).toFixed(2)} MB)`;
+          
+          // Auto-fill Title if empty
+          if (!uploadEls.title.value) {
+              // Remove extension and underscores
+              let cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
+              uploadEls.title.value = cleanName;
+          }
+      };
+
+      uploadEls.file.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+      // 4. Submit Logic (Base64 -> Worker)
+      uploadEls.form.onsubmit = async (e) => {
+          const file = uploadEls.file.files[0];
+          if (!file) return;
+
+          // UI Loading State
+          uploadEls.submit.classList.add('btn-loading');
+          uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
+          uploadEls.status.textContent = "Processing file... this may take a moment.";
+
+          try {
+              // Convert to Base64
+              const toBase64 = file => new Promise((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.readAsDataURL(file);
+                  reader.onload = () => resolve(reader.result.split(',')[1]); // Remove "data:app/pdf;base64," prefix
+                  reader.onerror = error => reject(error);
+              });
+
+              const base64Content = await toBase64(file);
+
+              // Prepare Payload
+              // We construct the filename using the User's Title to keep it clean on GitHub
+              const cleanExt = file.name.split('.').pop();
+
+              const safeFilename = uploadEls.title.value.replace(/[^a-zA-Z0-9\-\s\(\)\.]/g, '').trim() + '.' + cleanExt;
+
+              const payload = {
+                  fileName: safeFilename,
+                  fileContent: base64Content,
+                  author: uploadEls.author.value.trim() || "Anonymous", // Send name text
+                  isAi: uploadEls.aiCheck.checked
+              };
+
+              // Send to Cloudflare Worker
+              // Using the API_URL defined at the top of your script
+              const response = await fetch(`${API_URL}?type=upload`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+              });
+
+              const result = await response.json();
+
+              if (!response.ok) throw new Error(result.error || "Upload failed");
+
+              // Success!
+              showPopup("Upload successful! It will appear after approval/processing.");
+              toggleOverlay(uploadEls.overlay, false);
+              
+              // Reset Form
+              uploadEls.form.reset();
+              uploadEls.drop.classList.remove('has-file');
+              uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX";
+              uploadEls.aiBtn.classList.remove('active-ai');
+
+          } catch (err) {
+              console.error(err);
+              alert("Error uploading: " + err.message);
+          } finally {
+              // Reset UI
+              uploadEls.submit.classList.remove('btn-loading');
+              uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
+              uploadEls.status.textContent = "";
+          }
+      };
   </script>
 </body>
 </html>
