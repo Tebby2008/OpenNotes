@@ -264,6 +264,17 @@
     "is_ai_generated": false
   },
   {
+    "name": "test1 (by tebbytebby).pdf",
+    "path": "Notes/test1 (by tebbytebby).pdf",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/test1%20(by%20tebbytebby).pdf",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/test1%20(by%20tebbytebby)_pdf.jpg",
+    "author": "tebbytebby",
+    "author_username": null,
+    "last_updated": "2025-12-13T04:35:04Z",
+    "file_size": "14.81 MiB",
+    "is_ai_generated": false
+  },
+  {
     "name": "test1.docx",
     "path": "Notes/test1.docx",
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/test1.docx",
