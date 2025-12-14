@@ -17,7 +17,7 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js" defer></script>
 
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
 
   <style>
     :root {
@@ -645,7 +645,7 @@
             </div>
 
             <div class="input-group" style="display: flex; justify-content: center; margin-top: 20px; min-height: 65px;">
-                <div class="cf-turnstile" data-sitekey="0x4AAAAAACGcLC657zYbkp6o" data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired" data-theme="auto"></div>
+                <div id="turnstile-widget"></div>
             </div>
 
             <button type="submit" id="submitUploadBtn" class="styled-btn download-accent" style="width:100%; justify-content:center; margin-top:16px;">
@@ -677,6 +677,7 @@
       const REPO_OWNER = "Tebby2008", REPO_NAME = "OpenNotes", BRANCH = "main", API_URL = "https://open-notes.tebby2008-li.workers.dev";
       const owner = window.__owner || REPO_OWNER, repo = window.__repo || REPO_NAME;
       let turnstileToken = null;
+      let turnstileWidgetId = null;
       let verifiedAuthors = {}; 
       let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="updated-desc", currentFormat="all";
 
@@ -1107,11 +1108,27 @@
           e.preventDefault(); 
           history.pushState({ upload: true }, '', '#/upload');
           toggleOverlay(uploadEls.overlay, true); 
+
+          if (window.turnstile && turnstileWidgetId === null) {
+              turnstileWidgetId = turnstile.render('#turnstile-widget', {
+                  sitekey: '0x4AAAAAACGcLC657zYbkp6o',
+                  theme: 'auto',
+                  callback: function(token) {
+                      turnstileToken = token;
+                      document.getElementById('turnstile-widget').style.border = 'none';
+                  },
+                  'expired-callback': function() {
+                      turnstileToken = null;
+                  }
+              });
+          } else if (window.turnstile && turnstileWidgetId !== null) {
+              turnstile.reset(turnstileWidgetId);
+              turnstileToken = null;
+          }
       };
 
       uploadEls.back.onclick = () => {
           toggleOverlay(uploadEls.overlay, false);
-          if (window.turnstile) turnstile.reset();
           turnstileToken = null;
       };
 
