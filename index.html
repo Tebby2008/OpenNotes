@@ -643,7 +643,7 @@
                 </label>
             </div>
 
-            <div id="turnstile-wrapper" style="min-height:65px; margin-bottom: 16px;"></div>
+            <div id="captcha-box" style="min-height: 65px; margin-bottom: 16px;"></div>
 
             <button type="submit" id="submitUploadBtn" class="styled-btn download-accent" style="width:100%; justify-content:center; margin-top:16px;">
                 <span class="material-symbols-rounded">upload</span>
@@ -1091,57 +1091,55 @@
           status: document.getElementById('uploadStatus'),
       };
 
-      let turnstileWidgetId = null;
+      let widgetId = null;
 
+      function cleanupTurnstile() {
+          if (widgetId !== null && window.turnstile) {
+              // Remove the widget instance
+              window.turnstile.remove(widgetId);
+              widgetId = null;
+          }
+          // Clean the HTML box just to be safe
+          const box = document.getElementById('captcha-box');
+          if (box) box.innerHTML = '';
+      }
+
+      // 1. OPEN & RENDER
       uploadEls.btn.onclick = (e) => { 
           e.preventDefault(); 
           history.pushState({ upload: true }, '', '#/upload');
           toggleOverlay(uploadEls.overlay, true); 
-
-          const wrapper = document.getElementById('turnstile-wrapper');
           
-          wrapper.innerHTML = ''; 
+          // Safety check: kill any old instances first
+          cleanupTurnstile();
 
-          const newContainer = document.createElement('div');
-          newContainer.id = 'turnstile-fresh-container'; 
-          wrapper.appendChild(newContainer);
-
+          // Wait for the animation to finish opening (crucial!)
           setTimeout(() => {
               if (window.turnstile) {
-                  if (turnstileWidgetId !== null) {
-                      try { window.turnstile.remove(turnstileWidgetId); } catch(e) {}
-                      turnstileWidgetId = null;
-                  }
-
-                  turnstileWidgetId = window.turnstile.render('#turnstile-fresh-container', {
+                  widgetId = window.turnstile.render('#captcha-box', {
                       sitekey: '0x4AAAAAACGcLC657zYbkp6o',
                       theme: 'light',
-                      callback: function(token) {
-                          console.log('Challenge Solved');
-                      }
+                      // This improves speed: if they are known human, it auto-solves
+                      appearance: 'always', 
                   });
               }
-          }, 150);
+          }, 200); // 200ms delay ensures the overlay is fully visible
       };
 
+      // 2. CLOSE & DESTROY (Back Button)
       uploadEls.back.onclick = () => {
           toggleOverlay(uploadEls.overlay, false);
-          
-          if (window.turnstile && turnstileWidgetId !== null) {
-              window.turnstile.remove(turnstileWidgetId);
-              turnstileWidgetId = null;
-          }
+          cleanupTurnstile();
       };
 
+      // 3. CLOSE & DESTROY (Background Click)
       uploadEls.overlay.onclick = (e) => { 
           if(e.target === uploadEls.overlay) {
               toggleOverlay(uploadEls.overlay, false);
-              if (window.turnstile && turnstileWidgetId !== null) {
-                  window.turnstile.remove(turnstileWidgetId);
-                  turnstileWidgetId = null;
-              }
+              cleanupTurnstile();
           }
       };
+
 
       uploadEls.aiBtn.onclick = () => {
           uploadEls.aiCheck.checked = !uploadEls.aiCheck.checked;
@@ -1222,7 +1220,7 @@
         const turnstileToken = formData.get('cf-turnstile-response');
 
         if (!turnstileToken) {
-            showPopup("Please complete the human verification.", "error");
+            showPopup("Please complete the verification.", "error");
             return;
         }
 
@@ -1281,11 +1279,8 @@
 
             showPopup("Upload successful!", "success");
             toggleOverlay(uploadEls.overlay, false);
-            
             uploadEls.form.reset();
-            if (window.turnstile) {
-                window.turnstile.reset(uploadEls.turnstileWidgetId);
-            }
+            cleanupTurnstile();
             uploadEls.drop.classList.remove('has-file');
             uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
             uploadEls.aiBtn.classList.remove('active-ai');
