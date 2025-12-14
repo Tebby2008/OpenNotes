@@ -23,36 +23,45 @@
         function displayDocument() {
             const params = new URLSearchParams(window.location.search);
             const fileUrl = params.get("file");
-
             const docIframe = document.getElementById("doc");
 
+            const ALLOWED_BASE_URL = "https://raw.githubusercontent.com/Tebby2008/OpenNotes/";
+            
+            const showError = (message) => {
+                console.error(message);
+                docIframe.contentDocument.body.innerHTML = `
+                    <div style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; font-family:sans-serif; color:#4b5563;">
+                        <h2 style="font-size:1.5rem; margin-bottom:10px;">Access Denied</h2>
+                        <p>${message}</p>
+                    </div>`;
+            };
+
             if (!fileUrl) {
-                console.error("No file URL provided in the 'file' query parameter.");
-                docIframe.contentDocument.body.innerHTML = '<p class="text-xl text-center text-gray-500 mt-20">No file to display. Please provide a URL in the `?file=` query parameter.</p>';
+                showError("No file provided. Please add ?file= to the URL.");
                 return;
             }
 
-            const viewers = {
-                office: {
-                    extensions: ['.docx', '.pptx', '.xlsx'],
-                    url: 'https://view.officeapps.live.com/op/embed.aspx?src='
-                },
+            if (!fileUrl.startsWith(ALLOWED_BASE_URL)) {
+                showError("Security Restricted: Only files from the OpenNotes repository are allowed.");
+                return;
+            }
 
-                pdf: {
-                    extensions: ['.pdf'],
-                    url: 'https://mozilla.github.io/pdf.js/web/viewer.html?file='
-                }
-            };
-            
-            const lowerCaseFileUrl = fileUrl.toLowerCase();
-            let finalUrl = fileUrl;
+            const lowerCaseUrl = fileUrl.toLowerCase();
+            const isDocx = lowerCaseUrl.endsWith('.docx');
+            const isPdf = lowerCaseUrl.endsWith('.pdf');
 
-            for (const viewer in viewers) {
-                const isSupported = viewers[viewer].extensions.some(ext => lowerCaseFileUrl.endsWith(ext));
-                if (isSupported) {
-                    finalUrl = `${viewers[viewer].url}${encodeURIComponent(fileUrl)}`;
-                    break;
-                }
+            if (!isDocx && !isPdf) {
+                showError("Invalid File Type: Only .docx and .pdf files are supported.");
+                return;
+            }
+
+            let finalUrl = "";
+
+            if (isDocx) {
+                finalUrl = 'https://view.officeapps.live.com/op/embed.aspx?src=' + encodeURIComponent(fileUrl);
+            } 
+            else if (isPdf) {
+                finalUrl = 'https://raw.githubusercontent.com/Tebby2008/OpenNotes/resources/pdfjs/web/viewer.html?file=' + encodeURIComponent(fileUrl);
             }
             
             docIframe.src = finalUrl;
@@ -60,6 +69,5 @@
 
         window.onload = displayDocument;
     </script>
-
 </body>
 </html>

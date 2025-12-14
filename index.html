@@ -758,7 +758,7 @@
       const updateCounter = async (id, type) => {
         try { const res = await fetch(`${API_URL}?type=note&noteId=${id}&counter=${type}`, { method: 'POST' }); if (res.ok) return await res.json(); } catch (e) {} return null;
       };
-
+      
       async function fetchNotes() {
         const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`);
         if (!res.ok) throw new Error("Metadata failed");
