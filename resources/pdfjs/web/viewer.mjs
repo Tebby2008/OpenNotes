@@ -17655,8 +17655,8 @@ initCom(PDFViewerApplication);
     if (HOSTED_VIEWER_ORIGINS.has(viewerOrigin)) {
       return;
     }
-    const fileOrigin = URL.parse(file, window.location)?.origin;
-    if (fileOrigin === viewerOrigin) {
+    const fileOrigin = URL.parse(file, window.location)?.origin;    
+    if (fileOrigin === viewerOrigin || fileOrigin === "https://raw.githubusercontent.com") {
       return;
     }
     const ex = new Error("file origin does not match viewer's");
