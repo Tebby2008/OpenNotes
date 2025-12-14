@@ -115,6 +115,8 @@ The Platform relies on Third\-Party Services to function properly\. This include
 * <b>Cloudflare:</b> We use Cloudflare for site hosting, security processing \(Turnstile\), and HTTP request processing \(Workers\)
 * <b>Upstash Redis:</b> We use Upstash Redis to store notes and site views and downloads\.
 * <b>Google Gemini:</b> We use Google Gemini only in our CodePrep sub\-service to process and compile Java code and offer explanations with an AI\-powered advisor\.
+* <b>PDF.js:</b> We use PDF.js as the PDF viewer to display uploaded PDF content\.
+* <b>Microsoft Word:</b> We use Microsoft Word Viewer to display uploaded DOCX content\.
 
 
 ### Cookies Policy
