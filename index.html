@@ -14,9 +14,10 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="manifest" href="/resources/manifest-index.json">
   <link rel="apple-touch-icon" href="/resources/icon-square.png">
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js" defer></script>
+
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <style>
     :root {
@@ -643,7 +644,9 @@
                 </label>
             </div>
 
-            <div id="captcha-box" style="min-height: 65px; margin-bottom: 16px;"></div>
+            <div class="input-group" style="display: flex; justify-content: center; margin-top: 20px; min-height: 65px;">
+                <div class="cf-turnstile" data-sitekey="0x4AAAAAACGcLC657zYbkp6o" data-callback="onTurnstileSuccess" data-expired-callback="onTurnstileExpired" data-theme="auto"></div>
+            </div>
 
             <button type="submit" id="submitUploadBtn" class="styled-btn download-accent" style="width:100%; justify-content:center; margin-top:16px;">
                 <span class="material-symbols-rounded">upload</span>
@@ -673,6 +676,7 @@
   <script>
       const REPO_OWNER = "Tebby2008", REPO_NAME = "OpenNotes", BRANCH = "main", API_URL = "https://open-notes.tebby2008-li.workers.dev";
       const owner = window.__owner || REPO_OWNER, repo = window.__repo || REPO_NAME;
+      let turnstileToken = null;
       let verifiedAuthors = {}; 
       let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="updated-desc", currentFormat="all";
 
@@ -706,6 +710,14 @@
         mobTog: document.getElementById('viewToggleMobile')
       };
 
+      window.onTurnstileSuccess = function(token) {
+          turnstileToken = token;
+          document.querySelector('.cf-turnstile').style.border = 'none'; 
+      };
+
+      window.onTurnstileExpired = function() {
+          turnstileToken = null;
+      };
       const isDark = localStorage.getItem('openNotesDarkMode') === 'true';
       if (isDark) document.body.classList.add('dark-mode');
       els.themeTog.querySelector('span').textContent = isDark ? 'light_mode' : 'dark_mode';
@@ -1091,52 +1103,21 @@
           status: document.getElementById('uploadStatus'),
       };
 
-      let widgetId = null;
-
-      function cleanupTurnstile() {
-          if (widgetId !== null && window.turnstile) {
-              // Remove the widget instance
-              window.turnstile.remove(widgetId);
-              widgetId = null;
-          }
-          // Clean the HTML box just to be safe
-          const box = document.getElementById('captcha-box');
-          if (box) box.innerHTML = '';
-      }
-
-      // 1. OPEN & RENDER
       uploadEls.btn.onclick = (e) => { 
           e.preventDefault(); 
           history.pushState({ upload: true }, '', '#/upload');
           toggleOverlay(uploadEls.overlay, true); 
-          
-          // Safety check: kill any old instances first
-          cleanupTurnstile();
-
-          // Wait for the animation to finish opening (crucial!)
-          setTimeout(() => {
-              if (window.turnstile) {
-                  widgetId = window.turnstile.render('#captcha-box', {
-                      sitekey: '0x4AAAAAACGcLC657zYbkp6o',
-                      theme: 'light',
-                      // This improves speed: if they are known human, it auto-solves
-                      appearance: 'always', 
-                  });
-              }
-          }, 200); // 200ms delay ensures the overlay is fully visible
       };
 
-      // 2. CLOSE & DESTROY (Back Button)
       uploadEls.back.onclick = () => {
           toggleOverlay(uploadEls.overlay, false);
-          cleanupTurnstile();
+          if (window.turnstile) turnstile.reset();
+          turnstileToken = null;
       };
 
-      // 3. CLOSE & DESTROY (Background Click)
       uploadEls.overlay.onclick = (e) => { 
           if(e.target === uploadEls.overlay) {
               toggleOverlay(uploadEls.overlay, false);
-              cleanupTurnstile();
           }
       };
 
@@ -1203,99 +1184,106 @@
           }
       });
       uploadEls.form.onsubmit = async (e) => {
-        e.preventDefault();
-        const file = uploadEls.file.files[0];
-        
-        if (!file) {
-            showPopup("Please select a file.", "error");
-            return;
-        }
-        
-        if (uploadEls.author.classList.contains('input-error') || uploadEls.title.classList.contains('input-error')) {
-            showPopup("Please keep the highlighted fields shorter.", "error");
-            return;
-        }
+          e.preventDefault();
+          
+          if (!turnstileToken) {
+              showPopup("Please complete the security check.", "error");
+              document.querySelector('.cf-turnstile').parentElement.style.border = "1px solid red";
+              document.querySelector('.cf-turnstile').parentElement.style.borderRadius = "4px";
+              return;
+          }
 
-        const formData = new FormData(uploadEls.form);
-        const turnstileToken = formData.get('cf-turnstile-response');
+          const file = uploadEls.file.files[0];
+          
+          if (!file) {
+              showPopup("Please select a file.", "error");
+              return;
+          }
+          
+          if (uploadEls.author.classList.contains('input-error') || uploadEls.title.classList.contains('input-error')) {
+              showPopup("Please keep the highlighted fields shorter.", "error");
+              return;
+          }
 
-        if (!turnstileToken) {
-            showPopup("Please complete the verification.", "error");
-            return;
-        }
+          document.querySelector('.cf-turnstile').parentElement.style.border = "none";
 
-        uploadEls.submit.classList.add('btn-loading');
-        uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
-        uploadEls.status.textContent = "Processing file...";
+          uploadEls.submit.classList.add('btn-loading');
+          uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
+          uploadEls.status.textContent = "Processing file...";
 
-        try {
-            const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
-            
-            const safeTitle = cleanText(uploadEls.title.value);
-            const safeAuthor = cleanText(uploadEls.author.value);
-            const ext = file.name.split('.').pop();
+          try {
+              const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
+              
+              const safeTitle = cleanText(uploadEls.title.value);
+              const safeAuthor = cleanText(uploadEls.author.value);
+              const ext = file.name.split('.').pop();
 
-            if (safeTitle.length > 60) throw new Error("Title too long");
-            if (safeAuthor.length > 25) throw new Error("Author name too long");
+              if (safeTitle.length > 60) throw new Error("Title too long");
+              if (safeAuthor.length > 25) throw new Error("Author name too long");
 
-            let baseName = `${safeTitle} (by ${safeAuthor})`;
-            let finalFileName = `${baseName}.${ext}`;
+              let baseName = `${safeTitle} (by ${safeAuthor})`;
+              let finalFileName = `${baseName}.${ext}`;
 
-            let counter = 1;
-            while (allItems.some(item => item.name === finalFileName)) {
-                finalFileName = `${baseName} (${counter}).${ext}`;
-                counter++;
-            }
+              let counter = 1;
+              while (allItems.some(item => item.name === finalFileName)) {
+                  finalFileName = `${baseName} (${counter}).${ext}`;
+                  counter++;
+              }
 
-            const toBase64 = file => new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result.split(',')[1]);
-                reader.onerror = error => reject(error);
-            });
+              const toBase64 = file => new Promise((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.readAsDataURL(file);
+                  reader.onload = () => resolve(reader.result.split(',')[1]);
+                  reader.onerror = error => reject(error);
+              });
 
-            const base64Content = await toBase64(file);
-            uploadEls.status.textContent = "Uploading to servers...";
-            
-            const payload = {
-                fileName: finalFileName,
-                fileContent: base64Content,
-                author: safeAuthor, 
-                isAi: uploadEls.aiCheck.checked,
-                token: turnstileToken 
-            };
+              const base64Content = await toBase64(file);
+              uploadEls.status.textContent = "Uploading to servers...";
+              
+              const payload = {
+                  fileName: finalFileName,
+                  fileContent: base64Content,
+                  author: safeAuthor, 
+                  isAi: uploadEls.aiCheck.checked,
+                  token: turnstileToken
+              };
 
-            const response = await fetch(`${API_URL}?type=upload`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+              const response = await fetch(`${API_URL}?type=upload`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload)
+              });
 
-            const result = await response.json();
+              const result = await response.json();
 
-            if (!response.ok) {
-                throw new Error(result.error || "Upload failed");
-            }
+              if (!response.ok) {
+                  throw new Error(result.error || "Upload failed");
+              }
 
-            showPopup("Upload successful!", "success");
-            toggleOverlay(uploadEls.overlay, false);
-            uploadEls.form.reset();
-            cleanupTurnstile();
-            uploadEls.drop.classList.remove('has-file');
-            uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
-            uploadEls.aiBtn.classList.remove('active-ai');
-            uploadEls.author.classList.remove('input-error');
-            
-            if (window.turnstile) window.turnstile.reset(); 
+              showPopup("Upload successful!", "success");
+              toggleOverlay(uploadEls.overlay, false);
+              
+              uploadEls.form.reset();
+              uploadEls.drop.classList.remove('has-file');
+              uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
+              uploadEls.aiBtn.classList.remove('active-ai');
+              uploadEls.author.classList.remove('input-error');
+              
+              if (window.turnstile) turnstile.reset();
+              turnstileToken = null;
 
-        } catch (err) {
-            console.error(err);
-            showPopup(err.message, "error");
-        } finally {
-            uploadEls.submit.classList.remove('btn-loading');
-            uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
-            uploadEls.status.textContent = "";
-        }
+          } catch (err) {
+              console.error(err);
+              showPopup(err.message, "error");
+              
+              if (window.turnstile) turnstile.reset();
+              turnstileToken = null;
+              
+          } finally {
+              uploadEls.submit.classList.remove('btn-loading');
+              uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
+              uploadEls.status.textContent = "";
+          }
       };
   </script>
 </body>
