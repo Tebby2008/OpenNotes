@@ -84,15 +84,17 @@
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; margin: 0; }
+    html { height: 100%; }
     
     body {
       background: var(--bg); color: var(--text);
       font-family: var(--font);
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      min-height: 100%; margin: 0;
       transition: background var(--speed) ease, color var(--speed) ease;
     }
+    
 
     body::before {
       content: ''; position: fixed; inset: 0; z-index: -1;
@@ -102,9 +104,14 @@
     }
     @keyframes pan { from { transform: scale(1); } to { transform: translate(5%, -5%) scale(1.1); } }
 
+    input, button, textarea, select {
+        font-family: var(--font);
+    }
+
     .material-symbols-rounded {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       font-size: 20px; display: inline-flex; align-items: center; justify-content: center;
+      line-height: 0; color: transparent; width: 1em; height: 1em; color: currentColor; text-shadow: none;
     }
 
     header { padding: 4rem 1.5rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; }
@@ -193,15 +200,24 @@
     .list { display: flex; flex-direction: column; gap: 16px; }
 
     .card, .row {
-      --glow-op: 0; --glow-x: 50%; --glow-y: 50%;
-      position: relative; background: var(--panel-glass-strong);
-      border: 1px solid var(--border); border-radius: var(--radius);
-      box-shadow: var(--shadow); overflow: hidden;
-      cursor: pointer; opacity: 0; transform-origin: bottom center;
-      transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
-      animation: popUp 0.6s var(--ease) forwards;
+        --glow-op: 0; --glow-x: 50%; --glow-y: 50%;
+        position: relative; background: var(--panel-glass-strong);
+        border: 1px solid var(--border); border-radius: var(--radius);
+        box-shadow: var(--shadow); overflow: hidden;
+        cursor: pointer; opacity: 0; transform-origin: bottom center;
+        transition: transform var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
+        animation: popIn 0.6s var(--ease) forwards; 
     }
-    @keyframes popUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes popIn { 
+        from { 
+            opacity: 0; 
+            transform: translateY(30px) scale(0.9); 
+        } 
+        to { 
+            opacity: 1; 
+            transform: translateY(0) scale(1);
+        } 
+    }
     
     .card::before, .row::before {
       content: ''; position: absolute; inset: 0;
@@ -317,8 +333,9 @@
     .back:hover { transform: scale(1.05); box-shadow: var(--shadow-lg); }
 
     .overlay-content { padding: 40px; overflow-y: auto; line-height: 1.6; font-size: 1.05rem; color: var(--text-sec); }
-    .overlay-content h1, .overlay-content h2 { color: var(--text); margin-top: 1em; }
+    .overlay-content h1, .overlay-content h2, .overlay-content h3 { color: var(--text); margin-top: 1em; }
     .overlay-content a { color: var(--accent); }
+    .overlay-content h1:first-child { margin-top: 0; }
 
     footer { padding: 24px; display: flex; justify-content: space-between; align-items: center; margin-top: auto; font-size: 14px; font-weight: 500; color: var(--text-muted); }
     footer .left, footer .right { display: flex; gap: 24px; align-items: center; }
@@ -329,7 +346,7 @@
 
     .upload-viewer {
         display: flex; flex-direction: column; 
-        max-width: 600px; height: auto; max-height: 90vh;
+        max-width: 900px; height: auto; max-height: 90vh;
         background: var(--panel); 
         padding: 0;
     }
@@ -451,15 +468,15 @@
          .dark-mode .back { background: rgba(255,255,255,0.1); }
         .back:hover { transform: scale(1.05); }
 
-        .styled-btn span:last-child, .back span:last-child { display: none; }
+        .styled-btn:not(#submitUploadBtn) span:last-child, .back span:last-child { display: none; }
         
-        .styled-btn {
+        .styled-btn:not(#submitUploadBtn) {
             width: 44px; height: 44px;
             padding: 0;
             border-radius: 50%;
             justify-content: center;
         }
-        
+                
         .sub-actions { gap: 12px; display: contents; }
         .sub-actions > * { padding: 0; flex: unset; width: 44px; height: 44px; border-radius: 50%; }
         
@@ -715,7 +732,10 @@
         document.body.style.overflow = state ? 'hidden' : '';
         el.setAttribute("aria-hidden", !state);
         state ? el.classList.add("open") : el.classList.remove("open");
-        if (!state) history.replaceState({}, '', '#');
+        
+        if (!state) {
+          history.replaceState(null, null, window.location.pathname + window.location.search);
+        }
       };
       const showPopup = (msg, type = 'success') => {
         const icon = els.popup.querySelector('.material-symbols-rounded');
@@ -766,7 +786,7 @@
         list.forEach((it, i) => {
           const el = document.createElement("article");
           el.className = viewMode === "grid" ? "card" : "row";
-          el.style.animationDelay = `${i * 30}ms`;
+          el.style.animationDelay = `${500*(1-Math.pow(0.9, i))}ms`;
           const authHtml = (it.user && it.user.toLowerCase()==='tebby2008') 
             ? `Chenyu Li <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>` 
             : DOMPurify.sanitize(it.auth, {USE_PROFILES:{html:false}});
@@ -801,10 +821,30 @@
           el.onclick = () => openOverlay(it);
           els.container.appendChild(el);
         });
+
+        const isOverlayOpen = els.overlay.classList.contains("open") || 
+                        els.infoOver.classList.contains("open") || 
+                        (uploadEls && uploadEls.overlay.classList.contains("open"));
+
+        if (!isOverlayOpen) {
+          const query = els.search.value.trim();
+          const url = new URL(window.location);
+          
+          if (query) {
+            url.searchParams.set('q', query);
+          } else {
+            url.searchParams.delete('q'); 
+          }
+
+          if (url.search !== window.location.search) {
+            history.replaceState(null, '', url);
+          }
+        }
+
       }
 
       function openOverlay(it) {
-        history.pushState({ note: it }, '', `#Notes/${encodeURIComponent(it.name)}`);
+        history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
         toggleOverlay(els.overlay, true);
         els.ovTitle.textContent = it.title.replace(/\(AI\)$/, '');
         els.ovFmt.textContent = it.fmt.toUpperCase();
@@ -832,7 +872,7 @@
       async function openInfo(md) {
         history.pushState({ info: md }, '', `#/${md.split('/').pop()}`);
         toggleOverlay(els.infoOver, true);
-        els.infoCont.innerHTML = "Loading...";
+        els.infoCont.innerHTML = "";
         try {
             const r = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${md}`);
             els.infoCont.innerHTML = DOMPurify.sanitize(marked.parse(await r.text()));
@@ -896,9 +936,30 @@
       }
 
       window.onpopstate = (e) => {
-          if(e.state?.note) openOverlay(e.state.note);
-          else if(e.state?.info) openInfo(e.state.info);
-          else { toggleOverlay(els.overlay,false); toggleOverlay(els.infoOver,false); }
+          toggleOverlay(els.overlay, false);
+          toggleOverlay(els.infoOver, false);
+          toggleOverlay(uploadEls.overlay, false);
+
+          const params = new URLSearchParams(window.location.search);
+          const query = params.get('q');
+          
+          if (query !== els.search.value) {
+              els.search.value = query || '';
+              render(); 
+          }
+
+          if (e.state?.note) {
+              openOverlay(e.state.note);
+          } else if (e.state?.info) {
+              openInfo(e.state.info);
+          } else if (location.hash === '#/upload') {
+              toggleOverlay(uploadEls.overlay, true);
+          } 
+          else if (location.hash.startsWith('#/notes/')) {
+              const n = decodeURIComponent(location.hash.substr(8));
+              const it = allItems.find(i => i.name === n);
+              if(it) openOverlay(it);
+          }
       };
 
       (async function() {
@@ -909,9 +970,24 @@
             allItems.forEach(i=>{ if(s[i.path]){i.v=s[i.path].views;i.d=s[i.path].downloads} }); 
           }
           fetch(`${API_URL}?type=website`,{method:'POST'}).then(r=>r.json()).then(d=>els.webViews.textContent=d.views).catch(()=>{});
+          const params = new URLSearchParams(window.location.search);
+          if (params.has('q')) {
+              els.search.value = params.get('q');
+          }          
           render();
-          if(location.hash.startsWith('#Notes/')) { const n=decodeURIComponent(location.hash.substr(7)); const it=allItems.find(i=>i.name===n); if(it) openOverlay(it); }
-          else if(location.hash.endsWith('.md')) openInfo(`resources/${location.hash.substr(2)}`);
+
+          if(location.hash.startsWith('#/notes/')) { 
+              const n=decodeURIComponent(location.hash.substr(8)); 
+              const it=allItems.find(i=>i.name===n); 
+              if(it) openOverlay(it); 
+          }
+          else if(location.hash.endsWith('.md')) {
+              openInfo(`resources/${location.hash.substr(2)}`);
+          }
+          else if(location.hash === '#/upload') {
+              toggleOverlay(uploadEls.overlay, true);
+          }
+
         } catch(e) { els.container.innerHTML="<p>Failed to load.</p>"; }
       })();
 
@@ -934,6 +1010,7 @@
 
       uploadEls.btn.onclick = (e) => { 
           e.preventDefault(); 
+          history.pushState({ upload: true }, '', '#/upload');
           toggleOverlay(uploadEls.overlay, true); 
       };
       uploadEls.back.onclick = () => toggleOverlay(uploadEls.overlay, false);
