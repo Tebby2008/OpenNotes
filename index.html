@@ -643,7 +643,7 @@
                 </label>
             </div>
 
-            <div class="cf-turnstile" style="margin-bottom: 16px;"></div>
+            <div class="turnstile-wrapper" style="margin-bottom: 16px;"></div>
 
             <button type="submit" id="submitUploadBtn" class="styled-btn download-accent" style="width:100%; justify-content:center; margin-top:16px;">
                 <span class="material-symbols-rounded">upload</span>
@@ -1098,12 +1098,22 @@
           history.pushState({ upload: true }, '', '#/upload');
           toggleOverlay(uploadEls.overlay, true); 
 
-          const container = document.querySelector('.cf-turnstile');
-          if(container) container.innerHTML = '';
+          const wrapper = document.getElementById('turnstile-wrapper');
+          
+          wrapper.innerHTML = ''; 
+
+          const newContainer = document.createElement('div');
+          newContainer.id = 'turnstile-fresh-container'; 
+          wrapper.appendChild(newContainer);
 
           setTimeout(() => {
               if (window.turnstile) {
-                  turnstileWidgetId = window.turnstile.render('.cf-turnstile', {
+                  if (turnstileWidgetId !== null) {
+                      try { window.turnstile.remove(turnstileWidgetId); } catch(e) {}
+                      turnstileWidgetId = null;
+                  }
+
+                  turnstileWidgetId = window.turnstile.render('#turnstile-fresh-container', {
                       sitekey: '0x4AAAAAACGcLC657zYbkp6o',
                       theme: 'light',
                       callback: function(token) {
@@ -1111,9 +1121,8 @@
                       }
                   });
               }
-          }, 100); 
+          }, 150);
       };
-
 
       uploadEls.back.onclick = () => {
           toggleOverlay(uploadEls.overlay, false);
