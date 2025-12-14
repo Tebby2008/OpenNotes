@@ -1,7 +1,7 @@
 
 # Terms of Service & Privacy Policy
 
-<i>Last Updated: December 13th, 2025 @ 20:00 UTC</i>
+<i>Last Updated: December 14th, 2025 @ 04:30 UTC</i>
 
 Any access or use of the <b>OpenNotes</b> \(the "<b>Platform</b>"\) service constitutes to a user acceptance to the following terms\.  Please do not use the <b>Platform</b> if you do not accept these terms\.
 
