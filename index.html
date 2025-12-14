@@ -1089,27 +1089,50 @@
           aiCheck: document.getElementById('upAiCheck'),
           submit: document.getElementById('submitUploadBtn'),
           status: document.getElementById('uploadStatus'),
-          turnstileWidgetId: null
       };
+
+      let turnstileWidgetId = null;
 
       uploadEls.btn.onclick = (e) => { 
           e.preventDefault(); 
           history.pushState({ upload: true }, '', '#/upload');
           toggleOverlay(uploadEls.overlay, true); 
-          if (window.turnstile && uploadEls.turnstileWidgetId === null) {
-              uploadEls.turnstileWidgetId = window.turnstile.render('.cf-turnstile', {
-                  sitekey: '0x4AAAAAACGcLC657zYbkp6o',
-                  theme: 'light',
-                  callback: function(token) {
-                      console.log('Challenge Solved');
-                  },
-                  'expired-callback': function() {
-                  }
-              });
+
+          const container = document.querySelector('.cf-turnstile');
+          if(container) container.innerHTML = '';
+
+          setTimeout(() => {
+              if (window.turnstile) {
+                  turnstileWidgetId = window.turnstile.render('.cf-turnstile', {
+                      sitekey: '0x4AAAAAACGcLC657zYbkp6o',
+                      theme: 'light',
+                      callback: function(token) {
+                          console.log('Challenge Solved');
+                      }
+                  });
+              }
+          }, 100); 
+      };
+
+
+      uploadEls.back.onclick = () => {
+          toggleOverlay(uploadEls.overlay, false);
+          
+          if (window.turnstile && turnstileWidgetId !== null) {
+              window.turnstile.remove(turnstileWidgetId);
+              turnstileWidgetId = null;
           }
       };
-      uploadEls.back.onclick = () => toggleOverlay(uploadEls.overlay, false);
-      uploadEls.overlay.onclick = (e) => { if(e.target===uploadEls.overlay) toggleOverlay(uploadEls.overlay,false); };
+
+      uploadEls.overlay.onclick = (e) => { 
+          if(e.target === uploadEls.overlay) {
+              toggleOverlay(uploadEls.overlay, false);
+              if (window.turnstile && turnstileWidgetId !== null) {
+                  window.turnstile.remove(turnstileWidgetId);
+                  turnstileWidgetId = null;
+              }
+          }
+      };
 
       uploadEls.aiBtn.onclick = () => {
           uploadEls.aiCheck.checked = !uploadEls.aiCheck.checked;
