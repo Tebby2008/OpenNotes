@@ -674,6 +674,7 @@
   <script>
       const REPO_OWNER = "Tebby2008", REPO_NAME = "OpenNotes", BRANCH = "main", API_URL = "https://open-notes.tebby2008-li.workers.dev";
       const owner = window.__owner || REPO_OWNER, repo = window.__repo || REPO_NAME;
+      let verifiedAuthors = {}; 
       let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="updated-desc", currentFormat="all";
 
       const els = {
@@ -716,6 +717,25 @@
           localStorage.setItem('openNotesDarkMode', d);
           els.themeTog.querySelector('span').textContent = d ? 'light_mode' : 'dark_mode';
       });
+
+      const escapeHtml = (unsafe) => {
+          if (typeof unsafe !== 'string') return '';
+          return unsafe
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+      };
+
+      const isValidUrl = (urlString) => {
+          try {
+              const url = new URL(urlString);
+              return url.protocol === "http:" || url.protocol === "https:";
+          } catch (e) {
+              return false;
+          }
+      };
 
       const updateView = () => {
         if (viewMode === 'grid') {
@@ -762,16 +782,43 @@
       async function fetchNotes() {
         const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`);
         if (!res.ok) throw new Error("Metadata failed");
-        return (await res.json()).map(m => ({
-          name: m.name, title: m.name.replace(/\.[^/.]+$/, ""), path: m.path,
-          dl: m.download_url, thumb: m.thumbnail_url, fmt: (m.name.split('.').pop()||"").toLowerCase(),
-          upd: m.last_updated, auth: m.author, user: m.author_username,
-          ai: m.is_ai_generated, v: 0, d: 0
-        })).filter(i => i.fmt === "pdf" || i.fmt === "docx");
+        
+        const data = await res.json();
+        
+        return data.map(m => {
+          const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
+          const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
+
+          return {
+            name: m.name, 
+            title: m.name.replace(/\.[^/.]+$/, ""), 
+            path: m.path,
+            dl: safeDl,
+            thumb: safeThumb, 
+            fmt: (m.name.split('.').pop()||"").toLowerCase(),
+            upd: m.last_updated, 
+            auth: m.author, 
+            user: m.author_username,
+            ai: m.is_ai_generated, 
+            v: 0, 
+            d: 0
+          };
+        }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl);
       }
 
       function render() {
+        const escapeHtml = (str) => {
+          if (!str) return '';
+          return String(str)
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;")
+              .replace(/'/g, "&#039;");
+        };
+
         const q = els.search.value.trim().toLowerCase();
+        
         let list = allItems.filter(x => (showAI || !x.ai) && (currentFormat === "all" || x.fmt === currentFormat) && x.title.toLowerCase().includes(q));
         
         list.sort((a,b) => {
@@ -783,21 +830,30 @@
         });
 
         els.container.innerHTML = ""; els.container.className = viewMode;
+        
         list.forEach((it, i) => {
           const el = document.createElement("article");
           el.className = viewMode === "grid" ? "card" : "row";
           el.style.animationDelay = `${500*(1-Math.pow(0.9, i))}ms`;
-          const authHtml = (it.user && it.user.toLowerCase()==='tebby2008') 
-            ? `Chenyu Li <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>` 
-            : DOMPurify.sanitize(it.auth, {USE_PROFILES:{html:false}});
-            
+
+          const rawTitle = it.title.replace(/\(AI\)$/, '');
+          const safeTitle = escapeHtml(rawTitle);
+
+          let authHtml;
+          if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
+              const displayName = verifiedAuthors[it.user] || it.user;
+              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+          } else {
+              authHtml = escapeHtml(it.auth);
+          }
+                  
           el.innerHTML = `
             <div class="thumb">
               <img draggable="false" src="${it.thumb}" loading="lazy" onerror="this.style.display='none'">
               ${viewMode==='grid'?`<span class="fmt-badge fmt-${it.fmt}">${it.fmt.toUpperCase()}</span>`:''}
             </div>
             ${viewMode==='grid'? `<div class="body">
-              <div class="title-line">${it.title.replace(/\(AI\)$/, '')}</div>
+              <div class="title-line">${safeTitle}</div>
               <div class="meta">
                 <span class="author-line">${authHtml}</span>
                 ${it.ai?`<span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>`:''}
@@ -808,14 +864,14 @@
                 <span class="stat"><span class="material-symbols-rounded">download</span> <span data-d>${it.d}</span></span>
               </div>
             </div>` : `<div class="main">
-               <div class="cell"><div class="title-line">${it.title.replace(/\(AI\)$/, '')}</div></div>
-               <div class="cell">${authHtml} ${it.ai?`<span class="ai-tag" style="margin-left:4px"><span class="material-symbols-rounded" style="font-size:12px">auto_awesome</span>AI</span>`:''}</div>
-               <div class="cell">${fmtDate(it.upd)}</div>
-               <div class="cell"><span class="pill">${it.fmt.toUpperCase()}</span></div>
+              <div class="cell"><div class="title-line">${safeTitle}</div></div>
+              <div class="cell">${authHtml} ${it.ai?`<span class="ai-tag" style="margin-left:4px"><span class="material-symbols-rounded" style="font-size:12px">auto_awesome</span>AI</span>`:''}</div>
+              <div class="cell">${fmtDate(it.upd)}</div>
+              <div class="cell"><span class="pill">${it.fmt.toUpperCase()}</span></div>
             </div>
             <div class="right-end" style="display:flex;gap:16px;padding-right:12px;color:var(--text-muted)">
-               <span class="stat"><span class="material-symbols-rounded">visibility</span> ${it.v}</span>
-               <span class="stat"><span class="material-symbols-rounded">download</span> ${it.d}</span>
+              <span class="stat"><span class="material-symbols-rounded">visibility</span> ${it.v}</span>
+              <span class="stat"><span class="material-symbols-rounded">download</span> ${it.d}</span>
             </div>`}
           `;
           el.onclick = () => openOverlay(it);
@@ -840,33 +896,57 @@
             history.replaceState(null, '', url);
           }
         }
-
       }
-
       function openOverlay(it) {
         history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
         toggleOverlay(els.overlay, true);
-        els.ovTitle.textContent = it.title.replace(/\(AI\)$/, '');
+        
+        els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
+        
         els.ovFmt.textContent = it.fmt.toUpperCase();
         els.ovFmt.style.background = it.fmt==='pdf'?'var(--bg-pdf)':'var(--bg-docx)';
         els.ovFmt.style.color = it.fmt==='pdf'?'var(--c-pdf)':'var(--c-docx)';
         
-        const authHtml = (it.user && it.user.toLowerCase()==='tebby2008') 
-            ? `Chenyu Li <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>` 
-            : DOMPurify.sanitize(it.auth, {USE_PROFILES:{html:false}});
+        if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
+            const displayName = verifiedAuthors[it.user] || it.user;
+            els.ovAuth.innerHTML = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+        } else {
+            els.ovAuth.textContent = it.auth;
+        }
+        
+        if(it.ai) {
+            const aiSpan = document.createElement('span');
+            aiSpan.className = 'ai-tag';
+            aiSpan.innerHTML = '<span class="material-symbols-rounded">auto_awesome</span>AI';
+            els.ovAuth.appendChild(document.createTextNode(" "));
+            els.ovAuth.appendChild(aiSpan);
+        }
 
         els.ovDate.textContent = fmtDate(it.upd);
-        els.ovAuth.innerHTML = `${authHtml}${it.ai?` <span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>`:''}`;
-        els.ovRaw.href = els.frame.src = `view.html?file=${encodeURIComponent(it.dl)}`;
+        
+        if (it.dl && isValidUrl(it.dl)) {
+            els.ovRaw.href = els.frame.src = `view.html?file=${encodeURIComponent(it.dl)}`;
+            els.ovDown.onclick = () => {
+              updateCounter(it.path, 'downloads').then(d => { if(d){ it.v=d.views; it.d=d.downloads; els.ovView.textContent=d.views; els.ovDl.textContent=d.downloads; render(); }});
+              const a = document.createElement("a"); 
+              a.href=it.dl; 
+              a.download=it.name; 
+              document.body.appendChild(a); 
+              a.click(); 
+              a.remove();
+            };
+            els.ovRaw.style.display = 'flex';
+            els.ovDown.style.display = 'flex';
+        } else {
+            els.frame.src = 'about:blank';
+            els.ovRaw.style.display = 'none';
+            els.ovDown.style.display = 'none';
+        }
         
         els.ovView.textContent = it.v; els.ovDl.textContent = it.d;
         updateCounter(it.path, 'views').then(d => { if(d){ it.v=d.views; it.d=d.downloads; els.ovView.textContent=d.views; els.ovDl.textContent=d.downloads; render(); }});
         
         els.ovShare.onclick = () => { navigator.clipboard.writeText(window.location.href).then(()=>showPopup('Link copied', 'success')).catch(()=>{}); };
-        els.ovDown.onclick = () => {
-          updateCounter(it.path, 'downloads').then(d => { if(d){ it.v=d.views; it.d=d.downloads; els.ovView.textContent=d.views; els.ovDl.textContent=d.downloads; render(); }});
-          const a = document.createElement("a"); a.href=it.dl; a.download=it.name; document.body.appendChild(a); a.click(); a.remove();
-        };
       }
 
       async function openInfo(md) {
@@ -964,6 +1044,10 @@
 
       (async function() {
         try {
+          try {
+              const authRes = await fetch(`${API_URL}?type=authors`);
+              if(authRes.ok) verifiedAuthors = await authRes.json();
+          } catch(e) { console.error("Failed to load verified authors", e); }
           allItems = await fetchNotes();
           const ids = allItems.map(i=>i.path);
           if(ids.length) { const s = await async function(){ try{return await(await fetch(`${API_URL}?type=stats&noteIds=${ids.join(':')}`)).json()}catch{return{}} }(); 
