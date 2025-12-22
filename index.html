@@ -345,7 +345,73 @@
     .styled-btn:hover { transform: translateY(-2px); background: var(--border-soft); }
     .styled-btn.download-accent { background: var(--accent); color: white; box-shadow: 0 4px 14px var(--accent-glow); }
     .styled-btn.download-accent:hover { background: var(--accent-hover); box-shadow: 0 6px 20px var(--accent-glow); }
-    .sub-actions { display: flex; gap: 12px; } .sub-actions > * { flex: 1; font-size: 0.9rem; padding: 12px; }
+    .sub-actions { display: flex; gap: 12px; align-items: center; } .sub-actions > * { flex: 1; font-size: 0.9rem; padding: 12px; }
+
+    .morph-wrap {
+        position: relative;
+        width: 44px; 
+        height: 44px;
+        z-index: 10;
+    }
+
+    .morph-btn {
+        position: absolute;
+        top: 0; right: 0;
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        background: var(--bg);
+        color: var(--text-sec);
+        border: 1px solid var(--border-soft);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        overflow: hidden;
+        transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                    height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+                    border-radius 0.4s ease,
+                    background-color 0.3s ease,
+                    box-shadow 0.3s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .morph-btn:hover { background: var(--border-soft); color: var(--text); }
+    .morph-btn .icon-state { transition: opacity 0.2s; position: absolute; }
+
+    .morph-btn.expanded {
+        width: 200px;
+        height: 110px;
+        border-radius: 20px;
+        background: var(--panel);
+        border-color: var(--border);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        cursor: default;
+        z-index: 100;
+    }
+
+    .morph-content {
+        opacity: 0;
+        pointer-events: none;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        width: 100%; height: 100%;
+        transition: opacity 0.3s 0.1s;
+    }
+
+    .morph-btn.expanded .morph-content {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    .morph-btn.expanded .icon-state { opacity: 0; }
+
+    .confirm-action-btn {
+        background: #ef4444; color: white;
+        border: none; padding: 6px 16px; border-radius: 99px;
+        font-weight: 700; font-size: 0.85rem;
+        margin-top: 8px; cursor: pointer;
+        display: flex; align-items: center; gap: 6px;
+        transition: 0.2s;
+    }
+    .confirm-action-btn:hover { background: #dc2626; transform: scale(1.05); }
+
+    .logout-morph .confirm-action-btn { background: var(--text); color: var(--bg); }
 
     .popup-notification {
       position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
@@ -850,50 +916,54 @@
       };
       
       async function fetchNotes() {
-        const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`);
-        if (!res.ok) throw new Error("Metadata failed");
-        const data = await res.json();
-        
-        const ids = data.map(m => m.path).join(':'); 
-        
-        let statsRes = {};
-        try {
-            const s = await fetch(`${API_URL}?type=stats&noteIds=${encodeURIComponent(ids)}`);
-            if (s.ok) statsRes = await s.json();
-        } catch(e) {}
-        
-        const isNewFormat = statsRes.views && typeof statsRes.views === 'object';
-
-        return data.map(m => {
-          const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
-          const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
+          // 1. Fetch GitHub Metadata (The List of Files)
+          const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`);
+          if (!res.ok) throw new Error("Metadata failed");
+          const data = await res.json();
           
-          const cleanKey = m.name;
+          // 2. Fetch ALL Dynamic Data (Stats, Website Views, Ownership) in ONE request
+          let statsData = { views: {}, downloads: {}, site_views: 0, owned_notes: [] };
           
-          let v = 0, d = 0;
-          if (isNewFormat) {
-             v = parseInt(statsRes.views[cleanKey]) || 0;
-             d = parseInt(statsRes.downloads[cleanKey]) || 0;
-          } else if (statsRes[cleanKey]) {
-             v = statsRes[cleanKey].views;
-             d = statsRes[cleanKey].downloads;
-          }
+          try {
+              const headers = {};
+              if (currentUser) {
+                  headers['Authorization'] = `Bearer ${currentUser.token}`;
+              }
 
-          return {
-            name: m.name, 
-            title: m.name.replace(/\.[^/.]+$/, ""), 
-            path: m.path,
-            dl: safeDl,
-            thumb: safeThumb, 
-            fmt: (m.name.split('.').pop()||"").toLowerCase(),
-            upd: m.last_updated, 
-            auth: m.author, 
-            user: m.author_username,
-            ai: m.is_ai_generated, 
-            v: v, 
-            d: d
-          };
-        }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl);
+              const s = await fetch(`${API_URL}?type=init`, { headers });
+              if (s.ok) {
+                  statsData = await s.json();
+                  
+                  // Update Global Variables immediately
+                  els.webViews.textContent = statsData.site_views;
+                  ownedNotes = statsData.owned_notes || []; // Update the owned list for the delete button logic
+              }
+          } catch(e) { console.error("Stats fetch failed", e); }
+          
+          // 3. Merge Data
+          return data.map(m => {
+              const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
+              const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
+              
+              // Clean key matches how you store it in Redis (usually filename without "Notes/" prefix)
+              const cleanKey = m.name; 
+              
+              return {
+              name: m.name, 
+              title: m.name.replace(/\.[^/.]+$/, ""), 
+              path: m.path,
+              dl: safeDl,
+              thumb: safeThumb, 
+              fmt: (m.name.split('.').pop()||"").toLowerCase(),
+              upd: m.last_updated, 
+              auth: m.author, 
+              user: m.author_username,
+              ai: m.is_ai_generated, 
+              // Map stats directly
+              v: parseInt(statsData.views[cleanKey]) || 0, 
+              d: parseInt(statsData.downloads[cleanKey]) || 0
+              };
+          }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl);
       }
 
       
@@ -992,104 +1062,164 @@
         }
       }
       function openOverlay(it) {
-        history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
-        toggleOverlay(els.overlay, true);
-        
-        els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
-        
-        els.ovFmt.textContent = it.fmt.toUpperCase();
-        els.ovFmt.style.background = it.fmt==='pdf'?'var(--bg-pdf)':'var(--bg-docx)';
-        els.ovFmt.style.color = it.fmt==='pdf'?'var(--c-pdf)':'var(--c-docx)';
-        
+          history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
+          toggleOverlay(els.overlay, true);
+          
+          els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
+          els.ovFmt.textContent = it.fmt.toUpperCase();
+          els.ovFmt.style.background = it.fmt==='pdf'?'var(--bg-pdf)':'var(--bg-docx)';
+          els.ovFmt.style.color = it.fmt==='pdf'?'var(--c-pdf)':'var(--c-docx)';
+          
+          const oldWrap = document.getElementById('morphDeleteWrap');
+          if(oldWrap) oldWrap.remove();
 
-        const existingDel = document.getElementById('ovDelete');
-        if(existingDel) existingDel.remove();
+          const isOwner = ownedNotes.includes(it.name);
 
-        if (currentUser) {
-            const delBtn = document.createElement('button');
-            delBtn.id = 'ovDelete';
-            delBtn.className = 'styled-btn';
-            delBtn.style.cssText = "background: #fef2f2; color: #ef4444; margin-top:10px;";
-            delBtn.innerHTML = '<span class="material-symbols-rounded">delete</span> <span>Delete Note</span>';
-            delBtn.onclick = async () => {
-                if(!confirm("Are you sure? This cannot be undone.")) return;
-                delBtn.innerText = "Deleting...";
-                try {
-                    const res = await fetch(`${API_URL}?type=delete`, {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${currentUser.token}` },
-                        body: JSON.stringify({ fileName: it.name })
-                    });
-                    if(res.ok) {
-                        showPopup("Deleted successfully");
-                        setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        const err = await res.json();
-                        showPopup(err.error || "Delete failed", "error");
-                        delBtn.innerHTML = '<span class="material-symbols-rounded">delete</span> <span>Delete Note</span>';
-                    }
-                } catch(e) { showPopup("Error deleting", "error"); }
-            };
-            els.ovDown.parentNode.insertBefore(delBtn, els.ovDown);
-        }
+          if (currentUser && isOwner) {
+              const wrap = document.createElement('div');
+              wrap.id = 'morphDeleteWrap';
+              wrap.className = 'morph-wrap';
+              wrap.innerHTML = `
+                  <div class="morph-btn" id="deleteMorphBtn">
+                      <span class="material-symbols-rounded icon-state" style="color:#ef4444">delete</span>
+                      <div class="morph-content">
+                          <div style="font-weight:600; font-size:0.9rem; color:var(--text)">Are you sure?</div>
+                          <button class="confirm-action-btn" id="realDeleteBtn">
+                              <span class="material-symbols-rounded" style="font-size:16px">delete</span> Yes
+                          </button>
+                      </div>
+                  </div>`;
+              
+              // C. Insert into the sub-actions row (beside Share/Raw)
+              const subActions = document.querySelector('.sub-actions');
+              subActions.appendChild(wrap);
 
-        if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
-            const displayName = verifiedAuthors[it.user] || it.user;
-            els.ovAuth.innerHTML = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
-        } else {
-            els.ovAuth.textContent = it.auth;
-        }
-        
-        if(it.ai) {
-            const aiSpan = document.createElement('span');
-            aiSpan.className = 'ai-tag';
-            aiSpan.innerHTML = '<span class="material-symbols-rounded">auto_awesome</span>AI';
-            els.ovAuth.appendChild(document.createTextNode(" "));
-            els.ovAuth.appendChild(aiSpan);
-        }
+              // D. Add Event Listeners for Morphing
+              setTimeout(() => {
+                  const btn = document.getElementById('deleteMorphBtn');
+                  const realDel = document.getElementById('realDeleteBtn');
+                  
+                  if (btn && realDel) {
+                      // Expand logic
+                      btn.onclick = (e) => {
+                          // If clicking the "Yes" button, let it bubble up
+                          if (e.target.closest('#realDeleteBtn')) return; 
+                          
+                          // If not expanded, expand it
+                          if (!btn.classList.contains('expanded')) {
+                              btn.classList.add('expanded');
+                              
+                              // Click outside to close
+                              const close = (evt) => {
+                                  if(!btn.contains(evt.target)) {
+                                      btn.classList.remove('expanded');
+                                      document.removeEventListener('click', close);
+                                  }
+                              };
+                              setTimeout(() => document.addEventListener('click', close), 0);
+                          }
+                      };
 
-        els.ovDate.textContent = fmtDate(it.upd);
-        
-        if (it.dl && isValidUrl(it.dl)) {
-            els.ovRaw.href = els.frame.src = `view.html?file=${encodeURIComponent(it.dl)}`;
-            els.ovDown.onclick = () => {
-              updateCounter(it.path, 'downloads').then(d => { 
-                  if(d) { 
-                      if (d.views !== undefined) it.v = d.views;
-                      if (d.downloads !== undefined) it.d = d.downloads;
-                      els.ovView.textContent = it.v; 
-                      els.ovDl.textContent = it.d; 
-                      render(); 
+                      // Real Delete API Call
+                      realDel.onclick = async () => {
+                          realDel.innerHTML = '...';
+                          try {
+                              const res = await fetch(`${API_URL}?type=delete`, {
+                                  method: 'POST',
+                                  headers: { 'Authorization': `Bearer ${currentUser.token}` },
+                                  body: JSON.stringify({ fileName: it.name })
+                              });
+
+                              if(res.ok) {
+                                  showPopup("Deleted successfully");
+                                  setTimeout(() => window.location.reload(), 1500);
+                              } else {
+                                  const err = await res.json();
+                                  showPopup(err.error || "Delete failed", "error");
+                                  realDel.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px">close</span> Retry';
+                              }
+                          } catch(e) { 
+                              showPopup("Error deleting", "error"); 
+                              realDel.innerHTML = 'Error';
+                          }
+                      };
                   }
-              });
-              const a = document.createElement("a"); 
-              a.href=it.dl; 
-              a.download=it.name; 
-              document.body.appendChild(a); 
-              a.click(); 
-              a.remove();
-            };
-            els.ovRaw.style.display = 'flex';
-            els.ovDown.style.display = 'flex';
-        } else {
-            els.frame.removeAttribute('src');
-            els.ovRaw.style.display = 'none';
-            els.ovDown.style.display = 'none';
-        }
-        
-        els.ovView.textContent = it.v; els.ovDl.textContent = it.d;
-        updateCounter(it.path, 'views').then(d => { 
-            if(d) {
-                if (d.views !== undefined) it.v = d.views;
-                if (d.downloads !== undefined) it.d = d.downloads;
-                
-                els.ovView.textContent = it.v; 
-                els.ovDl.textContent = it.d; 
-                render(); 
-            }
-        });
-        
-        els.ovShare.onclick = () => { navigator.clipboard.writeText(window.location.href).then(()=>showPopup('Link copied', 'success')).catch(()=>{}); };
+              }, 50);
+          }
+
+          // 4. Author & AI Tags
+          if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
+              const displayName = verifiedAuthors[it.user] || it.user;
+              els.ovAuth.innerHTML = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+          } else {
+              els.ovAuth.textContent = it.auth;
+          }
+          
+          if(it.ai) {
+              const aiSpan = document.createElement('span');
+              aiSpan.className = 'ai-tag';
+              aiSpan.innerHTML = '<span class="material-symbols-rounded">auto_awesome</span>AI';
+              els.ovAuth.appendChild(document.createTextNode(" "));
+              els.ovAuth.appendChild(aiSpan);
+          }
+
+          els.ovDate.textContent = fmtDate(it.upd);
+          
+          // 5. Download & View Logic
+          // Reset click handler to avoid stacking listeners
+          els.ovDown.onclick = null; 
+
+          if (it.dl && isValidUrl(it.dl)) {
+              els.ovRaw.href = els.frame.src = `view.html?file=${encodeURIComponent(it.dl)}`;
+              
+              els.ovDown.onclick = () => {
+                  // Update Stats
+                  updateCounter(it.path, 'downloads').then(d => { 
+                      if(d) { 
+                          if (d.views !== undefined) it.v = d.views;
+                          if (d.downloads !== undefined) it.d = d.downloads;
+                          els.ovView.textContent = it.v; 
+                          els.ovDl.textContent = it.d; 
+                          render(); 
+                      }
+                  });
+                  // Trigger Download
+                  const a = document.createElement("a"); 
+                  a.href = it.dl; 
+                  a.download = it.name; 
+                  document.body.appendChild(a); 
+                  a.click(); 
+                  a.remove();
+              };
+              
+              els.ovRaw.style.display = 'flex';
+              els.ovDown.style.display = 'flex';
+          } else {
+              els.frame.removeAttribute('src');
+              els.ovRaw.style.display = 'none';
+              els.ovDown.style.display = 'none';
+          }
+          
+          // 6. Stats & Sharing
+          els.ovView.textContent = it.v; 
+          els.ovDl.textContent = it.d;
+          
+          // Increment View Counter on Open
+          updateCounter(it.path, 'views').then(d => { 
+              if(d) {
+                  if (d.views !== undefined) it.v = d.views;
+                  if (d.downloads !== undefined) it.d = d.downloads;
+                  els.ovView.textContent = it.v; 
+                  els.ovDl.textContent = it.d; 
+                  render(); 
+              }
+          });
+          
+          els.ovShare.onclick = () => { 
+              navigator.clipboard.writeText(window.location.href)
+                  .then(() => showPopup('Link copied', 'success'))
+                  .catch(() => {}); 
+          };
       }
 
       async function openInfo(md) {
@@ -1252,25 +1382,30 @@
 
       uploadEls.btn.onclick = (e) => {
           e.preventDefault();
+          
+          // 1. Check Login
           if (!currentUser) {
               showPopup("Please log in to upload", "error");
-              setTimeout(() => window.location.href = `${API_URL}/auth/login`, 1000);
+              // Trigger Popup Login with 'true' flag for auto-reopen
+              setTimeout(() => triggerLogin(true), 1000); 
               return;
           }
 
+          // 2. Open Upload Overlay
           history.pushState({ upload: true }, '', '#/upload');
           toggleOverlay(uploadEls.overlay, true); 
           
+          // 3. Initialize Turnstile
           if (window.turnstile && turnstileWidgetId === null) {
-             turnstileWidgetId = turnstile.render('#turnstile-widget', {
-                  sitekey: '0x4AAAAAACGcLC657zYbkp6o',
-                  theme: 'auto',
-                  callback: function(token) {
-                      turnstileToken = token;
-                      document.getElementById('turnstile-widget').style.border = 'none';
-                  },
-                  'expired-callback': function() { turnstileToken = null; }
-              });
+              turnstileWidgetId = turnstile.render('#turnstile-widget', {
+                    sitekey: '0x4AAAAAACGcLC657zYbkp6o', // Your Site Key
+                    theme: 'auto',
+                    callback: function(token) {
+                        turnstileToken = token;
+                        document.getElementById('turnstile-widget').style.border = 'none';
+                    },
+                    'expired-callback': function() { turnstileToken = null; }
+                });
           } else if (window.turnstile && turnstileWidgetId !== null) {
               turnstile.reset(turnstileWidgetId);
               turnstileToken = null;
@@ -1456,55 +1591,132 @@
           }
       };
 
-      let currentUser = null; 
+      let currentUser = null;
+      let ownedNotes = []; // Store list of files user owns
 
+      // 1. UPDATED AUTH RENDER (Morphing Logout)
       function renderAuth() {
           if (!currentUser) {
               els.auth.innerHTML = `
-                  <div class="profile-circle" title="Log In" onclick="window.location.href='${API_URL}/auth/login'">
+                  <div class="profile-circle" title="Log In" onclick="triggerLogin()">
                       <div class="icon-default"><span class="material-symbols-rounded">person</span></div>
                       <div class="icon-hover"><span class="material-symbols-rounded">login</span></div>
                   </div>`;
           } else {
+              // Morphing Logout Button Structure
               els.auth.innerHTML = `
-                  <div class="profile-circle" title="Log Out" onclick="logout()">
-                      <img src="${currentUser.picture}" onerror="this.src='resources/icon-square.png'">
-                      <div class="icon-hover"><span class="material-symbols-rounded">logout</span></div>
+                  <div class="morph-wrap logout-morph">
+                      <div class="morph-btn" id="logoutMorphBtn">
+                          <img src="${currentUser.picture}" class="icon-state" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.src='resources/icon-square.png'">
+                          <div class="morph-content">
+                              <div style="font-weight:600; font-size:0.9rem; color:var(--text)">Log out?</div>
+                              <button class="confirm-action-btn" onclick="logout()">
+                                  <span class="material-symbols-rounded" style="font-size:16px">logout</span> Yes
+                              </button>
+                          </div>
+                      </div>
                   </div>`;
+                  
+              // Add click listener for expansion
+              setTimeout(() => {
+                  const btn = document.getElementById('logoutMorphBtn');
+                  if(btn) {
+                      btn.onclick = (e) => {
+                          if (e.target.closest('.confirm-action-btn')) return; // Allow button click
+                          if (!btn.classList.contains('expanded')) {
+                              btn.classList.add('expanded');
+                              // Close on click outside
+                              const close = (evt) => {
+                                  if(!btn.contains(evt.target)) {
+                                      btn.classList.remove('expanded');
+                                      document.removeEventListener('click', close);
+                                  }
+                              };
+                              setTimeout(() => document.addEventListener('click', close), 0);
+                          }
+                      };
+                  }
+              }, 50);
           }
       }
 
-      function checkSession() {
-        const stored = localStorage.getItem('openNotesSession');
-        if (stored) {
-            try { currentUser = JSON.parse(stored); } catch(e) { localStorage.removeItem('openNotesSession'); }
-        }
-
-        const params = new URLSearchParams(window.location.search);
-        if (params.has('token')) {
-            const token = params.get('token');
-            const pic = decodeURIComponent(params.get('picture') || '');
-            const sub = params.get('sub');
-            
-            if(token && sub) {
-                currentUser = { token, picture: pic, sub };
-                localStorage.setItem('openNotesSession', JSON.stringify(currentUser));
-                window.history.replaceState({}, document.title, window.location.pathname);
-                showPopup("Logged in successfully");
-            }
-        }
-        renderAuth();
+      // 2. NEW LOGIN LOGIC (Popup)
+      function triggerLogin(isForUpload = false) {
+          if(isForUpload) sessionStorage.setItem('pendingUpload', 'true');
+          
+          const width = 500, height = 600;
+          const left = (window.innerWidth - width) / 2;
+          const top = (window.innerHeight - height) / 2;
+          
+          // Open Popup
+          window.open(
+              `${API_URL}/auth/login`, 
+              'Google Login', 
+              `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
+          );
       }
-      
+
+      // 3. UPDATED SESSION CHECK
+      async function checkSession() {
+          // A. Check if this IS the popup
+          const params = new URLSearchParams(window.location.search);
+          if (params.has('token') && window.opener) {
+              const token = params.get('token');
+              const pic = decodeURIComponent(params.get('picture') || '');
+              const sub = params.get('sub');
+              // Send to parent
+              window.opener.postMessage({ type: 'LOGIN_SUCCESS', user: { token, picture: pic, sub } }, '*');
+              window.close();
+              return; 
+          }
+
+          // B. Normal Page Load
+          const stored = localStorage.getItem('openNotesSession');
+          if (stored) {
+              try { currentUser = JSON.parse(stored); } catch(e) { localStorage.removeItem('openNotesSession'); }
+          }
+          
+          if (currentUser) await fetchOwnedNotes(); // Fetch ownership data
+          renderAuth();
+      }
+
+      // 4. FETCH OWNED NOTES
+      async function fetchOwnedNotes() {
+          if(!currentUser) return;
+          try {
+              const res = await fetch(`${API_URL}?type=user_notes`, {
+                  headers: { 'Authorization': `Bearer ${currentUser.token}` }
+              });
+              if(res.ok) ownedNotes = await res.json();
+          } catch(e) { console.error(e); }
+      }
+
+      // 5. MESSAGE LISTENER (For Popup)
+      window.addEventListener('message', async (event) => {
+          if (event.data && event.data.type === 'LOGIN_SUCCESS') {
+              currentUser = event.data.user;
+              localStorage.setItem('openNotesSession', JSON.stringify(currentUser));
+              await fetchOwnedNotes();
+              renderAuth();
+              showPopup("Logged in successfully");
+
+              // Check Pending Upload
+              if (sessionStorage.getItem('pendingUpload') === 'true') {
+                  sessionStorage.removeItem('pendingUpload');
+                  toggleOverlay(uploadEls.overlay, true);
+              }
+          }
+      });
+
       function logout() {
           localStorage.removeItem('openNotesSession');
           currentUser = null;
+          ownedNotes = [];
           renderAuth();
           showPopup("Logged out");
       }
-      
-      checkSession();
 
+      checkSession();
   </script>
 </body>
 </html>
