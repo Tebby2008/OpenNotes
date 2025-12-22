@@ -967,7 +967,6 @@
           return data.map(m => {
               const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
               const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
-              
               const cleanKey = m.name; 
               
               return {
@@ -1347,62 +1346,7 @@
           }
       };
 
-      (async function() {
-        try {
-          try {
-              const authRes = await fetch(`${API_URL}?type=authors`);
-              if(authRes.ok) verifiedAuthors = await authRes.json();
-          } catch(e) { console.error("Failed to load verified authors", e); }
-          
-          allItems = await fetchNotes();
-                    
-          const params = new URLSearchParams(window.location.search);
-          if (params.has('q')) {
-              els.search.value = params.get('q');
-          }          
-          render();
-
-          if(location.hash.startsWith('#/notes/')) { 
-              const n=decodeURIComponent(location.hash.substr(8)); 
-              const it=allItems.find(i=>i.name===n); 
-              if(it) openOverlay(it); 
-          }
-          else if(location.hash.endsWith('.md')) {
-              openInfo(`resources/${location.hash.substr(2)}`);
-          }
-          else if(location.hash === '#/upload') {
-              toggleOverlay(uploadEls.overlay, true);
-          }
-
-        } catch(e) { els.container.innerHTML="<p>Failed to load.</p>"; }
-      })();
-
-      uploadEls.btn.onclick = (e) => {
-          e.preventDefault();
-          
-          if (!currentUser) {
-              showPopup("Please log in to upload", "error");
-              setTimeout(() => triggerLogin(true), 1000); 
-              return;
-          }
-
-          history.pushState({ upload: true }, '', '#/upload');
-          toggleOverlay(uploadEls.overlay, true); 
-          
-          if (window.turnstile && turnstileWidgetId === null) {
-              turnstileWidgetId = turnstile.render('#turnstile-widget', {
-                    sitekey: '0x4AAAAAACGcLC657zYbkp6o',
-                    callback: function(token) {
-                        turnstileToken = token;
-                        document.getElementById('turnstile-widget').style.border = 'none';
-                    },
-                    'expired-callback': function() { turnstileToken = null; }
-                });
-          } else if (window.turnstile && turnstileWidgetId !== null) {
-              turnstile.reset(turnstileWidgetId);
-              turnstileToken = null;
-          }
-      };
+    
 
       uploadEls.back.onclick = () => {
           toggleOverlay(uploadEls.overlay, false);
@@ -1547,6 +1491,7 @@
           if (stored) {
               try { currentUser = JSON.parse(stored); } catch(e) { localStorage.removeItem('openNotesSession'); }
           }
+          
           renderAuth();
       }
 
