@@ -118,6 +118,40 @@
     .header-logo { width: 100%; max-width: 400px; margin-bottom: 1rem; filter: var(--filter-logo); }
     .header-subtitle { color: var(--text-muted); font-size: 1rem; display: flex; align-items: center; gap: 8px; }
     .header-subtitle img { height: 24px; filter: var(--filter-logo); }
+    .top-nav { position: absolute; top: 24px; right: 24px; z-index: 150; }
+
+    .profile-circle {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1.5px solid var(--border-soft);
+      background: transparent;
+      cursor: pointer; position: relative;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; transition: border-color 0.2s ease, transform 0.2s ease;
+      color: var(--text-muted);
+    }
+
+    .profile-circle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .profile-circle .icon-default,
+    .profile-circle .icon-hover {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+    }
+
+    .profile-circle .icon-hover { opacity: 0; transform: scale(0.8); }
+
+    .profile-circle:hover .icon-default { opacity: 0; transform: scale(0.8); }
+    .profile-circle:hover .icon-hover { opacity: 1; transform: scale(1); }
+
+    .profile-circle img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: opacity 0.2s;
+    }
+    .profile-circle:hover img { opacity: 0; }
     
     .controls-container { position: sticky; top: 16px; z-index: 100; padding-bottom: 2rem; pointer-events: none; }
     .controls {
@@ -410,6 +444,8 @@
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
     @media (max-width: 768px) {
+        .top-nav { top: 16px; right: 16px; }
+        .profile-circle { width: 38px; height: 38px; }
         footer .left { 
             flex-wrap: wrap; 
             row-gap: 8px; 
@@ -488,6 +524,10 @@
   </style>
 </head>
 <body>
+  <nav class="top-nav">
+    <div id="authContainer" class="user-profile">
+    </div>
+  </nav>
   <header>
       <img draggable="false" src="resources/logo.svg" alt="OpenNotes Logo" class="header-logo" />
       <p class="header-subtitle">
@@ -683,6 +723,7 @@
       let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="updated-desc", currentFormat="all";
 
       const els = {
+        auth: document.getElementById('authContainer'),
         container: document.getElementById("itemsContainer"),
         search: document.getElementById("searchInput"),
         gridBtn: document.getElementById("gridBtn"),
@@ -711,6 +752,55 @@
         popup: document.getElementById('popupNotification'),
         mobTog: document.getElementById('viewToggleMobile')
       };
+
+      let currentUser = null; 
+
+      function renderAuth() {
+          if (!currentUser) {
+              els.auth.innerHTML = `
+                  <div class="profile-circle" title="Log In" onclick="window.location.href='${API_URL}/auth/login'">
+                      <div class="icon-default"><span class="material-symbols-rounded">person</span></div>
+                      <div class="icon-hover"><span class="material-symbols-rounded">login</span></div>
+                  </div>`;
+          } else {
+              els.auth.innerHTML = `
+                  <div class="profile-circle" title="Log Out" onclick="logout()">
+                      <img src="${currentUser.picture}" onerror="this.src='resources/icon-square.png'">
+                      <div class="icon-hover"><span class="material-symbols-rounded">logout</span></div>
+                  </div>`;
+          }
+      }
+
+      function checkSession() {
+        const stored = localStorage.getItem('openNotesSession');
+        if (stored) {
+            try { currentUser = JSON.parse(stored); } catch(e) { localStorage.removeItem('openNotesSession'); }
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('token')) {
+            const token = params.get('token');
+            const pic = decodeURIComponent(params.get('picture') || '');
+            const sub = params.get('sub');
+            
+            if(token && sub) {
+                currentUser = { token, picture: pic, sub };
+                localStorage.setItem('openNotesSession', JSON.stringify(currentUser));
+                window.history.replaceState({}, document.title, window.location.pathname);
+                showPopup("Logged in successfully");
+            }
+        }
+        renderAuth();
+      }
+      
+      function logout() {
+          localStorage.removeItem('openNotesSession');
+          currentUser = null;
+          renderAuth();
+          showPopup("Logged out");
+      }
+      
+      checkSession();
 
       window.onTurnstileSuccess = function(token) {
           turnstileToken = token;
@@ -795,12 +885,32 @@
       async function fetchNotes() {
         const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`);
         if (!res.ok) throw new Error("Metadata failed");
-        
         const data = await res.json();
         
+        const ids = data.map(m => m.path).join(':'); 
+        
+        let statsRes = {};
+        try {
+            const s = await fetch(`${API_URL}?type=stats&noteIds=${encodeURIComponent(ids)}`);
+            if (s.ok) statsRes = await s.json();
+        } catch(e) {}
+        
+        const isNewFormat = statsRes.views && typeof statsRes.views === 'object';
+
         return data.map(m => {
           const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
           const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
+          
+          const cleanKey = m.name;
+          
+          let v = 0, d = 0;
+          if (isNewFormat) {
+             v = parseInt(statsRes.views[cleanKey]) || 0;
+             d = parseInt(statsRes.downloads[cleanKey]) || 0;
+          } else if (statsRes[cleanKey]) {
+             v = statsRes[cleanKey].views;
+             d = statsRes[cleanKey].downloads;
+          }
 
           return {
             name: m.name, 
@@ -813,11 +923,42 @@
             auth: m.author, 
             user: m.author_username,
             ai: m.is_ai_generated, 
-            v: 0, 
-            d: 0
+            v: v, 
+            d: d
           };
         }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl);
       }
+
+      (async function() {
+        try {
+          try {
+              const authRes = await fetch(`${API_URL}?type=authors`);
+              if(authRes.ok) verifiedAuthors = await authRes.json();
+          } catch(e) {}
+
+          allItems = await fetchNotes();
+          
+          fetch(`${API_URL}?type=website`,{method:'POST'}).then(r=>r.json()).then(d=>els.webViews.textContent=d.views).catch(()=>{});
+          
+          const params = new URLSearchParams(window.location.search);
+          if (params.has('q')) els.search.value = params.get('q');
+          
+          render();
+          
+          if(location.hash.startsWith('#/notes/')) { 
+              const n=decodeURIComponent(location.hash.substr(8)); 
+              const it=allItems.find(i=>i.name===n); 
+              if(it) openOverlay(it); 
+          }
+          else if(location.hash.endsWith('.md')) {
+              openInfo(`resources/${location.hash.substr(2)}`);
+          }
+          else if(location.hash === '#/upload') {
+              toggleOverlay(uploadEls.overlay, true);
+          }
+
+        } catch(e) { els.container.innerHTML="<p>Failed to load.</p>"; console.error(e); }
+      })();
 
       function render() {
         const escapeHtml = (str) => {
@@ -923,6 +1064,38 @@
         els.ovFmt.style.background = it.fmt==='pdf'?'var(--bg-pdf)':'var(--bg-docx)';
         els.ovFmt.style.color = it.fmt==='pdf'?'var(--c-pdf)':'var(--c-docx)';
         
+
+        const existingDel = document.getElementById('ovDelete');
+        if(existingDel) existingDel.remove();
+
+        if (currentUser) {
+            const delBtn = document.createElement('button');
+            delBtn.id = 'ovDelete';
+            delBtn.className = 'styled-btn';
+            delBtn.style.cssText = "background: #fef2f2; color: #ef4444; margin-top:10px;";
+            delBtn.innerHTML = '<span class="material-symbols-rounded">delete</span> <span>Delete Note</span>';
+            delBtn.onclick = async () => {
+                if(!confirm("Are you sure? This cannot be undone.")) return;
+                delBtn.innerText = "Deleting...";
+                try {
+                    const res = await fetch(`${API_URL}?type=delete`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${currentUser.token}` },
+                        body: JSON.stringify({ fileName: it.name })
+                    });
+                    if(res.ok) {
+                        showPopup("Deleted successfully");
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        const err = await res.json();
+                        showPopup(err.error || "Delete failed", "error");
+                        delBtn.innerHTML = '<span class="material-symbols-rounded">delete</span> <span>Delete Note</span>';
+                    }
+                } catch(e) { showPopup("Error deleting", "error"); }
+            };
+            els.ovDown.parentNode.insertBefore(delBtn, els.ovDown);
+        }
+
         if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
             const displayName = verifiedAuthors[it.user] || it.user;
             els.ovAuth.innerHTML = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
@@ -1140,22 +1313,26 @@
           status: document.getElementById('uploadStatus'),
       };
 
-      uploadEls.btn.onclick = (e) => { 
-          e.preventDefault(); 
+      uploadEls.btn.onclick = (e) => {
+          e.preventDefault();
+          if (!currentUser) {
+              showPopup("Please log in to upload", "error");
+              setTimeout(() => window.location.href = `${API_URL}/auth/login`, 1000);
+              return;
+          }
+
           history.pushState({ upload: true }, '', '#/upload');
           toggleOverlay(uploadEls.overlay, true); 
-
+          
           if (window.turnstile && turnstileWidgetId === null) {
-              turnstileWidgetId = turnstile.render('#turnstile-widget', {
+             turnstileWidgetId = turnstile.render('#turnstile-widget', {
                   sitekey: '0x4AAAAAACGcLC657zYbkp6o',
                   theme: 'auto',
                   callback: function(token) {
                       turnstileToken = token;
                       document.getElementById('turnstile-widget').style.border = 'none';
                   },
-                  'expired-callback': function() {
-                      turnstileToken = null;
-                  }
+                  'expired-callback': function() { turnstileToken = null; }
               });
           } else if (window.turnstile && turnstileWidgetId !== null) {
               turnstile.reset(turnstileWidgetId);
@@ -1296,14 +1473,17 @@
               const payload = {
                   fileName: finalFileName,
                   fileContent: base64Content,
-                  author: safeAuthor, 
+                  author: safeAuthor,
                   isAi: uploadEls.aiCheck.checked,
                   token: turnstileToken
               };
 
               const response = await fetch(`${API_URL}?type=upload`, {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { 
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${currentUser.token}`
+                  },
                   body: JSON.stringify(payload)
               });
 
