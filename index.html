@@ -1515,9 +1515,8 @@
     
 
       let currentUser = null;
-      let ownedNotes = []; // Store list of files user owns
+      let ownedNotes = [];
 
-      // 1. UPDATED AUTH RENDER (Morphing Logout)
       function renderAuth() {
           if (!currentUser) {
               els.auth.innerHTML = `
@@ -1526,7 +1525,6 @@
                       <div class="icon-hover"><span class="material-symbols-rounded">login</span></div>
                   </div>`;
           } else {
-              // Morphing Logout Button Structure
               els.auth.innerHTML = `
                   <div class="morph-wrap logout-morph">
                       <div class="morph-btn" id="logoutMorphBtn">
@@ -1540,15 +1538,13 @@
                       </div>
                   </div>`;
                   
-              // Add click listener for expansion
               setTimeout(() => {
                   const btn = document.getElementById('logoutMorphBtn');
                   if(btn) {
                       btn.onclick = (e) => {
-                          if (e.target.closest('.confirm-action-btn')) return; // Allow button click
+                          if (e.target.closest('.confirm-action-btn')) return;
                           if (!btn.classList.contains('expanded')) {
                               btn.classList.add('expanded');
-                              // Close on click outside
                               const close = (evt) => {
                                   if(!btn.contains(evt.target)) {
                                       btn.classList.remove('expanded');
@@ -1563,7 +1559,6 @@
           }
       }
 
-      // 2. NEW LOGIN LOGIC (Popup)
       function triggerLogin(isForUpload = false) {
           if(isForUpload) sessionStorage.setItem('pendingUpload', 'true');
           
@@ -1571,7 +1566,6 @@
           const left = (window.innerWidth - width) / 2;
           const top = (window.innerHeight - height) / 2;
           
-          // Open Popup
           window.open(
               `${API_URL}/auth/login`, 
               'Google Login', 
@@ -1579,31 +1573,26 @@
           );
       }
 
-      // 3. UPDATED SESSION CHECK
       async function checkSession() {
-          // A. Check if this IS the popup
           const params = new URLSearchParams(window.location.search);
           if (params.has('token') && window.opener) {
               const token = params.get('token');
               const pic = decodeURIComponent(params.get('picture') || '');
               const sub = params.get('sub');
-              // Send to parent
               window.opener.postMessage({ type: 'LOGIN_SUCCESS', user: { token, picture: pic, sub } }, '*');
               window.close();
               return; 
           }
 
-          // B. Normal Page Load
           const stored = localStorage.getItem('openNotesSession');
           if (stored) {
               try { currentUser = JSON.parse(stored); } catch(e) { localStorage.removeItem('openNotesSession'); }
           }
           
-          if (currentUser) await fetchOwnedNotes(); // Fetch ownership data
+          if (currentUser) await fetchOwnedNotes();
           renderAuth();
       }
 
-      // 4. FETCH OWNED NOTES
       async function fetchOwnedNotes() {
           if(!currentUser) return;
           try {
@@ -1614,7 +1603,6 @@
           } catch(e) { console.error(e); }
       }
 
-      // 5. MESSAGE LISTENER (For Popup)
       window.addEventListener('message', async (event) => {
           if (event.data && event.data.type === 'LOGIN_SUCCESS') {
               currentUser = event.data.user;
@@ -1623,7 +1611,6 @@
               renderAuth();
               showPopup("Logged in successfully");
 
-              // Check Pending Upload
               if (sessionStorage.getItem('pendingUpload') === 'true') {
                   sessionStorage.removeItem('pendingUpload');
                   toggleOverlay(uploadEls.overlay, true);
@@ -1639,13 +1626,12 @@
           showPopup("Logged out");
       }
 
+
       uploadEls.form.onsubmit = async (e) => {
           e.preventDefault();
           
           if (!turnstileToken) {
               showPopup("Please complete the security check.", "error");
-              document.querySelector('.cf-turnstile').parentElement.style.border = "1px solid red";
-              document.querySelector('.cf-turnstile').parentElement.style.borderRadius = "4px";
               return;
           }
 
@@ -1660,8 +1646,6 @@
               showPopup("Please keep the highlighted fields shorter.", "error");
               return;
           }
-
-          document.querySelector('.cf-turnstile').parentElement.style.border = "none";
 
           uploadEls.submit.classList.add('btn-loading');
           uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
@@ -1730,6 +1714,8 @@
               
               if (window.turnstile) turnstile.reset();
               turnstileToken = null;
+              
+              setTimeout(() => window.location.reload(), 1500);
 
           } catch (err) {
               console.error(err);
