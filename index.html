@@ -49,6 +49,7 @@
       --radius-pill: 999px;
       
       --ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-smooth: cubic-bezier(0.25, 1, 0.5, 1); 
       --speed: 0.3s;
 
       --c-pdf: #ef4444; --bg-pdf: #fef2f2;
@@ -364,11 +365,11 @@
         display: flex; align-items: center; justify-content: center;
         cursor: pointer;
         overflow: hidden;
-        transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-                    height 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                    border-radius 0.4s ease,
-                    background-color 0.3s ease,
-                    box-shadow 0.3s ease;
+        transition: width 0.3s var(--ease-smooth), 
+                    height 0.3s var(--ease-smooth),
+                    border-radius 0.3s var(--ease-smooth),
+                    background-color 0.2s ease,
+                    box-shadow 0.2s ease;
         box-shadow: 0 4px 10px rgba(0,0,0,0.05);
     }
 
@@ -430,14 +431,18 @@
 
     .confirm-action-btn {
         background: #ef4444; color: white;
-        border: none; padding: 6px 16px; border-radius: 99px;
-        font-weight: 700; font-size: 0.85rem;
-        margin-top: 8px; cursor: pointer;
+        border: none; padding: 8px 20px; border-radius: 99px;
+        font-weight: 700; font-size: 0.9rem;
+        margin-top: 12px; cursor: pointer;
         display: flex; align-items: center; gap: 6px;
-        transition: 0.2s;
+        transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
     }
-    .confirm-action-btn:hover { background: #dc2626; transform: scale(1.05); }
-
+    .confirm-action-btn:hover { 
+            background: #dc2626; 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
     .logout-morph .confirm-action-btn { background: var(--text); color: var(--bg); }
 
     .popup-notification {
@@ -533,6 +538,60 @@
         border: 2px solid #ef4444 !important;
         outline: none;
     }
+
+    .my-notes-header {
+        display: none;
+        padding: 4rem 1.5rem 2rem;
+        max-width: 1200px; 
+        margin: 0 auto;
+        font-size: 3.5rem; 
+        font-weight: 800; 
+        color: var(--text);
+        letter-spacing: -0.03em;
+        line-height: 1;
+    }
+    
+    .morph-btn.expanded.profile-menu-expanded {
+        width: 180px; 
+        height: 170px;
+        border-radius: 24px;
+    }
+
+    .menu-btn {
+        width: 100%;
+        padding: 10px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        font-family: var(--font);
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        transition: transform 0.2s, background 0.2s;
+        text-decoration: none;
+        font-size: 0.9rem;
+        margin-top: 8px;
+    }
+    .menu-btn:active { transform: scale(0.96); }
+
+    .menu-btn.neutral {
+        background: var(--border-soft);
+        color: var(--text);
+    }
+    .menu-btn.neutral:hover {
+        background: rgba(0,0,0,0.1);
+    }
+    .dark-mode .menu-btn.neutral:hover {
+        background: rgba(255,255,255,0.15);
+    }
+
+    .menu-btn.danger {
+        background: #ef4444; 
+        color: white;
+    }
+    .menu-btn.danger:hover {
+        background: #dc2626;
+    }
+
     
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -989,17 +1048,29 @@
       function render() {
         const escapeHtml = (str) => {
           if (!str) return '';
-          return String(str)
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;")
-              .replace(/'/g, "&#039;");
+          return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         };
+
+        const isMyNotesMode = location.hash === '#/mynotes';
+        const mainHeader = document.getElementById('mainHeader');
+        const myNotesHeader = document.getElementById('myNotesHeader');
+
+        if (isMyNotesMode) {
+            mainHeader.style.display = 'none';
+            myNotesHeader.style.display = 'block';
+        } else {
+            mainHeader.style.display = 'flex';
+            myNotesHeader.style.display = 'none';
+        }
+
+        let baseList = allItems;
+        if (isMyNotesMode) {
+            baseList = allItems.filter(item => ownedNotes.includes(item.name));
+        }
 
         const q = els.search.value.trim().toLowerCase();
         
-        let list = allItems.filter(x => (showAI || !x.ai) && (currentFormat === "all" || x.fmt === currentFormat) && x.title.toLowerCase().includes(q));
+        let list = baseList.filter(x => (showAI || !x.ai) && (currentFormat === "all" || x.fmt === currentFormat) && x.title.toLowerCase().includes(q));
         
         list.sort((a,b) => {
           if(currentSort==="title-asc") return a.title.localeCompare(b.title);
@@ -1012,8 +1083,16 @@
         els.container.innerHTML = ""; els.container.className = viewMode;
         const fragment = document.createDocumentFragment();
         
+        if (list.length === 0 && isMyNotesMode && !q) {
+             els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
+                <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">folder_off</span>
+                <p>You haven't uploaded any notes yet.</p>
+             </div>`;
+             return;
+        }
+
         list.forEach((it, i) => {
-          const el = document.createElement("article");
+             const el = document.createElement("article");
           el.className = viewMode === "grid" ? "card" : "row";
           el.style.animationDelay = `${500*(1-Math.pow(0.9, i))}ms`;
 
@@ -1059,8 +1138,7 @@
           fragment.appendChild(el);
         });
         els.container.appendChild(fragment);
-
-
+        
         const isOverlayOpen = els.overlay.classList.contains("open") || 
                         els.infoOver.classList.contains("open") || 
                         (uploadEls && uploadEls.overlay.classList.contains("open"));
@@ -1075,11 +1153,11 @@
             url.searchParams.delete('q'); 
           }
 
-          if (url.search !== window.location.search) {
-            history.replaceState(null, '', url);
+          if (location.hash !== '#/mynotes' && !location.hash.startsWith('#/notes/') && !location.hash.startsWith('#/upload')) {
           }
         }
       }
+
       function openOverlay(it) {
           history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
           toggleOverlay(els.overlay, true);
@@ -1098,13 +1176,14 @@
               const wrap = document.createElement('div');
               wrap.id = 'morphDeleteWrap';
               wrap.className = 'morph-wrap';
+              
               wrap.innerHTML = `
                   <div class="morph-btn" id="deleteMorphBtn">
                       <span class="material-symbols-rounded icon-state" style="color:#ef4444">delete</span>
-                      <div class="morph-content">
-                          <div style="font-weight:600; font-size:0.9rem; color:var(--text)">Are you sure?</div>
+                      <div class="morph-content" style="padding:12px;"> 
+                          <div style="font-weight:600; font-size:0.9rem; color:var(--text)">Delete note?</div>
                           <button class="confirm-action-btn" id="realDeleteBtn">
-                              <span class="material-symbols-rounded" style="font-size:16px">delete</span> Yes
+                              <span class="material-symbols-rounded" style="font-size:18px">delete</span> Yes, Delete
                           </button>
                       </div>
                   </div>`;
@@ -1121,16 +1200,17 @@
                           if (e.target.closest('#realDeleteBtn')) return; 
                           if (!btn.classList.contains('expanded')) {
                               btn.classList.add('expanded');
+                              btn.style.width = '160px'; 
                               const close = (evt) => {
                                   if(!btn.contains(evt.target)) {
                                       btn.classList.remove('expanded');
+                                      btn.style.width = ''; 
                                       document.removeEventListener('click', close);
                                   }
                               };
                               setTimeout(() => document.addEventListener('click', close), 0);
                           }
                       };
-
                       realDel.onclick = async () => {
                           realDel.innerHTML = '...';
                           try {
@@ -1162,21 +1242,20 @@
                   }
               }, 50);
           }
-
+          
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
-              const displayName = verifiedAuthors[it.user] || it.user;
-              els.ovAuth.innerHTML = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } else {
               els.ovAuth.textContent = it.auth;
           }
           
           if(it.ai) {
-              const aiSpan = document.createElement('span');
-              aiSpan.className = 'ai-tag';
-              aiSpan.innerHTML = '<span class="material-symbols-rounded">auto_awesome</span>AI';
-              els.ovAuth.appendChild(document.createTextNode(" "));
-              els.ovAuth.appendChild(aiSpan);
+             const aiSpan = document.createElement('span');
+             aiSpan.className = 'ai-tag';
+             aiSpan.innerHTML = '<span class="material-symbols-rounded">auto_awesome</span>AI';
+             els.ovAuth.appendChild(document.createTextNode(" "));
+             els.ovAuth.appendChild(aiSpan);
           }
+          
           els.ovDate.textContent = fmtDate(it.upd);
           
           els.ovDown.onclick = null; 
@@ -1329,8 +1408,9 @@
           
           if (query !== els.search.value) {
               els.search.value = query || '';
-              render(); 
           }
+          
+          render();
 
           if (e.state?.note) {
               openOverlay(e.state.note);
@@ -1438,10 +1518,15 @@
                   <div class="morph-wrap logout-morph">
                       <div class="morph-btn" id="logoutMorphBtn">
                           <img src="${currentUser.picture}" class="icon-state" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.src='resources/icon-square.png'">
-                          <div class="morph-content">
-                              <div style="font-weight:600; font-size:0.9rem; color:var(--text)">Log out?</div>
-                              <button class="confirm-action-btn" onclick="logout()">
-                                  <span class="material-symbols-rounded" style="font-size:16px">logout</span> Yes
+                          <div class="morph-content" style="padding: 16px;">
+                              <div style="font-weight:700; font-size:1rem; color:var(--text); margin-bottom: 4px;">Account</div>
+                              
+                              <button class="menu-btn neutral" onclick="window.location.hash='#/mynotes'">
+                                <span class="material-symbols-rounded">folder_open</span> My Notes
+                              </button>
+                              
+                              <button class="menu-btn danger" onclick="logout()">
+                                  <span class="material-symbols-rounded">logout</span> Log Out
                               </button>
                           </div>
                       </div>
@@ -1451,12 +1536,13 @@
                   const btn = document.getElementById('logoutMorphBtn');
                   if(btn) {
                       btn.onclick = (e) => {
-                          if (e.target.closest('.confirm-action-btn')) return;
+                          if (e.target.closest('button')) return;
+                          
                           if (!btn.classList.contains('expanded')) {
-                              btn.classList.add('expanded');
+                              btn.classList.add('expanded', 'profile-menu-expanded');
                               const close = (evt) => {
                                   if(!btn.contains(evt.target)) {
-                                      btn.classList.remove('expanded');
+                                      btn.classList.remove('expanded', 'profile-menu-expanded');
                                       document.removeEventListener('click', close);
                                   }
                               };
@@ -1518,6 +1604,10 @@
           ownedNotes = [];
           renderAuth();
           
+          if (location.hash === '#/mynotes') {
+              history.pushState(null, '', ' ');
+          }
+
           fetchNotes().then(items => {
               allItems = items;
               render();
