@@ -1100,6 +1100,7 @@
           const oldWrap = document.getElementById('morphDeleteWrap');
           if(oldWrap) oldWrap.remove();
 
+          // Check if owner
           const isOwner = ownedNotes.includes(it.name);
 
           if (currentUser && isOwner) {
@@ -1117,26 +1118,18 @@
                       </div>
                   </div>`;
               
-              // C. Insert into the sub-actions row (beside Share/Raw)
               const subActions = document.querySelector('.sub-actions');
               subActions.appendChild(wrap);
 
-              // D. Add Event Listeners for Morphing
               setTimeout(() => {
                   const btn = document.getElementById('deleteMorphBtn');
                   const realDel = document.getElementById('realDeleteBtn');
                   
                   if (btn && realDel) {
-                      // Expand logic
                       btn.onclick = (e) => {
-                          // If clicking the "Yes" button, let it bubble up
                           if (e.target.closest('#realDeleteBtn')) return; 
-                          
-                          // If not expanded, expand it
                           if (!btn.classList.contains('expanded')) {
                               btn.classList.add('expanded');
-                              
-                              // Click outside to close
                               const close = (evt) => {
                                   if(!btn.contains(evt.target)) {
                                       btn.classList.remove('expanded');
@@ -1147,7 +1140,7 @@
                           }
                       };
 
-                      // Real Delete API Call
+                      // REAL DELETE ACTION
                       realDel.onclick = async () => {
                           realDel.innerHTML = '...';
                           try {
@@ -1159,7 +1152,16 @@
 
                               if(res.ok) {
                                   showPopup("Deleted successfully");
-                                  setTimeout(() => window.location.reload(), 1500);
+                                  
+                                  // 1. Close Overlay
+                                  toggleOverlay(els.overlay, false);
+                                  
+                                  // 2. Remove from local data
+                                  allItems = allItems.filter(x => x.name !== it.name);
+                                  ownedNotes = ownedNotes.filter(n => n !== it.name);
+                                  
+                                  // 3. Re-render Grid
+                                  render();
                               } else {
                                   const err = await res.json();
                                   showPopup(err.error || "Delete failed", "error");
@@ -1174,7 +1176,7 @@
               }, 50);
           }
 
-          // 4. Author & AI Tags
+          // Author / AI / Date Logic
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
               const displayName = verifiedAuthors[it.user] || it.user;
               els.ovAuth.innerHTML = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
@@ -1189,18 +1191,13 @@
               els.ovAuth.appendChild(document.createTextNode(" "));
               els.ovAuth.appendChild(aiSpan);
           }
-
           els.ovDate.textContent = fmtDate(it.upd);
           
-          // 5. Download & View Logic
-          // Reset click handler to avoid stacking listeners
+          // Download / View Logic
           els.ovDown.onclick = null; 
-
           if (it.dl && isValidUrl(it.dl)) {
               els.ovRaw.href = els.frame.src = `view.html?file=${encodeURIComponent(it.dl)}`;
-              
               els.ovDown.onclick = () => {
-                  // Update Stats
                   updateCounter(it.path, 'downloads').then(d => { 
                       if(d) { 
                           if (d.views !== undefined) it.v = d.views;
@@ -1210,15 +1207,10 @@
                           render(); 
                       }
                   });
-                  // Trigger Download
                   const a = document.createElement("a"); 
-                  a.href = it.dl; 
-                  a.download = it.name; 
-                  document.body.appendChild(a); 
-                  a.click(); 
-                  a.remove();
+                  a.href = it.dl; a.download = it.name; 
+                  document.body.appendChild(a); a.click(); a.remove();
               };
-              
               els.ovRaw.style.display = 'flex';
               els.ovDown.style.display = 'flex';
           } else {
@@ -1227,11 +1219,9 @@
               els.ovDown.style.display = 'none';
           }
           
-          // 6. Stats & Sharing
+          // Stats & Sharing
           els.ovView.textContent = it.v; 
           els.ovDl.textContent = it.d;
-          
-          // Increment View Counter on Open
           updateCounter(it.path, 'views').then(d => { 
               if(d) {
                   if (d.views !== undefined) it.v = d.views;
@@ -1241,11 +1231,9 @@
                   render(); 
               }
           });
-          
           els.ovShare.onclick = () => { 
               navigator.clipboard.writeText(window.location.href)
-                  .then(() => showPopup('Link copied', 'success'))
-                  .catch(() => {}); 
+                  .then(() => showPopup('Link copied', 'success')).catch(() => {}); 
           };
       }
 
@@ -1380,12 +1368,9 @@
               const authRes = await fetch(`${API_URL}?type=authors`);
               if(authRes.ok) verifiedAuthors = await authRes.json();
           } catch(e) { console.error("Failed to load verified authors", e); }
+          
           allItems = await fetchNotes();
-          const ids = allItems.map(i=>i.path);
-          if(ids.length) { const s = await async function(){ try{return await(await fetch(`${API_URL}?type=stats&noteIds=${ids.join(':')}`)).json()}catch{return{}} }(); 
-            allItems.forEach(i=>{ if(s[i.path]){i.v=s[i.path].views;i.d=s[i.path].downloads} }); 
-          }
-          fetch(`${API_URL}?type=website`,{method:'POST'}).then(r=>r.json()).then(d=>els.webViews.textContent=d.views).catch(()=>{});
+                    
           const params = new URLSearchParams(window.location.search);
           if (params.has('q')) {
               els.search.value = params.get('q');
@@ -1410,23 +1395,18 @@
       uploadEls.btn.onclick = (e) => {
           e.preventDefault();
           
-          // 1. Check Login
           if (!currentUser) {
               showPopup("Please log in to upload", "error");
-              // Trigger Popup Login with 'true' flag for auto-reopen
               setTimeout(() => triggerLogin(true), 1000); 
               return;
           }
 
-          // 2. Open Upload Overlay
           history.pushState({ upload: true }, '', '#/upload');
           toggleOverlay(uploadEls.overlay, true); 
           
-          // 3. Initialize Turnstile
           if (window.turnstile && turnstileWidgetId === null) {
               turnstileWidgetId = turnstile.render('#turnstile-widget', {
-                    sitekey: '0x4AAAAAACGcLC657zYbkp6o', // Your Site Key
-                    theme: 'auto',
+                    sitekey: '0x4AAAAAACGcLC657zYbkp6o',
                     callback: function(token) {
                         turnstileToken = token;
                         document.getElementById('turnstile-widget').style.border = 'none';
