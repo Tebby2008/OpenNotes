@@ -1093,7 +1093,6 @@
           const oldWrap = document.getElementById('morphDeleteWrap');
           if(oldWrap) oldWrap.remove();
 
-          // Check if owner
           const isOwner = ownedNotes.includes(it.name);
 
           if (currentUser && isOwner) {
@@ -1133,7 +1132,6 @@
                           }
                       };
 
-                      // REAL DELETE ACTION
                       realDel.onclick = async () => {
                           realDel.innerHTML = '...';
                           try {
@@ -1146,14 +1144,11 @@
                               if(res.ok) {
                                   showPopup("Deleted successfully");
                                   
-                                  // 1. Close Overlay
                                   toggleOverlay(els.overlay, false);
                                   
-                                  // 2. Remove from local data
                                   allItems = allItems.filter(x => x.name !== it.name);
                                   ownedNotes = ownedNotes.filter(n => n !== it.name);
                                   
-                                  // 3. Re-render Grid
                                   render();
                               } else {
                                   const err = await res.json();
@@ -1169,7 +1164,6 @@
               }, 50);
           }
 
-          // Author / AI / Date Logic
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
               const displayName = verifiedAuthors[it.user] || it.user;
               els.ovAuth.innerHTML = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
@@ -1186,7 +1180,6 @@
           }
           els.ovDate.textContent = fmtDate(it.upd);
           
-          // Download / View Logic
           els.ovDown.onclick = null; 
           if (it.dl && isValidUrl(it.dl)) {
               els.ovRaw.href = els.frame.src = `view.html?file=${encodeURIComponent(it.dl)}`;
@@ -1212,7 +1205,6 @@
               els.ovDown.style.display = 'none';
           }
           
-          // Stats & Sharing
           els.ovView.textContent = it.v; 
           els.ovDl.textContent = it.d;
           updateCounter(it.path, 'views').then(d => { 
@@ -1534,19 +1526,13 @@
 
       function triggerLogin(isForUpload = false) {
           if(isForUpload) sessionStorage.setItem('pendingUpload', 'true');
-          
           const width = 500, height = 600;
           const left = (window.innerWidth - width) / 2;
           const top = (window.innerHeight - height) / 2;
-          
-          window.open(
-              `${API_URL}/auth/login`, 
-              'Google Login', 
-              `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`
-          );
+          window.open(`${API_URL}/auth/login`, 'Google Login', `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`);
       }
 
-      async function checkSession() {
+      function checkSession() {
           const params = new URLSearchParams(window.location.search);
           if (params.has('token') && window.opener) {
               const token = params.get('token');
@@ -1561,28 +1547,18 @@
           if (stored) {
               try { currentUser = JSON.parse(stored); } catch(e) { localStorage.removeItem('openNotesSession'); }
           }
-          
-          if (currentUser) await fetchOwnedNotes();
           renderAuth();
-      }
-
-      async function fetchOwnedNotes() {
-          if(!currentUser) return;
-          try {
-              const res = await fetch(`${API_URL}?type=user_notes`, {
-                  headers: { 'Authorization': `Bearer ${currentUser.token}` }
-              });
-              if(res.ok) ownedNotes = await res.json();
-          } catch(e) { console.error(e); }
       }
 
       window.addEventListener('message', async (event) => {
           if (event.data && event.data.type === 'LOGIN_SUCCESS') {
               currentUser = event.data.user;
               localStorage.setItem('openNotesSession', JSON.stringify(currentUser));
-              await fetchOwnedNotes();
               renderAuth();
               showPopup("Logged in successfully");
+              
+              allItems = await fetchNotes();
+              render();
 
               if (sessionStorage.getItem('pendingUpload') === 'true') {
                   sessionStorage.removeItem('pendingUpload');
@@ -1596,28 +1572,21 @@
           currentUser = null;
           ownedNotes = [];
           renderAuth();
+          
+          fetchNotes().then(items => {
+              allItems = items;
+              render();
+          });
           showPopup("Logged out");
       }
 
-
       uploadEls.form.onsubmit = async (e) => {
           e.preventDefault();
-          
-          if (!turnstileToken) {
-              showPopup("Please complete the security check.", "error");
-              return;
-          }
-
+          if (!turnstileToken) { showPopup("Please complete the security check.", "error"); return; }
           const file = uploadEls.file.files[0];
-          
-          if (!file) {
-              showPopup("Please select a file.", "error");
-              return;
-          }
-          
+          if (!file) { showPopup("Please select a file.", "error"); return; }
           if (uploadEls.author.classList.contains('input-error') || uploadEls.title.classList.contains('input-error')) {
-              showPopup("Please keep the highlighted fields shorter.", "error");
-              return;
+              showPopup("Please keep the highlighted fields shorter.", "error"); return;
           }
 
           uploadEls.submit.classList.add('btn-loading');
@@ -1626,7 +1595,6 @@
 
           try {
               const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
-              
               const safeTitle = cleanText(uploadEls.title.value);
               const safeAuthor = cleanText(uploadEls.author.value);
               const ext = file.name.split('.').pop();
@@ -1636,7 +1604,6 @@
 
               let baseName = `${safeTitle} (by ${safeAuthor})`;
               let finalFileName = `${baseName}.${ext}`;
-
               let counter = 1;
               while (allItems.some(item => item.name === finalFileName)) {
                   finalFileName = `${baseName} (${counter}).${ext}`;
@@ -1663,22 +1630,15 @@
 
               const response = await fetch(`${API_URL}?type=upload`, {
                   method: 'POST',
-                  headers: { 
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${currentUser.token}`
-                  },
+                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUser.token}` },
                   body: JSON.stringify(payload)
               });
 
               const result = await response.json();
-
-              if (!response.ok) {
-                  throw new Error(result.error || "Upload failed");
-              }
+              if (!response.ok) throw new Error(result.error || "Upload failed");
 
               showPopup("Upload successful!", "success");
               toggleOverlay(uploadEls.overlay, false);
-              
               uploadEls.form.reset();
               uploadEls.drop.classList.remove('has-file');
               uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
@@ -1693,10 +1653,8 @@
           } catch (err) {
               console.error(err);
               showPopup(err.message, "error");
-              
               if (window.turnstile) turnstile.reset();
               turnstileToken = null;
-              
           } finally {
               uploadEls.submit.classList.remove('btn-loading');
               uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
@@ -1705,6 +1663,35 @@
       };
 
       checkSession();
+
+      (async function() {
+        try {
+          try {
+              const authRes = await fetch(`${API_URL}?type=authors`);
+              if(authRes.ok) verifiedAuthors = await authRes.json();
+          } catch(e) { console.error("Failed to load verified authors", e); }
+          
+          allItems = await fetchNotes();
+                    
+          const params = new URLSearchParams(window.location.search);
+          if (params.has('q')) els.search.value = params.get('q');
+          
+          render();
+
+          if(location.hash.startsWith('#/notes/')) { 
+              const n=decodeURIComponent(location.hash.substr(8)); 
+              const it=allItems.find(i=>i.name===n); 
+              if(it) openOverlay(it); 
+          }
+          else if(location.hash.endsWith('.md')) {
+              openInfo(`resources/${location.hash.substr(2)}`);
+          }
+          else if(location.hash === '#/upload') {
+              toggleOverlay(uploadEls.overlay, true);
+          }
+
+        } catch(e) { els.container.innerHTML="<p>Failed to load.</p>"; }
+      })();
   </script>
 </body>
 </html>
