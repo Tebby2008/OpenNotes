@@ -752,6 +752,22 @@
         popup: document.getElementById('popupNotification'),
         mobTog: document.getElementById('viewToggleMobile')
       };
+      
+      const uploadEls = {
+          btn: document.getElementById('uploadBtn'),
+          overlay: document.getElementById('uploadOverlay'),
+          back: document.getElementById('uploadBackBtn'),
+          form: document.getElementById('uploadForm'),
+          file: document.getElementById('fileInput'),
+          drop: document.getElementById('dropArea'),
+          msg: document.querySelector('.file-msg'),
+          title: document.getElementById('upTitle'),
+          author: document.getElementById('upAuthor'),
+          aiBtn: document.getElementById('upAiToggle'),
+          aiCheck: document.getElementById('upAiCheck'),
+          submit: document.getElementById('submitUploadBtn'),
+          status: document.getElementById('uploadStatus'),
+      };
 
       let currentUser = null; 
 
@@ -929,37 +945,7 @@
         }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl);
       }
 
-      (async function() {
-        try {
-          try {
-              const authRes = await fetch(`${API_URL}?type=authors`);
-              if(authRes.ok) verifiedAuthors = await authRes.json();
-          } catch(e) {}
-
-          allItems = await fetchNotes();
-          
-          fetch(`${API_URL}?type=website`,{method:'POST'}).then(r=>r.json()).then(d=>els.webViews.textContent=d.views).catch(()=>{});
-          
-          const params = new URLSearchParams(window.location.search);
-          if (params.has('q')) els.search.value = params.get('q');
-          
-          render();
-          
-          if(location.hash.startsWith('#/notes/')) { 
-              const n=decodeURIComponent(location.hash.substr(8)); 
-              const it=allItems.find(i=>i.name===n); 
-              if(it) openOverlay(it); 
-          }
-          else if(location.hash.endsWith('.md')) {
-              openInfo(`resources/${location.hash.substr(2)}`);
-          }
-          else if(location.hash === '#/upload') {
-              toggleOverlay(uploadEls.overlay, true);
-          }
-
-        } catch(e) { els.container.innerHTML="<p>Failed to load.</p>"; console.error(e); }
-      })();
-
+      
       function render() {
         const escapeHtml = (str) => {
           if (!str) return '';
@@ -1116,7 +1102,15 @@
         if (it.dl && isValidUrl(it.dl)) {
             els.ovRaw.href = els.frame.src = `view.html?file=${encodeURIComponent(it.dl)}`;
             els.ovDown.onclick = () => {
-              updateCounter(it.path, 'downloads').then(d => { if(d){ it.v=d.views; it.d=d.downloads; els.ovView.textContent=d.views; els.ovDl.textContent=d.downloads; render(); }});
+              updateCounter(it.path, 'downloads').then(d => { 
+                  if(d) { 
+                      if (d.views !== undefined) it.v = d.views;
+                      if (d.downloads !== undefined) it.d = d.downloads;
+                      els.ovView.textContent = it.v; 
+                      els.ovDl.textContent = it.d; 
+                      render(); 
+                  }
+              });
               const a = document.createElement("a"); 
               a.href=it.dl; 
               a.download=it.name; 
@@ -1133,7 +1127,16 @@
         }
         
         els.ovView.textContent = it.v; els.ovDl.textContent = it.d;
-        updateCounter(it.path, 'views').then(d => { if(d){ it.v=d.views; it.d=d.downloads; els.ovView.textContent=d.views; els.ovDl.textContent=d.downloads; render(); }});
+        updateCounter(it.path, 'views').then(d => { 
+            if(d) {
+                if (d.views !== undefined) it.v = d.views;
+                if (d.downloads !== undefined) it.d = d.downloads;
+                
+                els.ovView.textContent = it.v; 
+                els.ovDl.textContent = it.d; 
+                render(); 
+            }
+        });
         
         els.ovShare.onclick = () => { navigator.clipboard.writeText(window.location.href).then(()=>showPopup('Link copied', 'success')).catch(()=>{}); };
       }
@@ -1295,23 +1298,6 @@
 
         } catch(e) { els.container.innerHTML="<p>Failed to load.</p>"; }
       })();
-
-
-      const uploadEls = {
-          btn: document.getElementById('uploadBtn'),
-          overlay: document.getElementById('uploadOverlay'),
-          back: document.getElementById('uploadBackBtn'),
-          form: document.getElementById('uploadForm'),
-          file: document.getElementById('fileInput'),
-          drop: document.getElementById('dropArea'),
-          msg: document.querySelector('.file-msg'),
-          title: document.getElementById('upTitle'),
-          author: document.getElementById('upAuthor'),
-          aiBtn: document.getElementById('upAiToggle'),
-          aiCheck: document.getElementById('upAiCheck'),
-          submit: document.getElementById('submitUploadBtn'),
-          status: document.getElementById('uploadStatus'),
-      };
 
       uploadEls.btn.onclick = (e) => {
           e.preventDefault();
