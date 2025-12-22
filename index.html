@@ -989,12 +989,12 @@
       updateView();
 
       const fmtDate = (iso) => !iso ? "—" : new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-      const toggleOverlay = (el, state) => {
+      const toggleOverlay = (el, state, suppressHistory = false) => {
         document.body.style.overflow = state ? 'hidden' : '';
         el.setAttribute("aria-hidden", !state);
         state ? el.classList.add("open") : el.classList.remove("open");
         
-        if (!state) {
+        if (!state && !suppressHistory) {
           history.replaceState(null, null, window.location.pathname + window.location.search);
         }
       };
@@ -1155,7 +1155,8 @@
             url.searchParams.delete('q'); 
           }
 
-          if (location.hash !== '#/mynotes' && !location.hash.startsWith('#/notes/') && !location.hash.startsWith('#/upload')) {
+          if (url.search !== window.location.search) {
+             history.replaceState(null, '', url);
           }
         }
       }
@@ -1185,7 +1186,7 @@
                       <div class="morph-content" style="padding:12px;"> 
                           <div style="font-weight:600; font-size:0.9rem; color:var(--text)">Delete note?</div>
                           <button class="confirm-action-btn" id="realDeleteBtn">
-                              <span class="material-symbols-rounded" style="font-size:18px">delete</span> Yes, Delete
+                              <span class="material-symbols-rounded" style="font-size:18px">delete</span> Yes
                           </button>
                       </div>
                   </div>`;
@@ -1401,9 +1402,9 @@
       }
 
       window.onpopstate = (e) => {
-          toggleOverlay(els.overlay, false);
-          toggleOverlay(els.infoOver, false);
-          toggleOverlay(uploadEls.overlay, false);
+          toggleOverlay(els.overlay, false, true);
+          toggleOverlay(els.infoOver, false, true);
+          toggleOverlay(uploadEls.overlay, false, true);
 
           const params = new URLSearchParams(window.location.search);
           const query = params.get('q');
