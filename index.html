@@ -752,7 +752,7 @@
         popup: document.getElementById('popupNotification'),
         mobTog: document.getElementById('viewToggleMobile')
       };
-      
+
       const uploadEls = {
           btn: document.getElementById('uploadBtn'),
           overlay: document.getElementById('uploadOverlay'),
@@ -768,55 +768,23 @@
           submit: document.getElementById('submitUploadBtn'),
           status: document.getElementById('uploadStatus'),
       };
+      const showPopup = (msg, type = 'success') => {
+        const icon = els.popup.querySelector('.material-symbols-rounded');
+        const text = els.popup.querySelector('span:last-child');
+        
+        text.textContent = msg;
 
-      let currentUser = null; 
-
-      function renderAuth() {
-          if (!currentUser) {
-              els.auth.innerHTML = `
-                  <div class="profile-circle" title="Log In" onclick="window.location.href='${API_URL}/auth/login'">
-                      <div class="icon-default"><span class="material-symbols-rounded">person</span></div>
-                      <div class="icon-hover"><span class="material-symbols-rounded">login</span></div>
-                  </div>`;
-          } else {
-              els.auth.innerHTML = `
-                  <div class="profile-circle" title="Log Out" onclick="logout()">
-                      <img src="${currentUser.picture}" onerror="this.src='resources/icon-square.png'">
-                      <div class="icon-hover"><span class="material-symbols-rounded">logout</span></div>
-                  </div>`;
-          }
-      }
-
-      function checkSession() {
-        const stored = localStorage.getItem('openNotesSession');
-        if (stored) {
-            try { currentUser = JSON.parse(stored); } catch(e) { localStorage.removeItem('openNotesSession'); }
+        if (type === 'error') {
+            els.popup.classList.add('error');
+            icon.textContent = 'cancel';
+        } else {
+            els.popup.classList.remove('error');
+            icon.textContent = 'check_circle';
         }
 
-        const params = new URLSearchParams(window.location.search);
-        if (params.has('token')) {
-            const token = params.get('token');
-            const pic = decodeURIComponent(params.get('picture') || '');
-            const sub = params.get('sub');
-            
-            if(token && sub) {
-                currentUser = { token, picture: pic, sub };
-                localStorage.setItem('openNotesSession', JSON.stringify(currentUser));
-                window.history.replaceState({}, document.title, window.location.pathname);
-                showPopup("Logged in successfully");
-            }
-        }
-        renderAuth();
-      }
-      
-      function logout() {
-          localStorage.removeItem('openNotesSession');
-          currentUser = null;
-          renderAuth();
-          showPopup("Logged out");
-      }
-      
-      checkSession();
+        els.popup.classList.add('show');
+        setTimeout(() => els.popup.classList.remove('show'), 3000);
+      };
 
       window.onTurnstileSuccess = function(token) {
           turnstileToken = token;
@@ -875,23 +843,6 @@
         if (!state) {
           history.replaceState(null, null, window.location.pathname + window.location.search);
         }
-      };
-      const showPopup = (msg, type = 'success') => {
-        const icon = els.popup.querySelector('.material-symbols-rounded');
-        const text = els.popup.querySelector('span:last-child');
-        
-        text.textContent = msg;
-
-        if (type === 'error') {
-            els.popup.classList.add('error');
-            icon.textContent = 'cancel';
-        } else {
-            els.popup.classList.remove('error');
-            icon.textContent = 'check_circle';
-        }
-
-        els.popup.classList.add('show');
-        setTimeout(() => els.popup.classList.remove('show'), 3000);
       };
 
       const updateCounter = async (id, type) => {
@@ -1504,6 +1455,56 @@
               uploadEls.status.textContent = "";
           }
       };
+
+      let currentUser = null; 
+
+      function renderAuth() {
+          if (!currentUser) {
+              els.auth.innerHTML = `
+                  <div class="profile-circle" title="Log In" onclick="window.location.href='${API_URL}/auth/login'">
+                      <div class="icon-default"><span class="material-symbols-rounded">person</span></div>
+                      <div class="icon-hover"><span class="material-symbols-rounded">login</span></div>
+                  </div>`;
+          } else {
+              els.auth.innerHTML = `
+                  <div class="profile-circle" title="Log Out" onclick="logout()">
+                      <img src="${currentUser.picture}" onerror="this.src='resources/icon-square.png'">
+                      <div class="icon-hover"><span class="material-symbols-rounded">logout</span></div>
+                  </div>`;
+          }
+      }
+
+      function checkSession() {
+        const stored = localStorage.getItem('openNotesSession');
+        if (stored) {
+            try { currentUser = JSON.parse(stored); } catch(e) { localStorage.removeItem('openNotesSession'); }
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('token')) {
+            const token = params.get('token');
+            const pic = decodeURIComponent(params.get('picture') || '');
+            const sub = params.get('sub');
+            
+            if(token && sub) {
+                currentUser = { token, picture: pic, sub };
+                localStorage.setItem('openNotesSession', JSON.stringify(currentUser));
+                window.history.replaceState({}, document.title, window.location.pathname);
+                showPopup("Logged in successfully");
+            }
+        }
+        renderAuth();
+      }
+      
+      function logout() {
+          localStorage.removeItem('openNotesSession');
+          currentUser = null;
+          renderAuth();
+          showPopup("Logged out");
+      }
+      
+      checkSession();
+
   </script>
 </body>
 </html>
