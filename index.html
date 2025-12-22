@@ -94,6 +94,8 @@
       overflow-x: hidden;
       min-height: 100%; margin: 0;
       transition: background var(--speed) ease, color var(--speed) ease;
+      display: flex;
+      flex-direction: column; 
     }
     
 
@@ -435,15 +437,28 @@
         font-weight: 700; font-size: 0.9rem;
         margin-top: 12px; cursor: pointer;
         display: flex; align-items: center; gap: 6px;
-        transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+        transition: background 0.2s, transform 0.2s, box-shadow 0.2s; 
         box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+        will-change: transform;
     }
     .confirm-action-btn:hover { 
-            background: #dc2626; 
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        background: #dc2626; 
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
     }
     .logout-morph .confirm-action-btn { background: var(--text); color: var(--bg); }
+
+    .return-home-link {
+        display: block;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        margin-top: 12px;
+        opacity: 0.8;
+        transition: 0.2s;
+        width: fit-content;
+    }
+    .return-home-link:hover { opacity: 1; transform: translateX(-4px); }
 
     .popup-notification {
       position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
@@ -690,7 +705,12 @@
       </p>
   </header>
 
-  <div id="myNotesHeader" class="my-notes-header">My Notes</div>
+  <div id="myNotesHeader" class="my-notes-header">
+      <div>My Notes</div>
+      <a href="#" onclick="history.pushState(null,'',' '); render(); return false;" class="return-home-link">
+          <span class="material-symbols-rounded" style="font-size:1em; vertical-align:middle;">arrow_back</span> Return to home
+      </a>
+  </div>
   
   <div class="controls-container">
     <div class="controls">
@@ -1056,13 +1076,22 @@
         const isMyNotesMode = location.hash === '#/mynotes';
         const mainHeader = document.getElementById('mainHeader');
         const myNotesHeader = document.getElementById('myNotesHeader');
+        
+        const uploadBtn = document.getElementById('uploadBtn');
+        const codePrepBtn = document.querySelector('.controls-promo-btn');
 
         if (isMyNotesMode) {
             mainHeader.style.display = 'none';
             myNotesHeader.style.display = 'block';
+            
+            if(uploadBtn) uploadBtn.style.display = 'none';
+            if(codePrepBtn) codePrepBtn.style.display = 'none';
         } else {
             mainHeader.style.display = 'flex';
             myNotesHeader.style.display = 'none';
+            
+            if(uploadBtn) uploadBtn.style.display = '';
+            if(codePrepBtn) codePrepBtn.style.display = '';
         }
 
         let baseList = allItems;
@@ -1094,7 +1123,7 @@
         }
 
         list.forEach((it, i) => {
-             const el = document.createElement("article");
+          const el = document.createElement("article");
           el.className = viewMode === "grid" ? "card" : "row";
           el.style.animationDelay = `${500*(1-Math.pow(0.9, i))}ms`;
 
@@ -1162,7 +1191,10 @@
       }
 
       function openOverlay(it) {
-          history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
+          if (location.hash !== '#/mynotes') {
+             history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
+          }
+          
           toggleOverlay(els.overlay, true);
           
           els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
@@ -1524,7 +1556,7 @@
                           <div class="morph-content" style="padding: 16px;">
                               <div style="font-weight:700; font-size:1rem; color:var(--text); margin-bottom: 4px;">Account</div>
                               
-                              <button class="menu-btn neutral" onclick="window.location.hash='#/mynotes'">
+                              <button class="menu-btn neutral" id="myNotesNavBtn">
                                 <span class="material-symbols-rounded">folder_open</span> My Notes
                               </button>
                               
@@ -1537,7 +1569,17 @@
                   
               setTimeout(() => {
                   const btn = document.getElementById('logoutMorphBtn');
+                  const navBtn = document.getElementById('myNotesNavBtn');
+
                   if(btn) {
+                      if (navBtn) {
+                          navBtn.onclick = () => {
+                              window.location.hash = '#/mynotes';
+                              btn.classList.remove('expanded', 'profile-menu-expanded');
+                              const tempBodyClick = document.body.onclick; 
+                          };
+                      }
+
                       btn.onclick = (e) => {
                           if (e.target.closest('button')) return;
                           
