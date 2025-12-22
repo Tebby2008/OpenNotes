@@ -1123,8 +1123,7 @@
                 myNotesHeader.classList.add('header-visible');
             }
             
-            if(uploadBtn) uploadBtn.style.display = 'none';
-            if(codePrepBtn) codePrepBtn.style.display = 'none';
+            if(codePrepBtn) codePrepBtn.style.display = 'none'; 
         } else {
              if (myNotesHeader.style.display === 'block') {
                 myNotesHeader.classList.remove('header-visible');
@@ -1392,6 +1391,12 @@
       }
 
       async function openInfo(md) {
+        if (location.hash === '#/mynotes') {
+            returnToMyNotes = true;
+        } else {
+            returnToMyNotes = false;
+        }
+
         history.pushState({ info: md }, '', `#/${md.split('/').pop()}`);
         toggleOverlay(els.infoOver, true);
         els.infoCont.innerHTML = "";
@@ -1406,6 +1411,16 @@
       if(els.mobTog) els.mobTog.onclick = () => { viewMode = viewMode==="grid"?"list":"grid"; localStorage.setItem('openNotesViewMode',viewMode); updateView(); render(); };
       
       els.aiBtn.onclick = () => { showAI=!showAI; els.aiBtn.classList.toggle("active-ai"); render(); };
+      uploadEls.btn.onclick = () => {
+          if (location.hash === '#/mynotes') {
+              returnToMyNotes = true;
+          } else {
+              returnToMyNotes = false;
+          }
+          
+          history.pushState(null, '', '#/upload');
+          toggleOverlay(uploadEls.overlay, true);
+      };
       const types=["ALL","PDF","DOCX"]; let tidx=0;
       els.typeBtn.onclick = () => { tidx=(tidx+1)%3; els.typeBtn.querySelector('b').textContent=types[tidx]; currentFormat=types[tidx].toLowerCase(); render(); };
       
