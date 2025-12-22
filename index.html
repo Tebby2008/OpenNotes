@@ -943,13 +943,11 @@
       };
       
       async function fetchNotes() {
-          // 1. Fetch GitHub Metadata (The List of Files)
           const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`);
           if (!res.ok) throw new Error("Metadata failed");
           const data = await res.json();
           
-          // 2. Fetch ALL Dynamic Data (Stats, Website Views, Ownership) in ONE request
-          let statsData = { views: {}, downloads: {}, site_views: 0, owned_notes: [] };
+          let dbData = { site_views: 0, data: {}, owned_notes: [] };
           
           try {
               const headers = {};
@@ -959,40 +957,35 @@
 
               const s = await fetch(`${API_URL}?type=init`, { headers });
               if (s.ok) {
-                  statsData = await s.json();
+                  dbData = await s.json();
                   
-                  // Update Global Variables immediately
-                  els.webViews.textContent = statsData.site_views;
-                  ownedNotes = statsData.owned_notes || []; // Update the owned list for the delete button logic
+                  els.webViews.textContent = dbData.site_views;
+                  ownedNotes = dbData.owned_notes || []; 
               }
           } catch(e) { console.error("Stats fetch failed", e); }
           
-          // 3. Merge Data
           return data.map(m => {
               const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
               const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
               
-              // Clean key matches how you store it in Redis (usually filename without "Notes/" prefix)
               const cleanKey = m.name; 
               
               return {
-              name: m.name, 
-              title: m.name.replace(/\.[^/.]+$/, ""), 
-              path: m.path,
-              dl: safeDl,
-              thumb: safeThumb, 
-              fmt: (m.name.split('.').pop()||"").toLowerCase(),
-              upd: m.last_updated, 
-              auth: m.author, 
-              user: m.author_username,
-              ai: m.is_ai_generated, 
-              // Map stats directly
-              v: parseInt(statsData.views[cleanKey]) || 0, 
-              d: parseInt(statsData.downloads[cleanKey]) || 0
+                  name: m.name, 
+                  title: m.name.replace(/\.[^/.]+$/, ""), 
+                  path: m.path,
+                  dl: safeDl,
+                  thumb: safeThumb, 
+                  fmt: (m.name.split('.').pop()||"").toLowerCase(),
+                  upd: m.last_updated, 
+                  auth: m.author, 
+                  user: m.author_username,
+                  ai: m.is_ai_generated, 
+                  v: parseInt(dbData.data['v:' + cleanKey]) || 0, 
+                  d: parseInt(dbData.data['d:' + cleanKey]) || 0
               };
           }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl);
       }
-
       
       function render() {
         const escapeHtml = (str) => {
