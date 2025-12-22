@@ -349,8 +349,7 @@
 
     .morph-wrap {
         position: relative;
-        width: 44px; 
-        height: 44px;
+        width: 44px; height: 44px;
         z-index: 10;
     }
 
@@ -374,17 +373,43 @@
     }
 
     .morph-btn:hover { background: var(--border-soft); color: var(--text); }
-    .morph-btn .icon-state { transition: opacity 0.2s; position: absolute; }
+
+    .icon-state {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        transition: opacity 0.2s;
+        pointer-events: none; 
+    }
+
+    .icon-state .icon-default {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%; object-fit: cover;
+        opacity: 1; transition: opacity 0.2s;
+    }
+
+    .icon-state .icon-hover {
+        position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--panel);
+        opacity: 0; transition: opacity 0.2s;
+    }
+
+    .morph-btn:not(.expanded):hover .icon-state .icon-default { opacity: 0; }
+    .morph-btn:not(.expanded):hover .icon-state .icon-hover { opacity: 1; }
 
     .morph-btn.expanded {
-        width: 200px;
-        height: 110px;
+        width: 200px; height: 110px;
         border-radius: 20px;
         background: var(--panel);
         border-color: var(--border);
         box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         cursor: default;
         z-index: 100;
+    }
+
+    .morph-btn.expanded .icon-state { 
+        opacity: 0; 
+        pointer-events: none; 
     }
 
     .morph-content {
@@ -399,7 +424,9 @@
         opacity: 1;
         pointer-events: auto;
     }
-    .morph-btn.expanded .icon-state { opacity: 0; }
+
+    .morph-btn .icon-state { transition: opacity 0.2s; position: absolute; }
+
 
     .confirm-action-btn {
         background: #ef4444; color: white;
@@ -1485,111 +1512,7 @@
               this.classList.remove('input-error');
           }
       });
-      uploadEls.form.onsubmit = async (e) => {
-          e.preventDefault();
-          
-          if (!turnstileToken) {
-              showPopup("Please complete the security check.", "error");
-              document.querySelector('.cf-turnstile').parentElement.style.border = "1px solid red";
-              document.querySelector('.cf-turnstile').parentElement.style.borderRadius = "4px";
-              return;
-          }
-
-          const file = uploadEls.file.files[0];
-          
-          if (!file) {
-              showPopup("Please select a file.", "error");
-              return;
-          }
-          
-          if (uploadEls.author.classList.contains('input-error') || uploadEls.title.classList.contains('input-error')) {
-              showPopup("Please keep the highlighted fields shorter.", "error");
-              return;
-          }
-
-          document.querySelector('.cf-turnstile').parentElement.style.border = "none";
-
-          uploadEls.submit.classList.add('btn-loading');
-          uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
-          uploadEls.status.textContent = "Processing file...";
-
-          try {
-              const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
-              
-              const safeTitle = cleanText(uploadEls.title.value);
-              const safeAuthor = cleanText(uploadEls.author.value);
-              const ext = file.name.split('.').pop();
-
-              if (safeTitle.length > 60) throw new Error("Title too long");
-              if (safeAuthor.length > 25) throw new Error("Author name too long");
-
-              let baseName = `${safeTitle} (by ${safeAuthor})`;
-              let finalFileName = `${baseName}.${ext}`;
-
-              let counter = 1;
-              while (allItems.some(item => item.name === finalFileName)) {
-                  finalFileName = `${baseName} (${counter}).${ext}`;
-                  counter++;
-              }
-
-              const toBase64 = file => new Promise((resolve, reject) => {
-                  const reader = new FileReader();
-                  reader.readAsDataURL(file);
-                  reader.onload = () => resolve(reader.result.split(',')[1]);
-                  reader.onerror = error => reject(error);
-              });
-
-              const base64Content = await toBase64(file);
-              uploadEls.status.textContent = "Uploading to servers...";
-              
-              const payload = {
-                  fileName: finalFileName,
-                  fileContent: base64Content,
-                  author: safeAuthor,
-                  isAi: uploadEls.aiCheck.checked,
-                  token: turnstileToken
-              };
-
-              const response = await fetch(`${API_URL}?type=upload`, {
-                  method: 'POST',
-                  headers: { 
-                      'Content-Type': 'application/json',
-                      'Authorization': `Bearer ${currentUser.token}`
-                  },
-                  body: JSON.stringify(payload)
-              });
-
-              const result = await response.json();
-
-              if (!response.ok) {
-                  throw new Error(result.error || "Upload failed");
-              }
-
-              showPopup("Upload successful!", "success");
-              toggleOverlay(uploadEls.overlay, false);
-              
-              uploadEls.form.reset();
-              uploadEls.drop.classList.remove('has-file');
-              uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
-              uploadEls.aiBtn.classList.remove('active-ai');
-              uploadEls.author.classList.remove('input-error');
-              
-              if (window.turnstile) turnstile.reset();
-              turnstileToken = null;
-
-          } catch (err) {
-              console.error(err);
-              showPopup(err.message, "error");
-              
-              if (window.turnstile) turnstile.reset();
-              turnstileToken = null;
-              
-          } finally {
-              uploadEls.submit.classList.remove('btn-loading');
-              uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
-              uploadEls.status.textContent = "";
-          }
-      };
+    
 
       let currentUser = null;
       let ownedNotes = []; // Store list of files user owns
@@ -1715,6 +1638,112 @@
           renderAuth();
           showPopup("Logged out");
       }
+
+      uploadEls.form.onsubmit = async (e) => {
+          e.preventDefault();
+          
+          if (!turnstileToken) {
+              showPopup("Please complete the security check.", "error");
+              document.querySelector('.cf-turnstile').parentElement.style.border = "1px solid red";
+              document.querySelector('.cf-turnstile').parentElement.style.borderRadius = "4px";
+              return;
+          }
+
+          const file = uploadEls.file.files[0];
+          
+          if (!file) {
+              showPopup("Please select a file.", "error");
+              return;
+          }
+          
+          if (uploadEls.author.classList.contains('input-error') || uploadEls.title.classList.contains('input-error')) {
+              showPopup("Please keep the highlighted fields shorter.", "error");
+              return;
+          }
+
+          document.querySelector('.cf-turnstile').parentElement.style.border = "none";
+
+          uploadEls.submit.classList.add('btn-loading');
+          uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
+          uploadEls.status.textContent = "Processing file...";
+
+          try {
+              const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
+              
+              const safeTitle = cleanText(uploadEls.title.value);
+              const safeAuthor = cleanText(uploadEls.author.value);
+              const ext = file.name.split('.').pop();
+
+              if (safeTitle.length > 60) throw new Error("Title too long");
+              if (safeAuthor.length > 25) throw new Error("Author name too long");
+
+              let baseName = `${safeTitle} (by ${safeAuthor})`;
+              let finalFileName = `${baseName}.${ext}`;
+
+              let counter = 1;
+              while (allItems.some(item => item.name === finalFileName)) {
+                  finalFileName = `${baseName} (${counter}).${ext}`;
+                  counter++;
+              }
+
+              const toBase64 = file => new Promise((resolve, reject) => {
+                  const reader = new FileReader();
+                  reader.readAsDataURL(file);
+                  reader.onload = () => resolve(reader.result.split(',')[1]);
+                  reader.onerror = error => reject(error);
+              });
+
+              const base64Content = await toBase64(file);
+              uploadEls.status.textContent = "Uploading to servers...";
+              
+              const payload = {
+                  fileName: finalFileName,
+                  fileContent: base64Content,
+                  author: safeAuthor,
+                  isAi: uploadEls.aiCheck.checked,
+                  token: turnstileToken
+              };
+
+              const response = await fetch(`${API_URL}?type=upload`, {
+                  method: 'POST',
+                  headers: { 
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${currentUser.token}`
+                  },
+                  body: JSON.stringify(payload)
+              });
+
+              const result = await response.json();
+
+              if (!response.ok) {
+                  throw new Error(result.error || "Upload failed");
+              }
+
+              showPopup("Upload successful!", "success");
+              toggleOverlay(uploadEls.overlay, false);
+              
+              uploadEls.form.reset();
+              uploadEls.drop.classList.remove('has-file');
+              uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
+              uploadEls.aiBtn.classList.remove('active-ai');
+              uploadEls.author.classList.remove('input-error');
+              
+              if (window.turnstile) turnstile.reset();
+              turnstileToken = null;
+
+          } catch (err) {
+              console.error(err);
+              showPopup(err.message, "error");
+              
+              if (window.turnstile) turnstile.reset();
+              turnstileToken = null;
+              
+          } finally {
+              uploadEls.submit.classList.remove('btn-loading');
+              uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
+              uploadEls.status.textContent = "";
+          }
+      };
 
       checkSession();
   </script>
