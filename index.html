@@ -324,7 +324,7 @@
       background: var(--panel); width: 90%; height: 90%; max-width: 1200px;
       border-radius: 24px; box-shadow: var(--shadow-lg); border: 1px solid var(--border);
       display: grid; grid-template-columns: 1fr 360px; overflow: hidden;
-      transform: scale(0.9) translateY(20px); opacity: 0; transition: all var(--speed) var(--ease);
+      transform: scale(0.9) translateY(20px); opacity: 0; transition: all var(--speed) var(--ease-smooth);
     }
     .overlay.open .viewer { transform: scale(1) translateY(0); opacity: 1; }
     .viewer .left { background: var(--bg); position: relative; }
@@ -447,19 +447,6 @@
     }
     .logout-morph .confirm-action-btn { background: var(--text); color: var(--bg); }
 
-    .return-home-link {
-        display: block;
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--accent);
-        text-decoration: none;
-        margin-top: 12px;
-        opacity: 0.8;
-        transition: 0.2s;
-        width: fit-content;
-    }
-    .return-home-link:hover { opacity: 1; transform: translateX(-4px); }
-
     .popup-notification {
       position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px);
       background: var(--panel); padding: 12px 24px; border-radius: 999px;
@@ -556,15 +543,49 @@
 
     .my-notes-header {
         display: none;
-        padding: 4rem 1.5rem 2rem;
+        padding: 6rem 1.5rem 2rem; 
         max-width: 1200px; 
         margin: 0 auto;
         font-size: 3.5rem; 
         font-weight: 800; 
         color: var(--text);
         letter-spacing: -0.03em;
-        line-height: 1;
+        line-height: 1.1;
+        text-align: left; 
+        
+        opacity: 0;
+        transform: translateY(10px);
+        transition: opacity 0.4s ease, transform 0.4s ease;
     }
+
+    #mainHeader {
+        transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    
+    .header-visible {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+    }
+    .header-hidden {
+        opacity: 0 !important;
+        transform: translateY(-10px) !important;
+        pointer-events: none;
+    }
+
+    .return-home-link {
+        display: inline-flex; 
+        align-items: center;
+        gap: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+        margin-top: 16px;
+        opacity: 0.8;
+        transition: 0.2s;
+        cursor: pointer;
+    }
+    .return-home-link:hover { opacity: 1; transform: translateX(-4px); }
     
     .morph-btn.expanded.profile-menu-expanded {
         width: 180px; 
@@ -894,6 +915,8 @@
       let turnstileToken = null;
       let turnstileWidgetId = null;
       let verifiedAuthors = {}; 
+      let returnToMyNotes = false;
+
       let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="updated-desc", currentFormat="all";
 
       const els = {
@@ -1015,7 +1038,14 @@
         state ? el.classList.add("open") : el.classList.remove("open");
         
         if (!state && !suppressHistory) {
-          history.replaceState(null, null, window.location.pathname + window.location.search);
+            if (returnToMyNotes) {
+                history.replaceState(null, null, '#/mynotes');
+                returnToMyNotes = false; 
+                render(); 
+            } else {
+                history.replaceState(null, null, window.location.pathname + window.location.search);
+                render();
+            }
         }
       };
 
@@ -1081,14 +1111,32 @@
         const codePrepBtn = document.querySelector('.controls-promo-btn');
 
         if (isMyNotesMode) {
-            mainHeader.style.display = 'none';
-            myNotesHeader.style.display = 'block';
+            if (mainHeader.style.display !== 'none') {
+                mainHeader.classList.add('header-hidden');
+                setTimeout(() => { 
+                    mainHeader.style.display = 'none'; 
+                    myNotesHeader.style.display = 'block';
+                    requestAnimationFrame(() => myNotesHeader.classList.add('header-visible'));
+                }, 300); 
+            } else {
+                myNotesHeader.style.display = 'block';
+                myNotesHeader.classList.add('header-visible');
+            }
             
             if(uploadBtn) uploadBtn.style.display = 'none';
             if(codePrepBtn) codePrepBtn.style.display = 'none';
         } else {
-            mainHeader.style.display = 'flex';
-            myNotesHeader.style.display = 'none';
+             if (myNotesHeader.style.display === 'block') {
+                myNotesHeader.classList.remove('header-visible');
+                setTimeout(() => { 
+                    myNotesHeader.style.display = 'none'; 
+                    mainHeader.style.display = 'flex';
+                    requestAnimationFrame(() => mainHeader.classList.remove('header-hidden'));
+                }, 300);
+            } else {
+                mainHeader.style.display = 'flex';
+                mainHeader.classList.remove('header-hidden');
+            }
             
             if(uploadBtn) uploadBtn.style.display = '';
             if(codePrepBtn) codePrepBtn.style.display = '';
@@ -1123,7 +1171,7 @@
         }
 
         list.forEach((it, i) => {
-          const el = document.createElement("article");
+             const el = document.createElement("article");
           el.className = viewMode === "grid" ? "card" : "row";
           el.style.animationDelay = `${500*(1-Math.pow(0.9, i))}ms`;
 
@@ -1184,16 +1232,22 @@
             url.searchParams.delete('q'); 
           }
 
-          if (url.search !== window.location.search) {
-             history.replaceState(null, '', url);
+          if (location.hash !== '#/mynotes' && !location.hash.startsWith('#/notes/') && !location.hash.startsWith('#/upload')) {
+             if (url.search !== window.location.search) {
+                 history.replaceState(null, '', url);
+             }
           }
         }
       }
 
       function openOverlay(it) {
-          if (location.hash !== '#/mynotes') {
-             history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
+          if (location.hash === '#/mynotes') {
+              returnToMyNotes = true;
+          } else {
+              returnToMyNotes = false;
           }
+
+          history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
           
           toggleOverlay(els.overlay, true);
           
@@ -1211,14 +1265,13 @@
               const wrap = document.createElement('div');
               wrap.id = 'morphDeleteWrap';
               wrap.className = 'morph-wrap';
-              
               wrap.innerHTML = `
                   <div class="morph-btn" id="deleteMorphBtn">
                       <span class="material-symbols-rounded icon-state" style="color:#ef4444">delete</span>
                       <div class="morph-content" style="padding:12px;"> 
                           <div style="font-weight:600; font-size:0.9rem; color:var(--text)">Delete note?</div>
                           <button class="confirm-action-btn" id="realDeleteBtn">
-                              <span class="material-symbols-rounded" style="font-size:18px">delete</span> Yes
+                              <span class="material-symbols-rounded" style="font-size:18px">delete</span> Yes, Delete
                           </button>
                       </div>
                   </div>`;
@@ -1247,7 +1300,8 @@
                           }
                       };
                       realDel.onclick = async () => {
-                          realDel.innerHTML = '...';
+                          // ... delete logic ...
+                           realDel.innerHTML = '...';
                           try {
                               const res = await fetch(`${API_URL}?type=delete`, {
                                   method: 'POST',
@@ -1277,8 +1331,10 @@
                   }
               }, 50);
           }
-          
+
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
+              const displayName = verifiedAuthors[it.user] || it.user;
+              els.ovAuth.innerHTML = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } else {
               els.ovAuth.textContent = it.auth;
           }
