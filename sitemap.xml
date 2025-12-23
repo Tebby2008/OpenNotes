@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="www.sitemaps.org">
+  <url>
+    <loc>https://opennotes.pages.dev/</loc>
+    <lastmod>2025-12-23</lastmod>
+  </url>
+  <url>
+    <loc>https://opennotes.pages.dev/codeprep</loc>
+    <lastmod>2025-10-05</lastmod>
+  </url>
+
+  <url><loc>https://opennotes.pages.dev/#/about.md</loc></url>
+  <url><loc>https://opennotes.pages.dev/#/contact.md</loc></url>
+  <url><loc>https://opennotes.pages.dev/#/terms-privacy.md</loc></url>
+  <url><loc>https://opennotes.pages.dev/#/upload</loc></url>
+</urlset>
