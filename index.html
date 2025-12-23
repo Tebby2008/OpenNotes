@@ -1074,7 +1074,6 @@
               const s = await fetch(`${API_URL}?type=init`, { headers });
               if (s.ok) {
                   dbData = await s.json();
-                  
                   els.webViews.textContent = dbData.site_views;
                   ownedNotes = dbData.owned_notes || []; 
               }
@@ -1096,6 +1095,7 @@
                   auth: m.author, 
                   user: m.author_username,
                   ai: m.is_ai_generated, 
+                  ownerId: dbData.data['o:' + cleanKey] || null,
                   v: parseInt(dbData.data['v:' + cleanKey]) || 0, 
                   d: parseInt(dbData.data['d:' + cleanKey]) || 0
               };
@@ -1192,15 +1192,14 @@
 
           const rawTitle = it.title.replace(/\(AI\)$/, '');
           const safeTitle = escapeHtml(rawTitle);
-          const ownerId = allData[`o:${it.name.replace(/^Notes\//, '')}`];
 
           let authHtml;
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
               const displayName = verifiedAuthors[it.user];
               authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
-          else if (ownerId && verifiedAuthors.hasOwnProperty(ownerId)) {
-              const displayName = verifiedAuthors[ownerId];
+          else if (it.ownerId && verifiedAuthors.hasOwnProperty(it.ownerId)) {
+              const displayName = verifiedAuthors[it.ownerId];
               authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
           else {
@@ -1281,7 +1280,6 @@
           if(oldWrap) oldWrap.remove();
 
           const isOwner = ownedNotes.includes(it.name);
-          const ownerId = allData[`o:${cleanName = it.name.replace(/^Notes\//, '')}`];
 
           if (currentUser && isOwner) {
               const wrap = document.createElement('div');
@@ -1359,8 +1357,8 @@
               const displayName = verifiedAuthors[it.user];
               authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
-          else if (ownerId && verifiedAuthors.hasOwnProperty(ownerId)) {
-              const displayName = verifiedAuthors[ownerId];
+          else if (it.ownerId && verifiedAuthors.hasOwnProperty(it.ownerId)) {
+              const displayName = verifiedAuthors[it.ownerId];
               authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
           else {
