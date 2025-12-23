@@ -138,18 +138,6 @@
       color: var(--accent);
     }
 
-    .profile-circle .icon-default,
-    .profile-circle .icon-hover {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      transition: opacity 0.2s ease, transform 0.2s ease;
-    }
-
-    .profile-circle .icon-hover { opacity: 0; transform: scale(0.8); }
-
-    .profile-circle:hover .icon-default { opacity: 0; transform: scale(0.8); }
-    .profile-circle:hover .icon-hover { opacity: 1; transform: scale(1); }
-
     .profile-circle img {
       width: 100%; height: 100%; object-fit: cover;
       transition: opacity 0.2s;
@@ -588,9 +576,13 @@
     .return-home-link:hover { opacity: 1; transform: translateX(-4px); }
     
     .morph-btn.expanded.profile-menu-expanded {
-        width: 180px; 
-        height: 150px;
+        width: 200px; 
+        height: 280px; 
         border-radius: 35px;
+    }
+    
+    .morph-btn.expanded.profile-menu-expanded.logged-out {
+        height: 220px;
     }
 
     .menu-btn {
@@ -632,6 +624,20 @@
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
     @media (max-width: 768px) {
+        .button-group .morph-wrap {
+            position: relative; 
+        }
+
+        .button-group .morph-btn {
+            top: auto; 
+            bottom: 0;
+            right: 0;
+        }
+        
+        .button-group .morph-btn.expanded {
+            transform-origin: bottom right;
+        }
+
         .top-nav { top: 16px; right: 16px; }
         .profile-circle { width: 38px; height: 38px; }
         footer .left { 
@@ -758,7 +764,6 @@
           <span class="material-symbols-rounded">search</span>
           <input id="searchInput" type="text" placeholder="Search notes..." />
         </div>
-        <a href="https://opennotes.pages.dev/codeprep" target="_blank" class="btn controls-promo-btn"><b>\\:</b></a>
         <button id="uploadBtn" class="btn icon-only" title="Upload Note">
           <span class="material-symbols-rounded">upload</span>
         </button>
@@ -1108,8 +1113,8 @@
         const myNotesHeader = document.getElementById('myNotesHeader');
         
         const uploadBtn = document.getElementById('uploadBtn');
-        const codePrepBtn = document.querySelector('.controls-promo-btn');
 
+        
         if (isMyNotesMode) {
             if (mainHeader.style.display !== 'none') {
                 mainHeader.classList.add('header-hidden');
@@ -1123,8 +1128,8 @@
                 myNotesHeader.classList.add('header-visible');
             }
             
-            if(codePrepBtn) codePrepBtn.style.display = 'none'; 
-        } else {
+
+          } else {
              if (myNotesHeader.style.display === 'block') {
                 myNotesHeader.classList.remove('header-visible');
                 setTimeout(() => { 
@@ -1138,7 +1143,6 @@
             }
             
             if(uploadBtn) uploadBtn.style.display = '';
-            if(codePrepBtn) codePrepBtn.style.display = '';
         }
 
         let baseList = allItems;
@@ -1411,15 +1415,27 @@
       if(els.mobTog) els.mobTog.onclick = () => { viewMode = viewMode==="grid"?"list":"grid"; localStorage.setItem('openNotesViewMode',viewMode); updateView(); render(); };
       
       els.aiBtn.onclick = () => { showAI=!showAI; els.aiBtn.classList.toggle("active-ai"); render(); };
-      uploadEls.btn.onclick = () => {
+      const handleUploadAccess = () => {
+          if (!currentUser) {
+              showPopup("You must log in first", "error");
+              triggerLogin(true);
+              return false;
+          }
+          
           if (location.hash === '#/mynotes') {
               returnToMyNotes = true;
           } else {
               returnToMyNotes = false;
           }
           
-          history.pushState(null, '', '#/upload');
           toggleOverlay(uploadEls.overlay, true);
+          return true;
+      };
+
+      uploadEls.btn.onclick = () => {
+          if (handleUploadAccess()) {
+               history.pushState(null, '', '#/upload');
+          }
       };
       const types=["ALL","PDF","DOCX"]; let tidx=0;
       els.typeBtn.onclick = () => { tidx=(tidx+1)%3; els.typeBtn.querySelector('b').textContent=types[tidx]; currentFormat=types[tidx].toLowerCase(); render(); };
@@ -1523,7 +1539,7 @@
           } else if (e.state?.info) {
               openInfo(e.state.info);
           } else if (location.hash === '#/upload') {
-              toggleOverlay(uploadEls.overlay, true);
+              handleUploadAccess();
           } 
           else if (location.hash.startsWith('#/notes/')) {
               const n = decodeURIComponent(location.hash.substr(8));
@@ -1613,61 +1629,94 @@
       let ownedNotes = [];
 
       function renderAuth() {
-          if (!currentUser) {
-              els.auth.innerHTML = `
-                  <div class="profile-circle" title="Log In" onclick="triggerLogin()">
-                      <div class="icon-default"><span class="material-symbols-rounded">person</span></div>
-                      <div class="icon-hover"><span class="material-symbols-rounded">login</span></div>
-                  </div>`;
-          } else {
-              els.auth.innerHTML = `
-                  <div class="morph-wrap logout-morph">
-                      <div class="morph-btn" id="logoutMorphBtn">
-                          <img src="${currentUser.picture}" class="icon-state" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.src='resources/icon-square.png'">
-                          <div class="morph-content" style="padding: 16px;">
-                              <div style="font-weight:700; font-size:1rem; color:var(--text); margin-bottom: 4px;">Account</div>
-                              
-                              <button class="menu-btn neutral" id="myNotesNavBtn">
-                                <span class="material-symbols-rounded">folder_open</span> My Notes
-                              </button>
-                              
-                              <button class="menu-btn danger" onclick="logout()">
-                                  <span class="material-symbols-rounded">logout</span> Log Out
-                              </button>
-                          </div>
-                      </div>
-                  </div>`;
+          const isLogged = !!currentUser;
+          const pic = isLogged ? currentUser.picture : '';
+          
+          let contentHtml = '';
+          let iconHtml = '';
+          
+          if (isLogged) {
+              iconHtml = `<img src="${pic}" class="icon-state" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.src='resources/icon-square.png'">`;
+              
+              contentHtml = `
+                  <div style="font-weight:700; font-size:1rem; color:var(--text); margin-bottom: 4px;">Account</div>
                   
-              setTimeout(() => {
-                  const btn = document.getElementById('logoutMorphBtn');
-                  const navBtn = document.getElementById('myNotesNavBtn');
+                  <button class="menu-btn neutral" id="myNotesNavBtn">
+                    <span class="material-symbols-rounded">folder_open</span> My Notes
+                  </button>
+                  
+                  <a href="https://opennotes.pages.dev/codeprep" target="_blank" class="menu-btn neutral">
+                    <b>\\:</b> CodePrep
+                  </a>
 
-                  if(btn) {
-                      if (navBtn) {
-                          navBtn.onclick = () => {
-                              window.location.hash = '#/mynotes';
-                              btn.classList.remove('expanded', 'profile-menu-expanded');
-                              const tempBodyClick = document.body.onclick; 
-                          };
-                      }
+                  <a href="https://ivystudy.org/" target="_blank" class="menu-btn neutral">
+                    <span class="material-symbols-rounded">eco</span> IvyStudy
+                  </a>
+                  
+                  <button class="menu-btn danger" onclick="logout()">
+                      <span class="material-symbols-rounded">logout</span> Log Out
+                  </button>
+              `;
+          } else {
+              iconHtml = `<span class="material-symbols-rounded icon-state" style="font-size: 24px;">menu</span>`;
+              
+              contentHtml = `
+                  <div style="font-weight:700; font-size:1rem; color:var(--text); margin-bottom: 4px;">Menu</div>
+                  
+                  <a href="https://opennotes.pages.dev/codeprep" target="_blank" class="menu-btn neutral">
+                    <b>\\:</b> CodePrep
+                  </a>
 
-                      btn.onclick = (e) => {
-                          if (e.target.closest('button')) return;
-                          
-                          if (!btn.classList.contains('expanded')) {
-                              btn.classList.add('expanded', 'profile-menu-expanded');
-                              const close = (evt) => {
-                                  if(!btn.contains(evt.target)) {
-                                      btn.classList.remove('expanded', 'profile-menu-expanded');
-                                      document.removeEventListener('click', close);
-                                  }
-                              };
-                              setTimeout(() => document.addEventListener('click', close), 0);
-                          }
+                  <a href="https://ivystudy.org/" target="_blank" class="menu-btn neutral">
+                    <span class="material-symbols-rounded">eco</span> IvyStudy
+                  </a>
+                  
+                  <button class="menu-btn danger" style="background:var(--accent); color:white;" onclick="triggerLogin()">
+                      <span class="material-symbols-rounded">login</span> Log In
+                  </button>
+              `;
+          }
+
+          els.auth.innerHTML = `
+              <div class="morph-wrap logout-morph">
+                  <div class="morph-btn" id="authMorphBtn">
+                      ${iconHtml}
+                      <div class="morph-content" style="padding: 16px;">
+                          ${contentHtml}
+                      </div>
+                  </div>
+              </div>`;
+
+          setTimeout(() => {
+              const btn = document.getElementById('authMorphBtn');
+              const navBtn = document.getElementById('myNotesNavBtn');
+
+              if(btn) {
+                  if (navBtn) {
+                      navBtn.onclick = () => {
+                          window.location.hash = '#/mynotes';
+                          btn.classList.remove('expanded', 'profile-menu-expanded', 'logged-out');
                       };
                   }
-              }, 50);
-          }
+
+                  btn.onclick = (e) => {
+                      if (e.target.closest('button') || e.target.closest('a')) return;
+                      
+                      if (!btn.classList.contains('expanded')) {
+                          btn.classList.add('expanded', 'profile-menu-expanded');
+                          if (!isLogged) btn.classList.add('logged-out');
+                          
+                          const close = (evt) => {
+                              if(!btn.contains(evt.target)) {
+                                  btn.classList.remove('expanded', 'profile-menu-expanded', 'logged-out');
+                                  document.removeEventListener('click', close);
+                              }
+                          };
+                          setTimeout(() => document.addEventListener('click', close), 0);
+                      }
+                  };
+              }
+          }, 50);
       }
 
       function triggerLogin(isForUpload = false) {
@@ -1838,7 +1887,7 @@
               openInfo(`resources/${location.hash.substr(2)}`);
           }
           else if(location.hash === '#/upload') {
-              toggleOverlay(uploadEls.overlay, true);
+              handleUploadAccess();
           }
 
         } catch(e) { els.container.innerHTML="<p>Failed to load.</p>"; }
