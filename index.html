@@ -1428,21 +1428,38 @@
       
       els.aiBtn.onclick = () => { showAI=!showAI; els.aiBtn.classList.toggle("active-ai"); render(); };
       const handleUploadAccess = () => {
-          if (!currentUser) {
-              showPopup("You must log in first", "error");
-              triggerLogin(true);
-              return false;
-          }
-          
-          if (location.hash === '#/mynotes') {
-              returnToMyNotes = true;
-          } else {
-              returnToMyNotes = false;
-          }
-          
-          toggleOverlay(uploadEls.overlay, true);
-          return true;
-      };
+         if (!currentUser) {
+             showPopup("You must log in first", "error");
+             triggerLogin(true);
+             return false;
+         }
+        
+         if (location.hash === '#/mynotes') {
+            returnToMyNotes = true;
+         } else {
+             returnToMyNotes = false;
+         }
+        
+         toggleOverlay(uploadEls.overlay, true);
+
+         setTimeout(() => {
+             if (window.turnstile && turnstileWidgetId === null) {
+                 turnstileWidgetId = turnstile.render('#turnstile-widget', {
+                     sitekey: '0x4AAAAAACGcLC657zYbkp6o', 
+                     callback: function(token) {
+                         turnstileToken = token;
+                         const frame = document.querySelector('#turnstile-widget iframe');
+                         if(frame) frame.style.border = 'none';
+                     },
+                     'expired-callback': function() {
+                         turnstileToken = null;
+                     }
+                 });
+             }
+         }, 100);
+ 
+         return true;
+     };
 
       uploadEls.btn.onclick = () => {
           if (handleUploadAccess()) {
@@ -1875,6 +1892,16 @@
 
       checkSession();
 
+
+      const turnstileInterval = setInterval(() => {
+          if (uploadEls.overlay.classList.contains('open') && turnstileWidgetId === null && window.turnstile) {
+              handleUploadAccess(); 
+              clearInterval(turnstileInterval);
+          } else if (window.turnstile && !uploadEls.overlay.classList.contains('open')) {
+              clearInterval(turnstileInterval);
+          }
+      }, 500);
+      
       (async function() {
         try {
           try {
