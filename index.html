@@ -1366,6 +1366,7 @@
           else {
               authHtml = escapeHtml(it.auth || "Anonymous");
           }
+          els.ovAuth.innerHTML = authHtml;
           
           if(it.ai) {
              const aiSpan = document.createElement('span');
