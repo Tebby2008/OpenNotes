@@ -1186,19 +1186,25 @@
         }
 
         list.forEach((it, i) => {
-             const el = document.createElement("article");
+          const el = document.createElement("article");
           el.className = viewMode === "grid" ? "card" : "row";
           el.style.animationDelay = `${500*(1-Math.pow(0.9, i))}ms`;
 
           const rawTitle = it.title.replace(/\(AI\)$/, '');
           const safeTitle = escapeHtml(rawTitle);
+          const ownerId = allData[`o:${it.name.replace(/^Notes\//, '')}`];
 
           let authHtml;
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
-              const displayName = verifiedAuthors[it.user] || it.user;
+              const displayName = verifiedAuthors[it.user];
               authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
-          } else {
-              authHtml = escapeHtml(it.auth);
+          } 
+          else if (ownerId && verifiedAuthors.hasOwnProperty(ownerId)) {
+              const displayName = verifiedAuthors[ownerId];
+              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+          } 
+          else {
+              authHtml = escapeHtml(it.auth || "Anonymous");
           }
                   
           el.innerHTML = `
@@ -1275,6 +1281,7 @@
           if(oldWrap) oldWrap.remove();
 
           const isOwner = ownedNotes.includes(it.name);
+          const ownerId = allData[`o:${cleanName = it.name.replace(/^Notes\//, '')}`];
 
           if (currentUser && isOwner) {
               const wrap = document.createElement('div');
@@ -1315,7 +1322,6 @@
                           }
                       };
                       realDel.onclick = async () => {
-                          // ... delete logic ...
                            realDel.innerHTML = '...';
                           try {
                               const res = await fetch(`${API_URL}?type=delete`, {
@@ -1345,13 +1351,20 @@
                       };
                   }
               }, 50);
+              
           }
+          
 
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
-              const displayName = verifiedAuthors[it.user] || it.user;
-              els.ovAuth.innerHTML = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
-          } else {
-              els.ovAuth.textContent = it.auth;
+              const displayName = verifiedAuthors[it.user];
+              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+          } 
+          else if (ownerId && verifiedAuthors.hasOwnProperty(ownerId)) {
+              const displayName = verifiedAuthors[ownerId];
+              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+          } 
+          else {
+              authHtml = escapeHtml(it.auth || "Anonymous");
           }
           
           if(it.ai) {
