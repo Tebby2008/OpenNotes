@@ -1014,8 +1014,10 @@
             if (!websiteViewsEl) return;
             try {
                 const res = await fetch(`${API_URL}?type=website`, { method: 'POST' });
+                
                 if(res.ok) {
-                    websiteViewsEl.textContent = (await res.json()).views;
+                    const data = await res.json();
+                    websiteViewsEl.textContent = data.views;
                 }
             } catch(e) {
                 console.error("Failed to track website views:", e);
