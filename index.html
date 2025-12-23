@@ -348,10 +348,10 @@
         position: absolute;
         top: 0; right: 0;
         width: 44px; height: 44px;
-        border-radius: 50%;
+        border-radius: 99px;
         background: var(--bg);
         color: var(--text-sec);
-        border: 1px solid var(--border-soft);
+        border: 1.5px solid var(--border-soft);
         display: flex; align-items: center; justify-content: center;
         cursor: pointer;
         overflow: hidden;
@@ -620,7 +620,6 @@
         background: #dc2626;
     }
 
-    
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
     @media (max-width: 768px) {
@@ -1103,6 +1102,18 @@
       }
       
       function render() {
+        if (location.hash === '#/mynotes' && !currentUser) {
+            history.replaceState(null, '', ' ');
+            const mainHeader = document.getElementById('mainHeader');
+            const myNotesHeader = document.getElementById('myNotesHeader');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            mainHeader.style.display = 'flex';
+            mainHeader.classList.remove('header-hidden');
+            myNotesHeader.style.display = 'none';
+            if(uploadBtn) uploadBtn.style.display = '';
+            
+        }
         const escapeHtml = (str) => {
           if (!str) return '';
           return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -1274,7 +1285,7 @@
                       <div class="morph-content" style="padding:12px;"> 
                           <div style="font-weight:600; font-size:0.9rem; color:var(--text)">Delete note?</div>
                           <button class="confirm-action-btn" id="realDeleteBtn">
-                              <span class="material-symbols-rounded" style="font-size:18px">delete</span> Yes, Delete
+                              <span class="material-symbols-rounded" style="font-size:18px">delete</span> Yes
                           </button>
                       </div>
                   </div>`;
