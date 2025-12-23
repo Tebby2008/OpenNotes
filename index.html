@@ -1761,23 +1761,10 @@
 
       function triggerLogin(isForUpload = false) {
           if(isForUpload) sessionStorage.setItem('pendingUpload', 'true');
-        
-          const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
-          const options = {
-              client_id: '938093181314-hmprg29rrmaq7da95rbiimgj0nh62q4v.apps.googleusercontent.com', 
-              redirect_uri: `${API_URL}/auth/callback`, 
-              response_type: 'code',
-              scope: 'openid email profile',
-              prompt: 'select_account'
-          };
-
-          const loginUrl = `${rootUrl}?${new URLSearchParams(options).toString()}`;
-
           const width = 500, height = 600;
           const left = (window.innerWidth - width) / 2;
           const top = (window.innerHeight - height) / 2;
-        
-          window.open(loginUrl, 'Google Login', `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`);
+          window.open(`${API_URL}/auth/login`, 'Google Login', `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`);
       }
 
       function checkSession() {
