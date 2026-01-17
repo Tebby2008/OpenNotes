@@ -631,16 +631,11 @@
     .header-link:hover {
         color: var(--accent);
     }
+
     .message-container {
-        position: absolute;
-        top: 24px;
-        left: 24px;
-        z-index: 90;
-        max-width: 320px;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+        position: absolute; top: 24px; left: 24px; z-index: 90;
+        max-width: 320px; width: 100%;
+        display: flex; flex-direction: column; gap: 12px;
         pointer-events: none;
     }
 
@@ -657,25 +652,36 @@
         position: relative;
         pointer-events: auto;
         transform-origin: top left;
-        animation: msgIn 0.4s var(--ease);
-        transition: all 0.3s var(--ease);
-        display: flex; flex-direction: column; gap: 8px;
+        animation: msgIn 0.5s var(--ease-smooth);
+        transition: box-shadow 0.2s;
+        
+        max-height: 1000px; 
+        overflow: hidden;
     }
     
     .dark-mode .msg-panel { border-color: rgba(255,255,255,0.1); }
 
-    @keyframes msgIn { from { opacity: 0; transform: translateY(-10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    @keyframes msgOut { to { opacity: 0; transform: translateY(-10px) scale(0.95); } }
+    @keyframes msgIn { 
+        from { opacity: 0; transform: translateY(-10px) scale(0.95); } 
+        to { opacity: 1; transform: translateY(0) scale(1); } 
+    }
 
-    .msg-panel.closing { animation: msgOut 0.3s var(--ease) forwards; }
+    @keyframes msgOut { 
+        0% { opacity: 1; transform: translateX(0); max-height: 500px; margin-bottom: 0; padding: 16px; opacity: 1; }
+        40% { opacity: 0; transform: translateX(-20px); } 
+        100% { opacity: 0; transform: translateX(-20px); max-height: 0; margin-bottom: -12px; padding: 0 16px; border: 0; }
+    }
 
-    .msg-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .msg-panel.closing { 
+        animation: msgOut 0.5s var(--ease-smooth) forwards; 
+    }
+
+    .msg-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
     .msg-date { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap:4px; }
     
     .msg-close {
         background: transparent; border: none; color: var(--text-sec);
-        cursor: pointer; padding: 0; display: flex;
-        transition: color 0.2s;
+        cursor: pointer; padding: 0; display: flex; transition: color 0.2s;
     }
     .msg-close:hover { color: var(--text); }
 
@@ -683,26 +689,35 @@
         line-height: 1.5;
         color: var(--text-sec);
         overflow: hidden;
-        max-height: 60px;
         position: relative;
-        transition: max-height 0.4s var(--ease);
-        cursor: pointer;
+        transition: max-height 0.4s var(--ease-smooth);
     }
     
-    .msg-body.expanded { max-height: 500px; cursor: default; }
-    
-    .msg-body:not(.expanded)::after {
-        content: ''; position: absolute; bottom: 0; left: 0; right: 0;
-        height: 24px; background: linear-gradient(to bottom, transparent, var(--panel-glass));
-        pointer-events: none;
-    }
-
     .msg-body p { margin: 0 0 8px; }
     .msg-body p:last-child { margin: 0; }
     .msg-body a { color: var(--accent); text-decoration: none; font-weight: 600; }
     .msg-body strong { color: var(--text); }
 
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .msg-body:not(.expanded) {
+        max-height: 54px;
+        -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+    }
+
+    .msg-body.expanded { 
+        max-height: 800px; 
+        -webkit-mask-image: none;
+        mask-image: none;
+    }
+
+    .msg-toggle {
+        font-weight: 700; color: var(--accent);
+        font-size: 0.85rem; cursor: pointer;
+        margin-top: 8px; display: inline-block;
+        transition: transform 0.2s;
+    }
+    .msg-toggle:hover { opacity: 0.8; }
+    .msg-toggle:active { transform: scale(0.96); }
 
     @media (max-width: 768px) {
         .message-container {
@@ -2059,7 +2074,7 @@
           const res = await fetch(`${API_URL}?type=messages`);
           if (!res.ok) return;
           const data = await res.json();
-            
+          
           const container = document.getElementById('messageContainer');
           container.innerHTML = '';
 
@@ -2078,12 +2093,22 @@
                       <button class="msg-close" title="Dismiss"><span class="material-symbols-rounded">close</span></button>
                   </div>
                   <div class="msg-body">${cleanHtml}</div>
+                  <div class="msg-toggle">\\/ Expand</div>
               `;
 
               const body = panel.querySelector('.msg-body');
-              body.onclick = (e) => {
-                  if(e.target.tagName === 'A') return; 
-                  body.classList.add('expanded');
+              const toggle = panel.querySelector('.msg-toggle');
+              
+              toggle.onclick = () => {
+                  const isExpanded = body.classList.contains('expanded');
+                  
+                  if (isExpanded) {
+                      body.classList.remove('expanded');
+                      toggle.textContent = "\\/ Expand";
+                  } else {
+                      body.classList.add('expanded');
+                      toggle.textContent = "^ Collapse";
+                  }
               };
 
               const closeBtn = panel.querySelector('.msg-close');
@@ -2091,7 +2116,8 @@
                   e.stopPropagation();
                   panel.classList.add('closing');
                   localStorage.setItem(`openNotes_msg_${msg.id}`, 'dismissed');
-                  setTimeout(() => panel.remove(), 300);
+                  
+                  setTimeout(() => panel.remove(), 500);
               };
 
               container.appendChild(panel);
