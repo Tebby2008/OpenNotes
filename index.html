@@ -88,13 +88,12 @@
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html { height: 100%; }
+    html { height: 100%; overflow-x: hidden; }
     
     body {
       background: var(--bg); color: var(--text);
       font-family: var(--font);
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
       min-height: 100%; margin: 0;
       transition: background var(--speed) ease, color var(--speed) ease;
       display: flex;
