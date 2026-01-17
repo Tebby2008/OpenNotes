@@ -635,13 +635,13 @@
         position: absolute;
         top: 24px;
         left: 24px;
-        z-index: 90; /* Below controls, above background */
+        z-index: 90;
         max-width: 320px;
         width: 100%;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        pointer-events: none; /* Let clicks pass through if empty */
+        pointer-events: none;
     }
 
     .msg-panel {
@@ -1133,10 +1133,8 @@
             if (returnToMyNotes) {
                 history.replaceState(null, null, '#/mynotes');
                 returnToMyNotes = false; 
-                render(); 
             } else {
                 history.replaceState(null, null, window.location.pathname + window.location.search);
-                render();
             }
         }
       };
