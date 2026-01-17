@@ -652,8 +652,9 @@
         position: relative;
         pointer-events: auto;
         transform-origin: top left;
+        
         animation: msgIn 0.5s var(--ease-smooth);
-        transition: box-shadow 0.2s;
+        transition: box-shadow 0.2s, margin-bottom 0.4s var(--ease-smooth), padding 0.4s var(--ease-smooth), opacity 0.4s var(--ease-smooth);
         
         max-height: 1000px; 
         overflow: hidden;
@@ -667,7 +668,7 @@
     }
 
     @keyframes msgOut { 
-        0% { opacity: 1; transform: translateX(0); max-height: 500px; margin-bottom: 0; padding: 16px; opacity: 1; }
+        0% { opacity: 1; transform: translateX(0); max-height: 500px; margin-bottom: 0; padding: 16px; }
         40% { opacity: 0; transform: translateX(-20px); } 
         100% { opacity: 0; transform: translateX(-20px); max-height: 0; margin-bottom: -12px; padding: 0 16px; border: 0; }
     }
@@ -690,7 +691,7 @@
         color: var(--text-sec);
         overflow: hidden;
         position: relative;
-        transition: max-height 0.4s var(--ease-smooth);
+        transition: max-height 0.4s ease, mask-image 0.4s ease; 
     }
     
     .msg-body p { margin: 0 0 8px; }
@@ -699,13 +700,17 @@
     .msg-body strong { color: var(--text); }
 
     .msg-body:not(.expanded) {
-        max-height: 54px;
-        -webkit-mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
-        mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+        max-height: 60px;
+        -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
+    }
+    
+    .msg-panel.is-single .msg-body:not(.expanded) {
+        max-height: 120px; 
     }
 
     .msg-body.expanded { 
-        max-height: 800px; 
+        max-height: 600px;
         -webkit-mask-image: none;
         mask-image: none;
     }
@@ -713,11 +718,13 @@
     .msg-toggle {
         font-weight: 700; color: var(--accent);
         font-size: 0.85rem; cursor: pointer;
-        margin-top: 8px; display: inline-block;
+        margin-top: 6px; display: inline-flex; align-items: center; gap: 4px;
         transition: transform 0.2s;
+        user-select: none;
     }
     .msg-toggle:hover { opacity: 0.8; }
     .msg-toggle:active { transform: scale(0.96); }
+    .msg-toggle .material-symbols-rounded { font-size: 18px; }
 
     @media (max-width: 768px) {
         .message-container {
@@ -2078,11 +2085,16 @@
           const container = document.getElementById('messageContainer');
           container.innerHTML = '';
 
-          data.messages.forEach(msg => {
-              if (localStorage.getItem(`openNotes_msg_${msg.id}`) === 'dismissed') return;
+          const visibleMessages = data.messages.filter(msg => 
+              localStorage.getItem(`openNotes_msg_${msg.id}`) !== 'dismissed'
+          );
 
+          const isSingle = visibleMessages.length === 1;
+
+          visibleMessages.forEach(msg => {
               const panel = document.createElement('div');
               panel.className = 'msg-panel';
+              if (isSingle) panel.classList.add('is-single');
                 
               const cleanHtml = DOMPurify.sanitize(marked.parse(msg.text));
               const dateStr = new Date(msg.start).toLocaleDateString(undefined, { month:'short', day:'numeric' });
@@ -2093,23 +2105,28 @@
                       <button class="msg-close" title="Dismiss"><span class="material-symbols-rounded">close</span></button>
                   </div>
                   <div class="msg-body">${cleanHtml}</div>
-                  <div class="msg-toggle">\\/ Expand</div>
+                  <div class="msg-toggle">
+                    <span class="material-symbols-rounded">expand_more</span> Expand
+                  </div>
               `;
 
               const body = panel.querySelector('.msg-body');
               const toggle = panel.querySelector('.msg-toggle');
               
-              toggle.onclick = () => {
+              const toggleHandler = () => {
                   const isExpanded = body.classList.contains('expanded');
                   
                   if (isExpanded) {
                       body.classList.remove('expanded');
-                      toggle.textContent = "\\/ Expand";
+                      toggle.innerHTML = '<span class="material-symbols-rounded">expand_more</span> Expand';
                   } else {
                       body.classList.add('expanded');
-                      toggle.textContent = "^ Collapse";
+                      toggle.innerHTML = '<span class="material-symbols-rounded">expand_less</span> Collapse';
                   }
               };
+
+              body.onclick = (e) => { if(e.target.tagName !== 'A') toggleHandler(); };
+              toggle.onclick = toggleHandler;
 
               const closeBtn = panel.querySelector('.msg-close');
               closeBtn.onclick = (e) => {
@@ -2117,7 +2134,9 @@
                   panel.classList.add('closing');
                   localStorage.setItem(`openNotes_msg_${msg.id}`, 'dismissed');
                   
-                  setTimeout(() => panel.remove(), 500);
+                  setTimeout(() => {
+                      panel.remove();
+                  }, 500);
               };
 
               container.appendChild(panel);
