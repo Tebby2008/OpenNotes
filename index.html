@@ -1136,7 +1136,6 @@
                 render(); 
             } else {
                 history.replaceState(null, null, window.location.pathname + window.location.search);
-                render();
             }
         }
       };
@@ -1272,7 +1271,7 @@
               return;
         }
 
-        if (list.length === 0 && q) {
+        else if (list.length === 0 && q) {
           els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
               <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">search_off</span>
               <p>No results found for "${escapeHtml(q)}"</p>
@@ -1280,7 +1279,7 @@
           return;
         }
         
-        if (list.length === 0 && !isMyNotesMode) {
+        else (list.length === 0 && !isMyNotesMode) {
           els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
               <p>No notes available.</p>
               </div>`;
