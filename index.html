@@ -653,13 +653,12 @@
         pointer-events: auto;
         transform-origin: top left;
         
-        animation: msgIn 0.5s var(--ease-smooth);
-        transition: box-shadow 0.2s, margin-bottom 0.4s ease, padding 0.4s ease, opacity 0.4s ease;
+        animation: msgIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        transition: box-shadow 0.2s, margin-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease;
         
         max-height: 1000px; 
         overflow: hidden;
     }
-    
     .dark-mode .msg-panel { border-color: rgba(255,255,255,0.1); }
 
     @keyframes msgIn { 
@@ -669,11 +668,10 @@
 
     @keyframes msgOut { 
         0% { opacity: 1; transform: translateX(0); max-height: 500px; margin-bottom: 0; padding: 16px; }
-        40% { opacity: 0; transform: translateX(-20px); } 
-        100% { opacity: 0; transform: translateX(-20px); max-height: 0; margin-bottom: -12px; padding: 0 16px; border: 0; }
+        40% { opacity: 0; transform: translateX(-10px); } 
+        100% { opacity: 0; transform: translateX(-10px); max-height: 0; margin-bottom: -12px; padding: 0 16px; border: 0; }
     }
-
-    .msg-panel.closing { animation: msgOut 0.5s var(--ease-smooth) forwards; }
+    .msg-panel.closing { animation: msgOut 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
 
     .msg-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
     .msg-date { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap:4px; }
@@ -689,7 +687,7 @@
         color: var(--text-sec);
         overflow: hidden;
         position: relative;
-        transition: max-height 0.4s ease, mask-image 0.4s ease; 
+        transition: max-height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), mask-image 0.2s ease;
     }
     
     .msg-body p { margin: 0 0 8px; }
@@ -697,33 +695,32 @@
     .msg-body a { color: var(--accent); text-decoration: none; font-weight: 600; }
     .msg-body strong { color: var(--text); }
 
-    .msg-body:not(.expanded) {
-        max-height: 60px; 
+    .msg-body {
+        max-height: 60px;
         -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
         mask-image: linear-gradient(to bottom, black 30%, transparent 100%);
     }
 
-    .msg-body.short-content {
-        max-height: none;
-        -webkit-mask-image: none !important;
-        mask-image: none !important;
-    }
-    
-    .msg-panel.is-single .msg-body:not(.expanded):not(.short-content) {
-        max-height: 120px; 
+    .msg-panel.is-single .msg-body {
+        max-height: 120px;
     }
 
-    .msg-body.expanded { 
-        max-height: 600px; 
+    .msg-body.expanded {
         -webkit-mask-image: none;
         mask-image: none;
+    }
+
+    .msg-body.short-content {
+        max-height: 500px !important;
+        -webkit-mask-image: none !important;
+        mask-image: none !important;
     }
 
     .msg-toggle {
         font-weight: 700; color: var(--accent);
         font-size: 0.85rem; cursor: pointer;
         margin-top: 6px; display: inline-flex; align-items: center; gap: 4px;
-        transition: transform 0.2s;
+        transition: transform 0.2s, opacity 0.2s;
         user-select: none;
     }
     .msg-toggle:hover { opacity: 0.8; }
@@ -732,18 +729,8 @@
 
     @media (max-width: 768px) {
         .message-container {
-            position: relative; 
-            top: auto; left: auto;
-            
-            max-width: 600px; 
-            width: 100%;
-            margin: 0 auto 24px;
-            z-index: 50; 
-        }
-        .message-container {
-            position: relative; top: 0; left: 0;
-            max-width: 600px; margin: 20px auto 20px;
-            padding: 0 24px;
+            position: relative; top: auto; left: auto;
+            max-width: 600px; margin: 0 auto 24px; padding: 0 24px; z-index: 50; 
         }
         .button-group .morph-wrap {
             position: relative; 
@@ -2105,12 +2092,35 @@
               localStorage.getItem(`openNotes_msg_${msg.id}`) !== 'dismissed'
           );
 
-          const isSingle = visibleMessages.length === 1;
+          const updatePanelLogic = (panel, isSingle) => {
+              const body = panel.querySelector('.msg-body');
+              const toggle = panel.querySelector('.msg-toggle');
+              const contentHeight = body.scrollHeight;
+              
+              const threshold = isSingle ? 120 : 60;
+              
+              if (isSingle) panel.classList.add('is-single');
+              else panel.classList.remove('is-single');
+
+              if (contentHeight <= threshold) {
+                  body.classList.add('short-content');
+                  toggle.style.display = 'none';
+                  body.style.cursor = 'default';
+                  body.style.maxHeight = '';
+              } else {
+                  body.classList.remove('short-content');
+                  toggle.style.display = 'inline-flex';
+                  body.style.cursor = 'pointer';
+                  
+                  if (!body.classList.contains('expanded')) {
+                      body.style.maxHeight = '';
+                  }
+              }
+          };
 
           visibleMessages.forEach(msg => {
               const panel = document.createElement('div');
               panel.className = 'msg-panel';
-              if (isSingle) panel.classList.add('is-single');
                 
               const cleanHtml = DOMPurify.sanitize(marked.parse(msg.text));
               const dateStr = new Date(msg.start).toLocaleDateString(undefined, { month:'short', day:'numeric' });
@@ -2130,38 +2140,50 @@
 
               const body = panel.querySelector('.msg-body');
               const toggle = panel.querySelector('.msg-toggle');
-              
-              const threshold = isSingle ? 120 : 60;
 
-              if (body.scrollHeight > threshold) {
-                  toggle.style.display = 'inline-flex';
-                  const toggleHandler = () => {
-                      const isExpanded = body.classList.contains('expanded');
-                      if (isExpanded) {
+              const toggleHandler = () => {
+                  const isExpanded = body.classList.contains('expanded');
+                  
+                  if (isExpanded) {
+                      body.style.maxHeight = body.scrollHeight + 'px';
+                      
+                      requestAnimationFrame(() => {
                           body.classList.remove('expanded');
-                          toggle.innerHTML = '<span class="material-symbols-rounded">expand_more</span> Expand';
-                      } else {
-                          body.classList.add('expanded');
-                          toggle.innerHTML = '<span class="material-symbols-rounded">expand_less</span> Collapse';
-                      }
-                  };
-                  body.onclick = (e) => { if(e.target.tagName !== 'A') toggleHandler(); };
-                  toggle.onclick = toggleHandler;
-              } else {
-                  // Content is short: No button, no mask
-                  body.classList.add('short-content');
-                  // Allow links to work, but remove expand click
-                  body.style.cursor = 'default';
-              }
+                          setTimeout(() => { body.style.maxHeight = ''; }, 10);
+                      });
+
+                      toggle.innerHTML = '<span class="material-symbols-rounded">expand_more</span> Expand';
+                  } else {
+                      body.classList.add('expanded');
+                      body.style.maxHeight = body.scrollHeight + 'px';
+                      
+                      toggle.innerHTML = '<span class="material-symbols-rounded">expand_less</span> Collapse';
+                  }
+              };
+
+              body.onclick = (e) => { if(e.target.tagName !== 'A' && !body.classList.contains('short-content')) toggleHandler(); };
+              toggle.onclick = toggleHandler;
 
               const closeBtn = panel.querySelector('.msg-close');
               closeBtn.onclick = (e) => {
                   e.stopPropagation();
                   panel.classList.add('closing');
                   localStorage.setItem(`openNotes_msg_${msg.id}`, 'dismissed');
-                  setTimeout(() => panel.remove(), 500);
+
+                  setTimeout(() => {
+                      panel.remove();
+                      
+                      const remaining = container.querySelectorAll('.msg-panel');
+                      if (remaining.length === 1) {
+                          updatePanelLogic(remaining[0], true);
+                      }
+                  }, 400);
               };
           });
+
+          const panels = container.querySelectorAll('.msg-panel');
+          const isSingle = panels.length === 1;
+          panels.forEach(p => updatePanelLogic(p, isSingle));
 
         } catch (e) { console.error("Message fetch failed", e); }
     }
