@@ -2059,18 +2059,11 @@
           const res = await fetch(`${API_URL}?type=messages`);
           if (!res.ok) return;
           const data = await res.json();
-          const now = new Date();
-
-          const validMessages = data.messages.filter(m => {
-              const start = new Date(m.start);
-              const end = new Date(m.end);
-              return now >= start && now <= end;
-          });
-
+            
           const container = document.getElementById('messageContainer');
           container.innerHTML = '';
 
-          validMessages.forEach(msg => {
+          data.messages.forEach(msg => {
               if (localStorage.getItem(`openNotes_msg_${msg.id}`) === 'dismissed') return;
 
               const panel = document.createElement('div');
@@ -2089,7 +2082,7 @@
 
               const body = panel.querySelector('.msg-body');
               body.onclick = (e) => {
-                  if(e.target.tagName === 'A') return;
+                  if(e.target.tagName === 'A') return; 
                   body.classList.add('expanded');
               };
 
