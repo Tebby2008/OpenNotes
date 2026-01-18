@@ -503,7 +503,7 @@ function matchesDate(token, isoDate) {
 // ==========================================
 
 export function searchNotes(items, query, options = {}) {
-    const { showAI = true, currentFormat = "all" } = options;
+    const { showAI = true, currentFormat = "all", verifiedAuthors = {} } = options;
     
     let workingQuery = normalize(query);
 
@@ -524,12 +524,25 @@ export function searchNotes(items, query, options = {}) {
     let hasSubjectQuery = false;
     const searchTargets = [];
     
+    const targetAuthorIDs = new Set();
+
     tokens.forEach(t => {
         const set = new Set();
-        set.add(t);
+        set.add(t); 
         
         if (SYNONYMS[t]) {
             SYNONYMS[t].forEach(s => set.add(s));
+        }
+
+        for (const [userId, displayName] of Object.entries(verifiedAuthors)) {
+            const normName = normalize(displayName);
+            const normUser = normalize(userId);
+            
+            if (normName.includes(t) || normUser.includes(t)) {
+                targetAuthorIDs.add(userId);
+
+                set.add(normName);
+            }
         }
 
         const normT = t.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -551,15 +564,18 @@ export function searchNotes(items, query, options = {}) {
         if (currentFormat !== "all" && item.fmt !== currentFormat) return null;
 
         const titleNorm = normalize(item.title);
-        const authNorm = normalize(
-            (item.auth || "") + " " + 
-            (item.user || "") + " " + 
-            (item.verifiedName || "")
-        );
+        const authNorm = normalize(item.auth || "");
         
         let score = 0;
         let matchedTokenCount = 0;
         let matchedASubject = false;
+
+        if (targetAuthorIDs.size > 0) {
+            if (targetAuthorIDs.has(item.user) || targetAuthorIDs.has(item.ownerId)) {
+                score += 100;
+                matchedTokenCount++;
+            }
+        }
 
         searchTargets.forEach(({ candidates, rawToken, weight, isModifier }) => {
             let tokenMatch = false;
@@ -572,41 +588,22 @@ export function searchNotes(items, query, options = {}) {
                     if (!isModifier) matchedASubject = true;
                     break; 
                 }
-            }
-
-            if (!tokenMatch) {
-                for (const str of candidates) {
-                    if (authNorm.includes(str)) {
-                        score += 30; 
-                        tokenMatch = true;
-                        break;
-                    }
-                }
-                if (!tokenMatch && rawToken.length > 3) {
-                    const authorWords = authNorm.split(" ");
-                    for (const word of authorWords) {
-                        if (Math.abs(word.length - rawToken.length) > 2) continue;
-                        const dist = getEditDistance(rawToken, word);
-                        if (dist <= 1) {
-                            score += 25; 
-                            tokenMatch = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!tokenMatch && item.upd) {
-                if (matchesDate(rawToken, item.upd)) {
-                    score += 20;
+                else if (authNorm.includes(str)) {
+                    score += 15;
                     tokenMatch = true;
+                    break;
                 }
+            }
+
+            if (!tokenMatch && item.upd && matchesDate(rawToken, item.upd)) {
+                score += 20;
+                tokenMatch = true;
             }
 
             if (tokenMatch) matchedTokenCount++;
         });
 
-        if (hasSubjectQuery && !matchedASubject && score < 30) {
+        if (hasSubjectQuery && !matchedASubject && score < 50) {
             return null;
         }
 

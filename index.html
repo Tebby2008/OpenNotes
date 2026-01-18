@@ -1205,7 +1205,8 @@
           }
 
           const metaPromise = fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`)
-              .then(res => res.ok ? res.json() : []);
+              .then(res => res.ok ? res.json() : [])
+              .catch(() => []);
             
           const statsPromise = fetch(`${API_URL}?type=init`, { headers })
               .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [] })
@@ -1219,23 +1220,14 @@
 
           if (dbData.site_views) els.webViews.textContent = dbData.site_views;
           if (dbData.owned_notes) ownedNotes = dbData.owned_notes;
-          verifiedAuthors = authorsData;
+          verifiedAuthors = authorsData || {}; 
 
           return metaData.map(m => {
               const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
               const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
               const cleanKey = m.name; 
-              const ownerId = dbData.data['o:' + cleanKey];
+              const fileStats = dbData.data || {};
               
-              let vName = "";
-              
-              if (m.author_username && verifiedAuthors[m.author_username]) {
-                  vName = verifiedAuthors[m.author_username];
-              } 
-              else if (ownerId && verifiedAuthors[ownerId]) {
-                  vName = verifiedAuthors[ownerId];
-              }
-
               return {
                   name: m.name, 
                   title: m.name.replace(/\.[^/.]+$/, ""), 
@@ -1246,11 +1238,10 @@
                   upd: m.last_updated, 
                   auth: m.author, 
                   user: m.author_username,
-                  verifiedName: vName,
+                  ownerId: fileStats['o:' + cleanKey] || null,
                   ai: m.is_ai_generated, 
-                  ownerId: ownerId || null,
-                  v: parseInt(dbData.data['v:' + cleanKey]) || 0, 
-                  d: parseInt(dbData.data['d:' + cleanKey]) || 0
+                  v: parseInt(fileStats['v:' + cleanKey]) || 0, 
+                  d: parseInt(fileStats['d:' + cleanKey]) || 0
               };
           }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl);
         }
@@ -1314,7 +1305,8 @@
 
         let list = searchNotes(baseList, q, {
             showAI: showAI,
-            currentFormat: currentFormat
+            currentFormat: currentFormat,
+            verifiedAuthors: verifiedAuthors
         });
         
         if (currentSort === 'relevance' && !q.trim()) {
@@ -2114,6 +2106,8 @@
       
       (async function() {
         try {
+          const authPromise = fetch(`${API_URL}?type=authors`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
+            
           fetchMessages();
 
           allItems = await fetchNotes();
