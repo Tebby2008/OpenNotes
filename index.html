@@ -877,6 +877,7 @@
             <span class="material-symbols-rounded">filter_list</span>
           </button>
           <div id="sortDropdown" class="custom-dropdown">
+            <div data-sort="relevance" class="option active">Relevance</div>
             <div data-sort="updated-desc" class="option active">Last updated ↓</div>
             <div data-sort="updated-asc" class="option">Last updated ↑</div>
             <div data-sort="title-asc" class="option">Title A→Z</div>
@@ -1063,7 +1064,7 @@
       let verifiedAuthors = {}; 
       let returnToMyNotes = false;
 
-      let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="updated-desc", currentFormat="all";
+      let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="relevance", currentFormat="all";
 
       const els = {
         auth: document.getElementById('authContainer'),
@@ -1298,7 +1299,23 @@
             currentFormat: currentFormat
         });
         
-        
+        if (currentSort === 'relevance' && !q.trim()) {
+            list.sort((a, b) => (new Date(b.upd||0)) - (new Date(a.upd||0)));
+        }
+        else if (currentSort !== 'relevance') {
+            list.sort((a,b) => {
+                if(currentSort==="title-asc") return a.title.localeCompare(b.title);
+                if(currentSort==="title-desc") return b.title.localeCompare(a.title);
+                if(currentSort==="format-asc") return a.fmt.localeCompare(b.fmt) || a.title.localeCompare(b.title);
+                if(currentSort==="updated-asc") return (new Date(a.upd||0)) - (new Date(b.upd||0));
+                if(currentSort==="updated-desc") return (new Date(b.upd||0)) - (new Date(a.upd||0));
+                return 0;
+            });
+        }
+
+        const isDefault = (!q.trim() && currentSort === 'relevance') || (!q.trim() && currentSort === 'updated-desc');
+        els.sortBtn.classList.toggle("active-sort", !isDefault);
+
         if (!q.trim()) {
             list.sort((a,b) => {
               if(currentSort==="title-asc") return a.title.localeCompare(b.title);
@@ -1676,9 +1693,10 @@
       });
       els.sortBtn.onclick = (e) => { e.stopPropagation(); els.sortDrop.classList.toggle("open"); };
       els.sortDrop.querySelectorAll(".option").forEach(o => o.onclick = () => {
-         els.sortDrop.querySelectorAll(".option").forEach(x=>x.classList.remove("active"));
-         o.classList.add("active"); currentSort=o.dataset.sort; render();
-         els.sortBtn.classList.toggle("active-sort", o.dataset.sort!=="updated-desc");
+          els.sortDrop.querySelectorAll(".option").forEach(x=>x.classList.remove("active"));
+          o.classList.add("active"); 
+          currentSort = o.dataset.sort;
+          render();
       });
       document.onclick = (e) => { if(!els.sortBtn.contains(e.target) && !els.sortDrop.contains(e.target)) els.sortDrop.classList.remove("open"); };
 

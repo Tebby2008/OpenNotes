@@ -446,21 +446,13 @@ const MODIFIER_PREFIXES = [
 function getEditDistance(a, b) {
     if (a.length === 0) return b.length;
     if (b.length === 0) return a.length;
-
     const matrix = [];
     for (let i = 0; i <= b.length; i++) matrix[i] = [i];
     for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-
     for (let i = 1; i <= b.length; i++) {
         for (let j = 1; j <= a.length; j++) {
-            if (b.charAt(i - 1) === a.charAt(j - 1)) {
-                matrix[i][j] = matrix[i - 1][j - 1];
-            } else {
-                matrix[i][j] = Math.min(
-                    matrix[i - 1][j - 1] + 1,
-                    Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
-                );
-            }
+            if (b.charAt(i - 1) === a.charAt(j - 1)) matrix[i][j] = matrix[i - 1][j - 1];
+            else matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
         }
     }
     return matrix[b.length][a.length];
@@ -469,12 +461,37 @@ function getEditDistance(a, b) {
 function normalize(text) {
     if (!text) return "";
     return text.toLowerCase()
-        .replace(/\+/g, " plus ") 
-        .replace(/&/g, " and ") 
-        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") 
+        .replace(/\+/g, " plus ")
+        .replace(/&/g, " and ")
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
         .replace(/[:\-\(\)\/\\,.]/g, " ")
-        .replace(/\s+/g, " ")   
+        .replace(/\s+/g, " ")
         .trim();
+}
+
+/**
+ * Checks if a token matches the note's updated date.
+ * Supports: "2025" (Year), "Dec" (Month), "12" (Month/Day), "12th" (Day)
+ */
+function matchesDate(token, isoDate) {
+    if (!isoDate) return false;
+    const d = new Date(isoDate);
+    const year = d.getFullYear().toString();
+    const monthIndex = d.getMonth();
+    const day = d.getDate().toString();
+    
+    if (token === year) return true;
+
+    const cleanToken = token.replace(/(st|nd|rd|th)$/, "");
+    if (cleanToken === day) return true;
+
+    if (cleanToken === (monthIndex + 1).toString() || cleanToken === (monthIndex + 1).toString().padStart(2, '0')) return true;
+
+    const monthShort = d.toLocaleString('default', { month: 'short' }).toLowerCase();
+    const monthLong = d.toLocaleString('default', { month: 'long' }).toLowerCase();
+    if (token === monthShort || token === monthLong) return true;
+
+    return false;
 }
 
 // ==========================================
@@ -484,33 +501,11 @@ function normalize(text) {
 export function searchNotes(items, query, options = {}) {
     const { showAI = true, currentFormat = "all" } = options;
     
-    // 1. PREPARE QUERY
     let workingQuery = normalize(query);
 
-    // 2. FUZZY CORRECTION
-    const conceptKeys = Object.keys(CONCEPT_MAP);
-    const rawTokens = workingQuery.split(" ");
-    
-    const correctedTokens = rawTokens.map(token => {
-        if (CONCEPT_MAP[token]) return token;
-        if (token.length < 4) return token;
-
-        for (const key of conceptKeys) {
-            if (Math.abs(token.length - key.length) > 2) continue;
-            const dist = getEditDistance(token, key);
-            const allowedErrors = token.length > 6 ? 2 : 1;
-            if (dist <= allowedErrors) return key;
-        }
-        return token;
-    });
-    
-    workingQuery = correctedTokens.join(" ");
-
-    // 3. CONCEPT LOCKING
     for (const [phrase, conceptId] of Object.entries(CONCEPT_MAP)) {
         const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const regex = new RegExp(`\\b${escapedPhrase}\\b`, 'g');
-        
         if (regex.test(workingQuery)) {
             workingQuery = workingQuery.replace(regex, conceptId);
         } else if (workingQuery.includes(phrase)) {
@@ -518,22 +513,16 @@ export function searchNotes(items, query, options = {}) {
         }
     }
 
-    workingQuery = workingQuery
-        .replace(/&/g, "and")
-        .replace(/\+/g, "plus")
-        .replace(/\s+/g, " ")
-        .trim();
-
+    workingQuery = workingQuery.replace(/&/g, "and").replace(/\+/g, "plus").replace(/\s+/g, " ").trim();
     const tokens = workingQuery.split(" ");
     const totalQueryTokens = tokens.length;
     
-    // 4. IDENTIFY PRIMARY SUBJECTS
     let hasSubjectQuery = false;
-
     const searchTargets = [];
+    
     tokens.forEach(t => {
         const set = new Set();
-        set.add(t); 
+        set.add(t);
         
         if (SYNONYMS[t]) {
             SYNONYMS[t].forEach(s => set.add(s));
@@ -543,19 +532,16 @@ export function searchNotes(items, query, options = {}) {
         if (normT !== t) set.add(normT);
 
         const isModifier = MODIFIER_PREFIXES.some(prefix => t.startsWith(prefix));
-
-        if (!isModifier && t.startsWith("CONCEPT_")) {
-            hasSubjectQuery = true;
-        }
+        if (!isModifier && t.startsWith("CONCEPT_")) hasSubjectQuery = true;
 
         searchTargets.push({
             candidates: Array.from(set),
+            rawToken: t,
             isModifier: isModifier,
             weight: isModifier ? 5 : 25
         });
     });
 
-    // 5. SCORE ITEMS
     return items.map(item => {
         if (!showAI && item.ai) return null;
         if (currentFormat !== "all" && item.fmt !== currentFormat) return null;
@@ -567,7 +553,7 @@ export function searchNotes(items, query, options = {}) {
         let matchedTokenCount = 0;
         let matchedASubject = false;
 
-        searchTargets.forEach(({ candidates, weight, isModifier }) => {
+        searchTargets.forEach(({ candidates, rawToken, weight, isModifier }) => {
             let tokenMatch = false;
             
             for (const str of candidates) {
@@ -575,22 +561,44 @@ export function searchNotes(items, query, options = {}) {
                     score += weight + (str.length * 1.5);
                     tokenMatch = true;
                     if (titleNorm.startsWith(str)) score += 10;
-                    
                     if (!isModifier) matchedASubject = true;
-                    
                     break; 
                 }
-                else if (authNorm.includes(str)) {
-                    score += 5;
+            }
+
+            if (!tokenMatch) {
+                for (const str of candidates) {
+                    if (authNorm.includes(str)) {
+                        score += 30; 
+                        tokenMatch = true;
+                        break;
+                    }
+                }
+                if (!tokenMatch && rawToken.length > 3) {
+                    const authorWords = authNorm.split(" ");
+                    for (const word of authorWords) {
+                        if (Math.abs(word.length - rawToken.length) > 2) continue;
+                        const dist = getEditDistance(rawToken, word);
+                        if (dist <= 1) {
+                            score += 25; 
+                            tokenMatch = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!tokenMatch && item.upd) {
+                if (matchesDate(rawToken, item.upd)) {
+                    score += 20;
                     tokenMatch = true;
-                    break;
                 }
             }
 
             if (tokenMatch) matchedTokenCount++;
         });
 
-        if (hasSubjectQuery && !matchedASubject) {
+        if (hasSubjectQuery && !matchedASubject && score < 30) {
             return null;
         }
 
