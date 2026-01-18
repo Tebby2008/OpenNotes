@@ -1284,6 +1284,8 @@
               const el = document.createElement("article");
               el.className = viewMode === "grid" ? "card" : "row";
               el.style.animationDelay = `${50 * i}ms`; 
+              
+              el.dataset.name = it.name; 
 
               const rawTitle = it.title.replace(/\(AI\)$/, '');
               const safeTitle = escapeHtml(rawTitle);
@@ -1314,8 +1316,8 @@
                     <span class="dot"></span><span>${fmtDate(it.upd)}</span>
                   </div>
                   <div class="stats">
-                    <span class="stat"><span class="material-symbols-rounded">visibility</span> <span data-v>${it.v}</span></span>
-                    <span class="stat"><span class="material-symbols-rounded">download</span> <span data-d>${it.d}</span></span>
+                    <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v}</span></span>
+                    <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d}</span></span>
                   </div>
                 </div>` : `<div class="main">
                   <div class="cell"><div class="title-line">${safeTitle}</div></div>
@@ -1324,8 +1326,8 @@
                   <div class="cell"><span class="pill">${it.fmt.toUpperCase()}</span></div>
                 </div>
                 <div class="right-end" style="display:flex;gap:16px;padding-right:12px;color:var(--text-muted)">
-                  <span class="stat"><span class="material-symbols-rounded">visibility</span> ${it.v}</span>
-                  <span class="stat"><span class="material-symbols-rounded">download</span> ${it.d}</span>
+                  <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v}</span></span>
+                  <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d}</span></span>
                 </div>`}
               `;
               el.onclick = () => openOverlay(it);
@@ -1378,7 +1380,7 @@
       }
 
       function render(force = false) {
-          const isMyNotesMode = location.hash === '#/mynotes';
+          const isMyNotesMode = location.hash.startsWith('#/mynotes');
           const newContext = isMyNotesMode ? 'mynotes' : 'home';
             
           if (activeContext !== 'mynotes' && newContext === 'mynotes') {
@@ -1493,7 +1495,6 @@
       };
 
       function openOverlay(it) {
-
           history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
     
           toggleOverlay(els.overlay, true);
@@ -1576,11 +1577,9 @@
                       };
                   }
               }, 50);
-              
           }
           
           let authHtml;
-
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
               const displayName = verifiedAuthors[it.user];
               authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
@@ -1604,10 +1603,33 @@
           
           els.ovDate.textContent = fmtDate(it.upd);
           
+          const updateTileParams = () => {
+              const card = document.querySelector(`article[data-name="${CSS.escape(it.name)}"]`);
+              if(card) {
+                  const vEl = card.querySelector('.stat-value-v');
+                  const dEl = card.querySelector('.stat-value-d');
+                  if(vEl) vEl.textContent = it.v;
+                  if(dEl) dEl.textContent = it.d;
+              }
+          };
+
+          els.ovView.textContent = it.v; 
+          els.ovDl.textContent = it.d;
+
+          updateCounter(it.path, 'views').then(d => { 
+              if(d) {
+                  if (d.views !== undefined) it.v = d.views;
+                  if (d.downloads !== undefined) it.d = d.downloads;
+                  els.ovView.textContent = it.v; 
+                  els.ovDl.textContent = it.d; 
+                  updateTileParams(); 
+              }
+          });
+
           els.ovDown.onclick = null; 
           if (it.dl && isValidUrl(it.dl)) {
               const viewerUrl = `view.html?file=${encodeURIComponent(it.dl)}`;
-              els.ovRaw.href = els.frame.src = viewerUrl;
+              els.ovRaw.href = viewerUrl;
 
               try {
                   els.frame.contentWindow.location.replace(viewerUrl);
@@ -1622,7 +1644,7 @@
                           if (d.downloads !== undefined) it.d = d.downloads;
                           els.ovView.textContent = it.v; 
                           els.ovDl.textContent = it.d; 
-                          render(); 
+                          updateTileParams();
                       }
                   });
                   const a = document.createElement("a"); 
@@ -1639,17 +1661,6 @@
               els.ovDown.style.display = 'none';
           }
           
-          els.ovView.textContent = it.v; 
-          els.ovDl.textContent = it.d;
-          updateCounter(it.path, 'views').then(d => { 
-              if(d) {
-                  if (d.views !== undefined) it.v = d.views;
-                  if (d.downloads !== undefined) it.d = d.downloads;
-                  els.ovView.textContent = it.v; 
-                  els.ovDl.textContent = it.d; 
-                  render(); 
-              }
-          });
           els.ovShare.onclick = () => { 
               const cleanUrl = `${window.location.origin}${window.location.pathname}#/notes/${encodeURIComponent(it.name)}`;
               
@@ -1806,7 +1817,6 @@
       }
 
       window.onpopstate = (e) => {
-
           if (location.hash === '' || location.hash === '#') {
               history.replaceState(null, '', location.pathname + location.search);
           }
@@ -1820,8 +1830,10 @@
           toggleOverlay(uploadEls.overlay, false);
 
           const currentHash = location.hash;
-          const targetContext = (currentHash === '#/mynotes') ? 'mynotes' : 'home';
+          const targetContext = (currentHash.startsWith('#/mynotes')) ? 'mynotes' : 'home';
+          
           const targetQuery = new URLSearchParams(window.location.search).get('q') || '';
+          
           const contextUnchanged = targetContext === lastRenderState.context;
           const queryUnchanged = targetQuery === lastRenderState.query;
 
@@ -1841,7 +1853,7 @@
               openInfo(e.state.info);
               return;
           }
-          else if (currentHash === '#/upload') {
+          else if (currentHash.startsWith('#/upload')) {
               handleUploadAccess();
               return;
           } 
@@ -1854,7 +1866,6 @@
                   return;
               }
           }
-
 
           render(true);
       };
