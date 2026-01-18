@@ -1434,7 +1434,7 @@
           el.className = viewMode === "grid" ? "card" : "row";
           el.style.animationDelay = `${500*(1-Math.pow(0.9, i))}ms`;
 
-          const rawTitle = it.title.replace(/\(AI\)$/, '');
+          const rawTitle = it.title.replace(/\{AI\}$/, '');
           const safeTitle = escapeHtml(rawTitle);
 
           let authHtml;
@@ -1859,7 +1859,7 @@
           uploadEls.aiCheck.checked = !uploadEls.aiCheck.checked;
           const isAi = uploadEls.aiCheck.checked;
           uploadEls.aiBtn.classList.toggle('active-ai', isAi);
-          uploadEls.aiBtn.querySelector('span:last-child').textContent = isAi ? "Yes (AI)" : "No";
+          uploadEls.aiBtn.querySelector('span:last-child').textContent = isAi ? "Yes" : "No";
       };
 
       const handleFile = (file) => {
