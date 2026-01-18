@@ -39,30 +39,51 @@ export function initUpload(API_URL, currentUserGetter, turnstileTokenGetter, all
         });
     }
 
-    function addTag(val) {
-        if (!val) return;
-        const clean = val.replace(/[^a-zA-Z0-9\s]/g, '').trim(); 
-        if (clean && !uploadTags.includes(clean) && uploadTags.length < 5) {
-            uploadTags.push(clean);
-            renderTags();
-        }
+    function addTagsFromInput(rawVal) {
+        if (!rawVal) return;
+        
+        const parts = rawVal.split(',');
+
+        parts.forEach(part => {
+            const clean = part.replace(/[^a-zA-Z0-9\s\-]/g, '').trim();
+            
+            if (clean && !uploadTags.includes(clean) && uploadTags.length < 10) {
+                uploadTags.push(clean);
+            }
+        });
+        
+        renderTags();
         if (els.tagInput) els.tagInput.value = '';
     }
 
     if (els.tagInput) {
         els.tagInput.addEventListener('keydown', (e) => {
-            if (e.key === ',' || e.key === 'Enter') {
+            if (e.key === ',') {
                 e.preventDefault();
-                addTag(els.tagInput.value);
+                addTagsFromInput(els.tagInput.value);
             }
-            if (e.key === 'Backspace' && els.tagInput.value === '' && uploadTags.length > 0) {
+            else if (e.key === 'Enter') {
+                e.preventDefault();
+                addTagsFromInput(els.tagInput.value);
+            }
+            else if (e.key === 'Backspace' && els.tagInput.value === '' && uploadTags.length > 0) {
                 uploadTags.pop();
                 renderTags();
             }
         });
 
         els.tagInput.addEventListener('blur', () => {
-            if (els.tagInput && els.tagInput.value.trim()) addTag(els.tagInput.value);
+            if (els.tagInput && els.tagInput.value.trim()) {
+                addTagsFromInput(els.tagInput.value);
+            }
+        });
+        
+        els.tagInput.addEventListener('paste', (e) => {
+            setTimeout(() => {
+                if (els.tagInput.value.includes(',')) {
+                    addTagsFromInput(els.tagInput.value);
+                }
+            }, 50);
         });
     }
 
@@ -122,12 +143,8 @@ export function initUpload(API_URL, currentUserGetter, turnstileTokenGetter, all
             const turnstileToken = turnstileTokenGetter();
             const allItems = allItemsGetter();
 
-            if (!currentUser) {
-                return showPopup("You must log in first.", "error");
-            }
-            if (!turnstileToken) {
-                return showPopup("Please complete the security check.", "error");
-            }
+            if (!currentUser) return showPopup("You must log in first.", "error");
+            if (!turnstileToken) return showPopup("Please complete the security check.", "error");
             
             const file = els.file.files[0];
             if (!file) return showPopup("Please select a file.", "error");
