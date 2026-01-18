@@ -1099,7 +1099,7 @@
 
   <script type="module">
       import { searchNotes } from './search.js';
-      import { initUploadSystem } from './upload.js';
+      import { initUpload } from './upload.js';
 
       const REPO_OWNER = "Tebby2008", REPO_NAME = "OpenNotes", BRANCH = "main", API_URL = "https://open-notes.tebby2008-li.workers.dev";
       const owner = window.__owner || REPO_OWNER, repo = window.__repo || REPO_NAME;
@@ -2076,7 +2076,7 @@
           showPopup("Logged out");
       }
 
-      initUploadSystem({
+      initUpload({
           currentUser,
           API_URL,
           allItems,
