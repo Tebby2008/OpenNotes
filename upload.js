@@ -1,206 +1,220 @@
-// upload.js
+// --- upload.js ---
 
 let uploadTags = [];
 
-/**
- * Initializes the upload system (Tags, Form Submission, Validation).
- * @param {Object} ctx - The context containing globals from index.html
- * { currentUser, API_URL, allItems, showPopup, toggleOverlay, render, turnstileTokenPtr }
- */
-export function initUploadSystem(ctx) {
-    const uploadEls = {
+export function initUpload(API_URL, currentUserGetter, turnstileTokenGetter, allItemsGetter, onUploadSuccess, showPopup) {
+    const els = {
+        overlay: document.getElementById('uploadOverlay'),
+        btn: document.getElementById('uploadBtn'),
+        back: document.getElementById('uploadBackBtn'),
         form: document.getElementById('uploadForm'),
         file: document.getElementById('fileInput'),
         drop: document.getElementById('dropArea'),
         msg: document.querySelector('.file-msg'),
         title: document.getElementById('upTitle'),
         author: document.getElementById('upAuthor'),
-        aiCheck: document.getElementById('upAiCheck'),
         aiBtn: document.getElementById('upAiToggle'),
+        aiCheck: document.getElementById('upAiCheck'),
         submit: document.getElementById('submitUploadBtn'),
         status: document.getElementById('uploadStatus'),
-        overlay: document.getElementById('uploadOverlay')
+        tagInput: document.getElementById('upTagInput'),
+        tagContainer: document.getElementById('upTagContainer')
     };
 
-    const tagInput = document.getElementById('upTagsInput');
-    const chipContainer = document.getElementById('tagChips');
-    const container = document.getElementById('tagInputContainer');
-
-    
-    container.onclick = () => tagInput.focus();
-
     function renderTags() {
-        chipContainer.innerHTML = '';
+        if (!els.tagContainer) return;
+        els.tagContainer.innerHTML = '';
         uploadTags.forEach((tag, index) => {
             const chip = document.createElement('div');
             chip.className = 'tag-chip';
-            chip.innerHTML = `${escapeHtml(tag)} <span class="material-symbols-rounded" style="font-size:14px">close</span>`;
-            chip.querySelector('span').onclick = (e) => {
-                e.stopPropagation();
-                uploadTags.splice(index, 1);
-                renderTags();
-            };
-            chipContainer.appendChild(chip);
+            chip.innerHTML = `<span>#${tag}</span><span class="material-symbols-rounded close">close</span>`;
+            const closeBtn = chip.querySelector('.close');
+            if (closeBtn) {
+                closeBtn.onclick = () => {
+                    uploadTags.splice(index, 1);
+                    renderTags();
+                };
+            }
+            els.tagContainer.appendChild(chip);
         });
     }
 
-    tagInput.onkeydown = (e) => {
-        if (e.key === 'Enter' || e.key === ',') {
-            e.preventDefault();
-            addTag(tagInput.value);
-        } else if (e.key === 'Backspace' && !tagInput.value && uploadTags.length > 0) {
-            uploadTags.pop();
-            renderTags();
-        }
-    };
-
-    tagInput.onblur = () => {
-        addTag(tagInput.value);
-    };
-
     function addTag(val) {
-        const clean = val.trim().replace(/,/g, '');
-        if (clean && !uploadTags.includes(clean)) {
-            if (/[#{}]/.test(clean)) {
-                ctx.showPopup("Tags cannot contain #, { or }", "error");
-                return;
-            }
+        if (!val) return;
+        const clean = val.replace(/[^a-zA-Z0-9\s]/g, '').trim(); 
+        if (clean && !uploadTags.includes(clean) && uploadTags.length < 5) {
             uploadTags.push(clean);
-            tagInput.value = '';
             renderTags();
-        } else {
-            tagInput.value = '';
         }
+        if (els.tagInput) els.tagInput.value = '';
     }
 
+    if (els.tagInput) {
+        els.tagInput.addEventListener('keydown', (e) => {
+            if (e.key === ',' || e.key === 'Enter') {
+                e.preventDefault();
+                addTag(els.tagInput.value);
+            }
+            if (e.key === 'Backspace' && els.tagInput.value === '' && uploadTags.length > 0) {
+                uploadTags.pop();
+                renderTags();
+            }
+        });
 
-    uploadEls.file.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+        els.tagInput.addEventListener('blur', () => {
+            if (els.tagInput && els.tagInput.value.trim()) addTag(els.tagInput.value);
+        });
+    }
 
-        const lowerName = file.name.toLowerCase();
-        if (!lowerName.endsWith('.pdf') && !lowerName.endsWith('.docx')) {
-            ctx.showPopup("Invalid file type. Only .pdf and .docx allowed.", "error");
-            this.value = '';
-            return;
-        }
+    if (els.title) {
+        els.title.addEventListener('input', (e) => {
+            const val = e.target.value;
+            if (val.includes('#{') || val.includes('{AI}')) {
+                e.target.classList.add('input-error');
+                showPopup("Do not include tags or {AI} in the title manually. Use the options below.", "error");
+            } else {
+                e.target.classList.remove('input-error');
+            }
+        });
+    }
 
-        if (file.size > 35 * 1024 * 1024) {
-            ctx.showPopup("File too large (Max 35MB).", "error");
-            this.value = '';
-            return;
-        }
+    if (els.aiBtn) {
+        els.aiBtn.onclick = () => {
+            els.aiCheck.checked = !els.aiCheck.checked;
+            const isAi = els.aiCheck.checked;
+            els.aiBtn.classList.toggle('active-ai', isAi);
+            els.aiBtn.querySelector('span:last-child').textContent = isAi ? "Yes {AI}" : "No";
+        };
+    }
 
-        uploadEls.drop.classList.add('has-file');
-        uploadEls.msg.innerHTML = `<strong>${escapeHtml(file.name)}</strong>`;
-        
-        if (!uploadEls.title.value) {
-            uploadEls.title.value = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
-        }
-    });
-
-
-    uploadEls.form.onsubmit = async (e) => {
-        e.preventDefault();
-        
-        const token = ctx.getTurnstileToken(); 
-
-        if (!token) { ctx.showPopup("Please complete the security check.", "error"); return; }
-        
-        const file = uploadEls.file.files[0];
-        if (!file) { ctx.showPopup("Please select a file.", "error"); return; }
-        
-        const rawTitle = uploadEls.title.value;
-        if (rawTitle.includes('#{') || rawTitle.includes('{AI}')) {
-            ctx.showPopup("Title cannot contain reserved patterns '#{' or '{AI}'", "error");
-            return;
-        }
-
-        uploadEls.submit.classList.add('btn-loading');
-        uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
-        uploadEls.status.textContent = "Processing file...";
-
-        try {
-            const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
-            const safeTitle = cleanText(rawTitle);
-            const safeAuthor = cleanText(uploadEls.author.value);
-            const ext = file.name.split('.').pop();
-            const isAi = uploadEls.aiCheck.checked;
-
-            if (safeTitle.length > 60) throw new Error("Title too long");
-
-            let finalBase = safeTitle;
+    if (els.file) {
+        els.file.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
             
-            if (uploadTags.length > 0) {
-                finalBase += ` #{${uploadTags.join(', ')}}`;
+            if (file.size > 35 * 1024 * 1024) {
+                showPopup("File too large (>35MB).", "error");
+                e.target.value = '';
+                return;
             }
 
-            if (isAi) {
-                finalBase += ` {AI}`; 
-            }
-            
-            finalBase += ` (by ${safeAuthor})`;
-
-            let finalFileName = `${finalBase}.${ext}`;
-            
-            let counter = 1;
-            while (ctx.allItems.some(item => item.name === finalFileName)) {
-                finalFileName = `${finalBase} (${counter}).${ext}`;
-                counter++;
+            const ext = file.name.split('.').pop().toLowerCase();
+            if (ext !== 'pdf' && ext !== 'docx') {
+                showPopup("Only .pdf and .docx allowed.", "error");
+                e.target.value = '';
+                return;
             }
 
-            const toBase64 = file => new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result.split(',')[1]);
-                reader.onerror = error => reject(error);
-            });
-
-            const base64Content = await toBase64(file);
-            uploadEls.status.textContent = "Uploading...";
+            els.drop.classList.add('has-file');
+            els.msg.innerHTML = `<strong>${file.name}</strong>`;
             
-            const payload = {
-                fileName: finalFileName,
-                fileContent: base64Content,
-                author: safeAuthor,
-                isAi: isAi,
-                token: token
-            };
+            if (!els.title.value) {
+                els.title.value = file.name.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
+            }
+        });
+    }
 
-            const response = await fetch(`${ctx.API_URL}?type=upload`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ctx.currentUser.token}` },
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.error || "Upload failed");
-
-            ctx.showPopup("Upload successful!", "success");
-            ctx.toggleOverlay(uploadEls.overlay, false);
+    if (els.form) {
+        els.form.onsubmit = async (e) => {
+            e.preventDefault();
             
-            uploadEls.form.reset();
-            uploadTags = [];
-            renderTags();
-            uploadEls.drop.classList.remove('has-file');
-            uploadEls.msg.textContent = "Drag & drop to upload";
-            
-            if (window.turnstile) turnstile.reset();
-            
-            setTimeout(() => window.location.reload(), 1500);
+            const currentUser = currentUserGetter();
+            const turnstileToken = turnstileTokenGetter();
+            const allItems = allItemsGetter();
 
-        } catch (err) {
-            console.error(err);
-            ctx.showPopup(err.message, "error");
-            if (window.turnstile) turnstile.reset();
-        } finally {
-            uploadEls.submit.classList.remove('btn-loading');
-            uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
-            uploadEls.status.textContent = "";
-        }
-    };
+            if (!currentUser) {
+                return showPopup("You must log in first.", "error");
+            }
+            if (!turnstileToken) {
+                return showPopup("Please complete the security check.", "error");
+            }
+            
+            const file = els.file.files[0];
+            if (!file) return showPopup("Please select a file.", "error");
 
-    function escapeHtml(str) {
-        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+            if (els.title.value.includes('#{') || els.title.value.includes('{AI}')) {
+                return showPopup("Invalid characters in title.", "error");
+            }
+
+            els.submit.classList.add('btn-loading');
+            els.submit.querySelector('span:last-child').textContent = "Uploading...";
+            els.status.textContent = "Processing file...";
+
+            try {
+                const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
+                const safeTitle = cleanText(els.title.value);
+                const safeAuthor = cleanText(els.author.value);
+                const ext = file.name.split('.').pop();
+
+                let tagString = "";
+                if (uploadTags.length > 0) {
+                    tagString = " #{" + uploadTags.join(", ") + "}";
+                }
+                
+                let aiString = els.aiCheck.checked ? " {AI}" : "";
+                
+                let baseName = `${safeTitle} (by ${safeAuthor})${tagString}${aiString}`;
+                let finalFileName = `${baseName}.${ext}`;
+                
+                let counter = 1;
+                while (allItems.some(item => item.name === finalFileName)) {
+                    finalFileName = `${baseName} (${counter}).${ext}`;
+                    counter++;
+                }
+
+                const toBase64 = file => new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                });
+
+                const base64Content = await toBase64(file);
+                els.status.textContent = "Uploading to servers...";
+
+                const token = currentUser?.token || "";
+
+                const payload = {
+                    fileName: finalFileName,
+                    fileContent: base64Content,
+                    author: safeAuthor,
+                    isAi: els.aiCheck.checked,
+                    token: turnstileToken
+                };
+
+                const response = await fetch(`${API_URL}?type=upload`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const result = await response.json();
+                    throw new Error(result.error || "Upload failed");
+                }
+
+                showPopup("Upload successful!", "success");
+                els.form.reset();
+                uploadTags = [];
+                renderTags();
+                els.drop.classList.remove('has-file');
+                els.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
+                els.aiBtn.classList.remove('active-ai');
+                els.aiBtn.querySelector('span:last-child').textContent = "No";
+                
+                if (onUploadSuccess) onUploadSuccess();
+
+            } catch (err) {
+                console.error(err);
+                showPopup(err.message || "Error", "error");
+            } finally {
+                els.submit.classList.remove('btn-loading');
+                els.submit.querySelector('span:last-child').textContent = "Upload Note";
+                els.status.textContent = "";
+            }
+        };
     }
 }
