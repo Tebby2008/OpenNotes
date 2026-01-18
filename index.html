@@ -1932,41 +1932,49 @@
           toggleOverlay(uploadEls.overlay, false);
 
           const currentHash = location.hash;
+
+          let targetOverlayItem = null;
+          let targetInfoItem = null;
+
+          if (e.state?.note) {
+              targetOverlayItem = e.state.note;
+          } 
+          else if (currentHash.startsWith('#/notes/')) {
+              const n = decodeURIComponent(currentHash.substr(8));
+              targetOverlayItem = allItems.find(i => i.name === n);
+          }
+          else if (e.state?.info) {
+              targetInfoItem = e.state.info;
+          }
+
           const targetContext = (currentHash.startsWith('#/mynotes')) ? 'mynotes' : 'home';
-          
           const targetQuery = new URLSearchParams(window.location.search).get('q') || '';
-          
+            
           const contextUnchanged = targetContext === lastRenderState.context;
           const queryUnchanged = targetQuery === lastRenderState.query;
 
-          if (wasOverlayOpen && contextUnchanged && queryUnchanged) {
-            return;
+          if (wasOverlayOpen && !targetOverlayItem && !targetInfoItem && !currentHash.startsWith('#/upload') && contextUnchanged && queryUnchanged) {
+              return;
+          }
+
+          if (targetOverlayItem) {
+              openOverlay(targetOverlayItem, false);
+              if(currentlyRenderedCount === 0) render(true);
+              return;
+          }
+            
+          if (targetInfoItem) {
+              openInfo(targetInfoItem, false);
+              return;
+          }
+            
+          if (currentHash.startsWith('#/upload')) {
+              handleUploadAccess();
+              return;
           }
 
           if (els.search.value !== targetQuery) {
               els.search.value = targetQuery;
-          }
-
-          if (e.state?.note) {
-              openOverlay(e.state.note, false);
-              return;
-          } 
-          else if (e.state?.info) {
-              openInfo(e.state.info, false);
-              return;
-          }
-          else if (currentHash.startsWith('#/upload')) {
-              handleUploadAccess();
-              return;
-          } 
-          else if (currentHash.startsWith('#/notes/')) {
-              const n = decodeURIComponent(currentHash.substr(8));
-              const it = allItems.find(i => i.name === n);
-              if(it) {
-                  openOverlay(it, false);
-                  if(currentlyRenderedCount === 0) render(true);
-                  return;
-              }
           }
 
           render(true);
