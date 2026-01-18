@@ -1270,9 +1270,6 @@
               if (cleanName.includes('{AI}')) {
                   isAi = true;
                   cleanName = cleanName.replace('{AI}', '');
-              } else if (cleanName.includes('(AI)')) {
-                  isAi = true;
-                  cleanName = cleanName.replace('(AI)', '');
               }
 
               cleanName = cleanName.trim();

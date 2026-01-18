@@ -13,7 +13,6 @@ function appendLog(message, level = 'INFO', event = 'Metadata') {
     const logPath = path.join('resources', 'system_log.md');
     const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
     
-    // Define icons based on level
     let icon = '🔵';
     if (level === 'ADD') icon = '✨';
     if (level === 'DEL') icon = '❌';
@@ -35,7 +34,6 @@ async function generateNotesData() {
         const notesPath = 'Notes';
         const metadataPath = path.join('resources', 'notes_metadata.json');
 
-        // 1. Load Previous Metadata (for diff logging)
         let oldFiles = new Set();
         try {
             if (fs.existsSync(metadataPath)) {
@@ -49,7 +47,6 @@ async function generateNotesData() {
 
         console.log(`Scanning notes in ${owner}/${repo}/${notesPath}...`);
 
-        // 2. Get list of all current files from GitHub API
         const { data: fileData } = await octokit.repos.getContent({
             owner, repo, path: notesPath, ref: 'main',
         });
@@ -61,7 +58,6 @@ async function generateNotesData() {
             if (file.type === 'file') {
                 currentFiles.add(file.name);
 
-                // Fetch commit history
                 const { data: commitsData } = await octokit.repos.listCommits({
                     owner, repo, path: file.path, per_page: 10,
                 });
@@ -69,9 +65,8 @@ async function generateNotesData() {
                 let lastUpdated = commitsData[0].commit.author.date;
                 let authorDisplay = "Unknown";
                 let authorUsername = null;
-                let isAiGenerated = file.name.includes('(AI)');
+                let isAiGenerated = file.name.includes('{AI}');
 
-                // Search history for Worker Metadata
                 let metadataFound = false;
                 const metadataRegex = /Author:\s*([^|]+)\|\s*AI:\s*(true|false)/i;
 
@@ -103,7 +98,6 @@ async function generateNotesData() {
                     }
                 }
 
-                // Check if this is a NEW file
                 if (!oldFiles.has(file.name)) {
                     appendLog(`New note added: **${file.name}** by ${authorDisplay}`, 'ADD', 'New Entry');
                 }
@@ -126,14 +120,12 @@ async function generateNotesData() {
             }
         }
 
-        // 3. Check for DELETED files
         oldFiles.forEach(oldName => {
             if (!currentFiles.has(oldName)) {
                 appendLog(`Note deleted from repo: **${oldName}**`, 'DEL', 'Removal');
             }
         });
 
-        // 4. Save
         fs.writeFileSync(metadataPath, JSON.stringify(notesMetadata, null, 2));
         console.log(`Successfully generated ${metadataPath}!`);
 

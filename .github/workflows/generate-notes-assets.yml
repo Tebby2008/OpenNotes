@@ -17,7 +17,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Need full history for author detection
+          fetch-depth: 0
 
       - name: Install Tools
         run: |
@@ -37,7 +37,6 @@ jobs:
       - name: Install Node Deps
         run: npm install @octokit/rest
 
-      # --- 0. PREPARE LOG FILE ---
       - name: Init Log
         run: |
           mkdir -p resources
@@ -47,7 +46,6 @@ jobs:
             echo "|---|---|---|---|" >> "$LOG_FILE"
           fi
 
-      # --- 1. SECURITY SCAN (Priority #1) ---
       - name: Virus Scan & Removal
         run: |
           LOG_FILE="resources/system_log.md"
@@ -89,7 +87,6 @@ jobs:
             echo "✅ No viruses found."
           fi
 
-      # --- 2. SMART COMPRESSION ---
       - name: Compress New/Modified PDFs
         run: |
           LOG_FILE="resources/system_log.md"
@@ -122,7 +119,6 @@ jobs:
             done
           fi
 
-      # --- 3. THUMBNAILS ---
       - name: Generate Thumbnails
         run: |
           mkdir -p resources/thumbnails
@@ -162,7 +158,6 @@ jobs:
             fi
           done
 
-      # --- 4. CLEANUP ORPHANS ---
       - name: Cleanup Orphaned Thumbnails
         run: |
           LOG_FILE="resources/system_log.md"
@@ -184,7 +179,6 @@ jobs:
           done
           rm valid_thumbnails.txt
 
-      # --- 5. METADATA JSON ---
       - name: Generate Metadata JSON
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -192,7 +186,6 @@ jobs:
         run: |
           node .github/workflows/generate-notes-metadata.js
 
-      # --- 6. COMMIT ---
       - name: Commit changes
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
