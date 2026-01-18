@@ -44,3 +44,7 @@
 | 2026-01-18 05:19:18 | ✨ ADD | New Entry | New note added: **TESTING2 (by Tebby).docx** by Tebby |
 | 2026-01-18 05:23 | 🟢 THUMB | Generated | File: `Notes/TESTING3 (by Tebby) (AI).docx` <br> Reason: Missing |
 | 2026-01-18 05:23:21 | ✨ ADD | New Entry | New note added: **TESTING3 (by Tebby) (AI).docx** by Tebby |
+| 2026-01-18 05:28 | 🗑️ CLEANUP | Deleted Thumbnail | File: `TESTING (by Tebby)_docx.jpg` (Original note deleted) |
+| 2026-01-18 05:28:34 | ❌ DEL | Removal | Note deleted from repo: **TESTING (by Tebby).docx** |
+| 2026-01-18 05:28:34 | ❌ DEL | Removal | Note deleted from repo: **TESTING2 (by Tebby).docx** |
+| 2026-01-18 05:28:34 | ❌ DEL | Removal | Note deleted from repo: **TESTING3 (by Tebby) (AI).docx** |
