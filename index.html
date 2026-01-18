@@ -2030,6 +2030,9 @@
               if (safeAuthor.length > 25) throw new Error("Author name too long");
 
               let baseName = `${safeTitle} (by ${safeAuthor})`;
+              if (uploadEls.aiCheck.checked) {
+                  baseName += " (AI)";
+              }
               let finalFileName = `${baseName}.${ext}`;
               let counter = 1;
               while (allItems.some(item => item.name === finalFileName)) {
