@@ -1,7 +1,7 @@
 /**
  * search.js
  * Advanced Concept-Based Search Engine
- * Features: Smart Weighting (Core vs Modifiers), Overlap Scoring, Multilingual, Broad Taxonomies
+ * Updated: "Primary Subject" Logic & Expanded Study Guide Terms
  */
 
 const CONCEPT_MAP = {
@@ -11,7 +11,6 @@ const CONCEPT_MAP = {
     "technology": "CONCEPT_TECH_GEN",
     "tech": "CONCEPT_TECH_GEN",
     "stem": "CONCEPT_STEM",
-    
     "artificial intelligence": "CONCEPT_AI",
     "machine learning": "CONCEPT_AI",
     "ai": "CONCEPT_AI",
@@ -20,14 +19,28 @@ const CONCEPT_MAP = {
     "algorithm": "CONCEPT_ALGO",
     "algorithms": "CONCEPT_ALGO",
     "algo": "CONCEPT_ALGO",
-    
     "high school": "CONCEPT_HS_GEN",
     "hs": "CONCEPT_HS_GEN",
     "finance": "CONCEPT_FINANCE",
     "business": "CONCEPT_BUSMAN", 
     
     // ============================
-    // 2. CODING & CS
+    // 2. STUDY GUIDES (Fixed)
+    // ============================
+    // Mapping these ensures "prep" finds "study guide" and "notes" finds "review"
+    "study guide": "CONCEPT_GUIDE",
+    "guide": "CONCEPT_GUIDE",
+    "review": "CONCEPT_GUIDE",
+    "prep": "CONCEPT_GUIDE",
+    "notes": "CONCEPT_GUIDE",
+    "summary": "CONCEPT_GUIDE",
+    "sheet": "CONCEPT_GUIDE",
+    "cheat sheet": "CONCEPT_GUIDE",
+    "revision": "CONCEPT_GUIDE",
+    "packet": "CONCEPT_GUIDE",
+
+    // ============================
+    // 3. CODING & CS
     // ============================
     "ap csp": "CONCEPT_CSP",
     "apcsp": "CONCEPT_CSP", 
@@ -42,7 +55,6 @@ const CONCEPT_MAP = {
     "programming": "CONCEPT_CODING_GEN",
     "coding": "CONCEPT_CODING_GEN",
     "web dev": "CONCEPT_WEB_DEV",
-    
     "c plus plus": "CONCEPT_CPP", 
     "cpp": "CONCEPT_CPP",
     "python": "CONCEPT_PYTHON",
@@ -52,12 +64,11 @@ const CONCEPT_MAP = {
     "js": "CONCEPT_JS",
 
     // ============================
-    // 3. MATHEMATICS
+    // 4. MATHEMATICS
     // ============================
     "apcalc": "CONCEPT_CALC_GEN",
     "apstat": "CONCEPT_STATS",
     "apstats": "CONCEPT_STATS",
-
     "calc ab": "CONCEPT_CALC_AB",
     "ab calc": "CONCEPT_CALC_AB",
     "calc bc": "CONCEPT_CALC_BC",
@@ -80,7 +91,6 @@ const CONCEPT_MAP = {
     "multivar": "CONCEPT_MULTIVAR",
     "stats": "CONCEPT_STATS",
     "statistics": "CONCEPT_STATS",
-    
     "matematicas": "CONCEPT_MATH_GEN",
     "math": "CONCEPT_MATH_GEN",
     "maths": "CONCEPT_MATH_GEN",
@@ -91,26 +101,23 @@ const CONCEPT_MAP = {
     "ib math": "CONCEPT_IB_MATH_BROAD",
     "ib maths": "CONCEPT_IB_MATH_BROAD",
     "ibmath": "CONCEPT_IB_MATH_BROAD",
-    
     "aa hl": "CONCEPT_MATH_AA_HL",
     "aahl": "CONCEPT_MATH_AA_HL",
     "ibaahl": "CONCEPT_MATH_AA_HL",
     "aa sl": "CONCEPT_MATH_AA_SL",
     "aasl": "CONCEPT_MATH_AA_SL",
     "ibaasl": "CONCEPT_MATH_AA_SL",
-    
     "ai hl": "CONCEPT_MATH_AI_HL",
     "aihl": "CONCEPT_MATH_AI_HL",
     "ibaihl": "CONCEPT_MATH_AI_HL",
     "ai sl": "CONCEPT_MATH_AI_SL",
     "aisl": "CONCEPT_MATH_AI_SL",
     "ibaisl": "CONCEPT_MATH_AI_SL",
-    
     "math aa": "CONCEPT_MATH_AA_GEN",
     "math ai": "CONCEPT_MATH_AI_GEN",
 
     // ============================
-    // 4. SCIENCES
+    // 5. SCIENCES
     // ============================
     "apbio": "CONCEPT_BIO",
     "ibbio": "CONCEPT_BIO",
@@ -120,33 +127,28 @@ const CONCEPT_MAP = {
     "apphysics": "CONCEPT_PHYS",
     "ibphys": "CONCEPT_PHYS",
     "ibphysics": "CONCEPT_PHYS",
-
     "science": "CONCEPT_SCI_GEN",
     "sciences": "CONCEPT_SCI_GEN",
     "sci": "CONCEPT_SCI_GEN",
     "ciencia": "CONCEPT_SCI_GEN",
     "科学": "CONCEPT_SCI_GEN",
     "kexue": "CONCEPT_SCI_GEN",
-
     "env sys": "CONCEPT_ESS",
     "ibess": "CONCEPT_ESS",
     "env sci": "CONCEPT_APES",
     "apes": "CONCEPT_APES",
     "sports ex": "CONCEPT_SEHS",
     "sehs": "CONCEPT_SEHS",
-    
     "bio": "CONCEPT_BIO",
     "biology": "CONCEPT_BIO",
     "biologia": "CONCEPT_BIO",
     "生物": "CONCEPT_BIO",
     "shengwu": "CONCEPT_BIO",
-
     "chem": "CONCEPT_CHEM",
     "chemistry": "CONCEPT_CHEM",
     "quimica": "CONCEPT_CHEM",
     "化学": "CONCEPT_CHEM",
     "huaxue": "CONCEPT_CHEM",
-    
     "phys": "CONCEPT_PHYS",
     "physics": "CONCEPT_PHYS",
     "fisica": "CONCEPT_PHYS",
@@ -154,7 +156,7 @@ const CONCEPT_MAP = {
     "wuli": "CONCEPT_PHYS",
 
     // ============================
-    // 5. HUMANITIES
+    // 6. HUMANITIES
     // ============================
     "apush": "CONCEPT_USH",
     "apeuro": "CONCEPT_EURO",
@@ -165,11 +167,9 @@ const CONCEPT_MAP = {
     "ibecon": "CONCEPT_ECON",
     "ibpsych": "CONCEPT_PSYCH",
     "ibhistory": "CONCEPT_HISTORY_GEN",
-
     "humanities": "CONCEPT_HUMANITIES_GEN",
     "social science": "CONCEPT_SOCSCI_GEN",
     "social studies": "CONCEPT_SOCSCI_GEN",
-
     "us hist": "CONCEPT_USH",
     "u s hist": "CONCEPT_USH",
     "euro hist": "CONCEPT_EURO",
@@ -177,24 +177,19 @@ const CONCEPT_MAP = {
     "w hist": "CONCEPT_WHIST",
     "world hist": "CONCEPT_WHIST",
     "whap": "CONCEPT_WHIST",
-    
     "historia": "CONCEPT_HISTORY_GEN",
     "历史": "CONCEPT_HISTORY_GEN",
     "lishi": "CONCEPT_HISTORY_GEN",
-    
     "human geo": "CONCEPT_HUG",
     "aphug": "CONCEPT_HUG",
     "glob pol": "CONCEPT_GLOPO",
     "glo po": "CONCEPT_GLOPO",
     "glopo": "CONCEPT_GLOPO",
-    
     "bus man": "CONCEPT_BUSMAN",
     "business": "CONCEPT_BUSMAN",
     "negocios": "CONCEPT_BUSMAN",
-    
     "comp gov": "CONCEPT_COMPGOV",
     "us gov": "CONCEPT_USGOV",
-    
     "econ": "CONCEPT_ECON",
     "economics": "CONCEPT_ECON",
     "economia": "CONCEPT_ECON",
@@ -202,7 +197,6 @@ const CONCEPT_MAP = {
     "jingji": "CONCEPT_ECON",
     "macro": "CONCEPT_ECON_MACRO",
     "micro": "CONCEPT_ECON_MICRO",
-
     "psych": "CONCEPT_PSYCH",
     "psychology": "CONCEPT_PSYCH",
     "psicologia": "CONCEPT_PSYCH",
@@ -210,7 +204,7 @@ const CONCEPT_MAP = {
     "xinli": "CONCEPT_PSYCH",
 
     // ============================
-    // 6. LANGUAGES & ARTS
+    // 7. LANGUAGES & ARTS
     // ============================
     "lang lit": "CONCEPT_ENG_LL",
     "lang & lit": "CONCEPT_ENG_LL",
@@ -221,7 +215,6 @@ const CONCEPT_MAP = {
     "lit": "CONCEPT_ENG_LIT",
     "ab initio": "CONCEPT_LANG_AB",
     "lang ab": "CONCEPT_LANG_AB",
-    
     "spanish": "CONCEPT_SPANISH",
     "esp": "CONCEPT_SPANISH",
     "espanol": "CONCEPT_SPANISH",
@@ -229,14 +222,12 @@ const CONCEPT_MAP = {
     "西语": "CONCEPT_SPANISH",
     "西班牙语": "CONCEPT_SPANISH",
     "xiyu": "CONCEPT_SPANISH",
-
     "french": "CONCEPT_FRENCH",
     "fr": "CONCEPT_FRENCH",
     "francais": "CONCEPT_FRENCH",
     "français": "CONCEPT_FRENCH",
     "法语": "CONCEPT_FRENCH",
     "fayu": "CONCEPT_FRENCH",
-
     "chinese": "CONCEPT_CHINESE",
     "mandarin": "CONCEPT_CHINESE",
     "cn": "CONCEPT_CHINESE",
@@ -245,13 +236,11 @@ const CONCEPT_MAP = {
     "hanyu": "CONCEPT_CHINESE",
     "zhongwen": "CONCEPT_CHINESE",
     "语文": "CONCEPT_CHINESE",
-
     "english": "CONCEPT_ENG_GEN",
     "eng": "CONCEPT_ENG_GEN",
     "ingles": "CONCEPT_ENG_GEN",
     "英语": "CONCEPT_ENG_GEN",
     "yingyu": "CONCEPT_ENG_GEN",
-    
     "visual arts": "CONCEPT_VIS_ARTS",
     "vis arts": "CONCEPT_VIS_ARTS",
     "art hist": "CONCEPT_ART_HIST",
@@ -269,14 +258,13 @@ const CONCEPT_MAP = {
     "film": "CONCEPT_FILM",
 
     // ============================
-    // 7. IB CORE & RESEARCH
+    // 8. IB CORE & RESEARCH
     // ============================
     "ib core": "CONCEPT_IB_CORE",
     "tok": "CONCEPT_TOK",
     "ibtok": "CONCEPT_TOK",
     "theory of know": "CONCEPT_TOK",
     "theory of knowledge": "CONCEPT_TOK",
-    
     "ee": "CONCEPT_RESEARCH",
     "ib research": "CONCEPT_RESEARCH",
     "extended essay": "CONCEPT_RESEARCH",
@@ -285,7 +273,7 @@ const CONCEPT_MAP = {
     "cas": "CONCEPT_CAS",
 
     // ============================
-    // 8. MODIFIERS (Weighted Low)
+    // 9. MODIFIERS
     // ============================
     "ib yr 1": "CONCEPT_IB_Y1",
     "ib yr1": "CONCEPT_IB_Y1",
@@ -295,48 +283,46 @@ const CONCEPT_MAP = {
     "ib yr2": "CONCEPT_IB_Y2",
     "ib y2": "CONCEPT_IB_Y2",
     "ib year 2": "CONCEPT_IB_Y2",
-    
     "grade 11": "CONCEPT_GRADE_11",
     "g11": "CONCEPT_GRADE_11",
     "gr 11": "CONCEPT_GRADE_11",
     "yr 12": "CONCEPT_GRADE_11",
     "year 12": "CONCEPT_GRADE_11",
-
     "grade 12": "CONCEPT_GRADE_12",
     "g12": "CONCEPT_GRADE_12",
     "gr 12": "CONCEPT_GRADE_12",
     "yr 13": "CONCEPT_GRADE_12",
     "year 13": "CONCEPT_GRADE_12",
-    
     "grade 1": "CONCEPT_GRADE_1",
     "g1": "CONCEPT_GRADE_1",
     "grade 5": "CONCEPT_GRADE_5",
     "g5": "CONCEPT_GRADE_5",
-    
     "pt 1": "CONCEPT_PART_1",
     "pt1": "CONCEPT_PART_1",
     "pt 2": "CONCEPT_PART_2",
     "pt2": "CONCEPT_PART_2",
     "sem 1": "CONCEPT_SEM_1",
     "sem1": "CONCEPT_SEM_1",
-    "study guide": "CONCEPT_GUIDE",
-    "review": "CONCEPT_GUIDE",
-    "summary": "CONCEPT_GUIDE",
     "hl": "CONCEPT_LEVEL_HL",
     "higher level": "CONCEPT_LEVEL_HL",
     "sl": "CONCEPT_LEVEL_SL",
     "standard level": "CONCEPT_LEVEL_SL",
-
-    // ============================
-    // 9. TEST PREP
-    // ============================
     "std test": "CONCEPT_TEST_PREP",
     "test prep": "CONCEPT_TEST_PREP",
     "sat": "CONCEPT_SAT",
-    "act": "CONCEPT_ACT"
+    "act": "CONCEPT_ACT",
+
+    // Connectors
+    "&": ["and"],
+    "+": ["and", "plus"],
+    "vs": ["versus"],
+    "intl": ["international"]
 };
 
 const SYNONYMS = {
+    // --- GUIDES (Expanded) ---
+    "CONCEPT_GUIDE": ["study guide", "review", "prep", "notes", "summary", "cheat sheet", "review sheet", "revision", "packet"],
+
     // --- TECH & BROAD ---
     "CONCEPT_TECH_GEN": ["technology", "tech", "computer science", "coding", "design technology", "digital", "stem"],
     "CONCEPT_AI": ["artificial intelligence", "ai", "machine learning", "ml", "neural networks", "deep learning", "computer science", "algorithms"],
@@ -437,12 +423,16 @@ const SYNONYMS = {
     "CONCEPT_SAT": ["sat", "scholastic assessment test", "reading", "writing", "math"],
     "CONCEPT_ACT": ["act", "american college testing"],
 
-    // --- BASIC CONNECTORS ---
+    // --- CONNECTORS ---
     "&": ["and"],
     "+": ["and", "plus"],
     "vs": ["versus"],
     "intl": ["international"]
 };
+
+// ==========================================
+// SCORING HELPERS
+// ==========================================
 
 const MODIFIER_PREFIXES = [
     "CONCEPT_GRADE", 
@@ -453,23 +443,13 @@ const MODIFIER_PREFIXES = [
     "CONCEPT_GUIDE"
 ];
 
-/**
- * Standard Levenshtein Distance Algorithm
- * Calculates how many edits (insert/delete/sub) to turn a into b
- */
 function getEditDistance(a, b) {
     if (a.length === 0) return b.length;
     if (b.length === 0) return a.length;
 
     const matrix = [];
-
-    for (let i = 0; i <= b.length; i++) {
-        matrix[i] = [i];
-    }
-
-    for (let j = 0; j <= a.length; j++) {
-        matrix[0][j] = j;
-    }
+    for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
 
     for (let i = 1; i <= b.length; i++) {
         for (let j = 1; j <= a.length; j++) {
@@ -478,24 +458,14 @@ function getEditDistance(a, b) {
             } else {
                 matrix[i][j] = Math.min(
                     matrix[i - 1][j - 1] + 1,
-                    Math.min(
-                        matrix[i][j - 1] + 1, 
-                        matrix[i - 1][j] + 1  
-                    )
+                    Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
                 );
             }
         }
     }
-
     return matrix[b.length][a.length];
 }
 
-/**
- * Normalize text:
- * 1. Lowercase
- * 2. Space out symbols
- * 3. Handle specific character replacements (like + -> plus) BEFORE strictly removing punctuation
- */
 function normalize(text) {
     if (!text) return "";
     return text.toLowerCase()
@@ -507,35 +477,36 @@ function normalize(text) {
         .trim();
 }
 
+// ==========================================
+// MAIN SEARCH FUNCTION
+// ==========================================
+
 export function searchNotes(items, query, options = {}) {
     const { showAI = true, currentFormat = "all" } = options;
     
+    // 1. PREPARE QUERY
     let workingQuery = normalize(query);
 
+    // 2. FUZZY CORRECTION
     const conceptKeys = Object.keys(CONCEPT_MAP);
     const rawTokens = workingQuery.split(" ");
     
     const correctedTokens = rawTokens.map(token => {
         if (CONCEPT_MAP[token]) return token;
-        
         if (token.length < 4) return token;
 
         for (const key of conceptKeys) {
             if (Math.abs(token.length - key.length) > 2) continue;
-
             const dist = getEditDistance(token, key);
-            
             const allowedErrors = token.length > 6 ? 2 : 1;
-            
-            if (dist <= allowedErrors) {
-                return key;
-            }
+            if (dist <= allowedErrors) return key;
         }
         return token;
     });
     
     workingQuery = correctedTokens.join(" ");
 
+    // 3. CONCEPT LOCKING
     for (const [phrase, conceptId] of Object.entries(CONCEPT_MAP)) {
         const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const regex = new RegExp(`\\b${escapedPhrase}\\b`, 'g');
@@ -556,6 +527,9 @@ export function searchNotes(items, query, options = {}) {
     const tokens = workingQuery.split(" ");
     const totalQueryTokens = tokens.length;
     
+    // 4. IDENTIFY PRIMARY SUBJECTS
+    let hasSubjectQuery = false;
+
     const searchTargets = [];
     tokens.forEach(t => {
         const set = new Set();
@@ -568,17 +542,20 @@ export function searchNotes(items, query, options = {}) {
         const normT = t.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         if (normT !== t) set.add(normT);
 
-        let weight = 25; 
-        if (MODIFIER_PREFIXES.some(prefix => t.startsWith(prefix))) {
-            weight = 5; 
+        const isModifier = MODIFIER_PREFIXES.some(prefix => t.startsWith(prefix));
+
+        if (!isModifier && t.startsWith("CONCEPT_")) {
+            hasSubjectQuery = true;
         }
 
         searchTargets.push({
             candidates: Array.from(set),
-            weight: weight
+            isModifier: isModifier,
+            weight: isModifier ? 5 : 25
         });
     });
 
+    // 5. SCORE ITEMS
     return items.map(item => {
         if (!showAI && item.ai) return null;
         if (currentFormat !== "all" && item.fmt !== currentFormat) return null;
@@ -588,8 +565,9 @@ export function searchNotes(items, query, options = {}) {
         
         let score = 0;
         let matchedTokenCount = 0;
+        let matchedASubject = false;
 
-        searchTargets.forEach(({ candidates, weight }) => {
+        searchTargets.forEach(({ candidates, weight, isModifier }) => {
             let tokenMatch = false;
             
             for (const str of candidates) {
@@ -597,10 +575,13 @@ export function searchNotes(items, query, options = {}) {
                     score += weight + (str.length * 1.5);
                     tokenMatch = true;
                     if (titleNorm.startsWith(str)) score += 10;
+                    
+                    if (!isModifier) matchedASubject = true;
+                    
                     break; 
                 }
                 else if (authNorm.includes(str)) {
-                    score += 5; 
+                    score += 5;
                     tokenMatch = true;
                     break;
                 }
@@ -608,6 +589,10 @@ export function searchNotes(items, query, options = {}) {
 
             if (tokenMatch) matchedTokenCount++;
         });
+
+        if (hasSubjectQuery && !matchedASubject) {
+            return null;
+        }
 
         if (totalQueryTokens > 0) {
             const matchRatio = matchedTokenCount / totalQueryTokens;
