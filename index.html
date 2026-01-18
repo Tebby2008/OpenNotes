@@ -1202,6 +1202,8 @@
             if (returnToMyNotes) {
                 history.replaceState(null, null, '#/mynotes');
                 returnToMyNotes = false; 
+                updateHeaderUI(); 
+
             } else {
                 history.replaceState(null, null, window.location.pathname + window.location.search);
             }
@@ -1318,49 +1320,48 @@
           }
       }
 
+      function updateHeaderUI() {
+          const isMyNotesMode = location.hash === '#/mynotes';
+          const mainHeader = document.getElementById('mainHeader');
+          const myNotesHeader = document.getElementById('myNotesHeader');
+          const uploadBtn = document.getElementById('uploadBtn');
+
+          if (isMyNotesMode) {
+              if (mainHeader.style.display !== 'none') {
+                  mainHeader.classList.add('header-hidden');
+                  setTimeout(() => { 
+                      mainHeader.style.display = 'none'; 
+                      myNotesHeader.style.display = 'block';
+                      requestAnimationFrame(() => myNotesHeader.classList.add('header-visible'));
+                  }, 300); 
+              } else {
+                  myNotesHeader.style.display = 'block';
+                  myNotesHeader.classList.add('header-visible');
+              }
+          } else {
+               if (myNotesHeader.style.display === 'block') {
+                  myNotesHeader.classList.remove('header-visible');
+                  setTimeout(() => { 
+                      myNotesHeader.style.display = 'none'; 
+                      mainHeader.style.display = 'flex';
+                      requestAnimationFrame(() => mainHeader.classList.remove('header-hidden'));
+                  }, 300);
+              } else {
+                  mainHeader.style.display = 'flex';
+                  mainHeader.classList.remove('header-hidden');
+              }
+              if(uploadBtn) uploadBtn.style.display = '';
+          }
+      }
+
       function render() {
         const isMyNotesMode = location.hash === '#/mynotes';
         
+        updateHeaderUI();
+
         if (location.hash === '#/mynotes' && !currentUser) {
             history.replaceState(null, '', ' ');
-            const mainHeader = document.getElementById('mainHeader');
-            const myNotesHeader = document.getElementById('myNotesHeader');
-            const uploadBtn = document.getElementById('uploadBtn');
-            mainHeader.style.display = 'flex';
-            mainHeader.classList.remove('header-hidden');
-            myNotesHeader.style.display = 'none';
-            if(uploadBtn) uploadBtn.style.display = '';
-        }
-
-        const mainHeader = document.getElementById('mainHeader');
-        const myNotesHeader = document.getElementById('myNotesHeader');
-        const uploadBtn = document.getElementById('uploadBtn');
-
-        if (isMyNotesMode) {
-            if (mainHeader.style.display !== 'none') {
-                mainHeader.classList.add('header-hidden');
-                setTimeout(() => { 
-                    mainHeader.style.display = 'none'; 
-                    myNotesHeader.style.display = 'block';
-                    requestAnimationFrame(() => myNotesHeader.classList.add('header-visible'));
-                }, 300); 
-            } else {
-                myNotesHeader.style.display = 'block';
-                myNotesHeader.classList.add('header-visible');
-            }
-        } else {
-             if (myNotesHeader.style.display === 'block') {
-                myNotesHeader.classList.remove('header-visible');
-                setTimeout(() => { 
-                    myNotesHeader.style.display = 'none'; 
-                    mainHeader.style.display = 'flex';
-                    requestAnimationFrame(() => mainHeader.classList.remove('header-hidden'));
-                }, 300);
-            } else {
-                mainHeader.style.display = 'flex';
-                mainHeader.classList.remove('header-hidden');
-            }
-            if(uploadBtn) uploadBtn.style.display = '';
+            updateHeaderUI();
         }
 
         let baseList = allItems;
