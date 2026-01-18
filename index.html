@@ -747,6 +747,21 @@
     100% { background-position: -200% 0; }
     }
 
+    .card.pending, .row.pending {
+        opacity: 0.6;
+        pointer-events: none;
+        filter: grayscale(1);
+    }
+    .card.pending::after, .row.pending::after {
+        content: 'Processing...';
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.7); color: white;
+        padding: 6px 12px; border-radius: 99px;
+        font-size: 12px; font-weight: 700;
+        z-index: 20;
+    }
+
     @media (max-width: 768px) {
         .message-container {
             position: relative; top: auto; left: auto;
@@ -1252,15 +1267,18 @@
           const statsPromise = fetch(`${API_URL}?type=init`, { headers })
               .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [] })
               .catch(() => ({ site_views: 0, data: {}, owned_notes: [] }));
+          
           const [metaData, dbData] = await Promise.all([metaPromise, statsPromise]);
           if (dbData.site_views) els.webViews.textContent = dbData.site_views;
           if (dbData.owned_notes) ownedNotes = dbData.owned_notes;
 
-          return metaData.map(m => {
+          const serverItems = metaData.map(m => {
               const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
               const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
-              const cleanKey = m.name; 
-                
+              const cleanKey = m.name;
+              
+              const isOrphan = !m.author_username && !dbData.data['o:' + cleanKey];
+
               return {
                   name: m.name, 
                   title: m.name.replace(/\.[^/.]+$/, ""), 
@@ -1274,9 +1292,23 @@
                   ai: m.is_ai_generated, 
                   ownerId: dbData.data['o:' + cleanKey] || null,
                   v: parseInt(dbData.data['v:' + cleanKey]) || 0, 
-                  d: parseInt(dbData.data['d:' + cleanKey]) || 0
+                  d: parseInt(dbData.data['d:' + cleanKey]) || 0,
+                  isOrphan: isOrphan 
               };
-          }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl);
+          }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl && !i.isOrphan);
+
+          let pending = JSON.parse(localStorage.getItem('openNotes_pending') || '[]');
+          const now = Date.now();
+          
+          pending = pending.filter(p => {
+              const age = now - p.timestamp;
+              const existsOnServer = serverItems.some(si => si.name === p.name);
+              return age < 86400000 && !existsOnServer;
+          });
+          
+          localStorage.setItem('openNotes_pending', JSON.stringify(pending));
+
+          return [...pending, ...serverItems];
       }
       
       function appendItems() {
@@ -1285,9 +1317,8 @@
           
           nextBatch.forEach((it, i) => {
               const el = document.createElement("article");
-              el.className = viewMode === "grid" ? "card" : "row";
+              el.className = (viewMode === "grid" ? "card" : "row") + (it.pending ? " pending" : "");
               el.style.animationDelay = `${50 * i}ms`; 
-              
               el.dataset.name = it.name; 
 
               const rawTitle = it.title.replace(/\(AI\)$/, '');
@@ -1333,7 +1364,11 @@
                   <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d}</span></span>
                 </div>`}
               `;
-              el.onclick = () => openOverlay(it);
+              
+              if (!it.pending) {
+                  el.onclick = () => openOverlay(it);
+              }
+              
               fragment.appendChild(el);
           });
 
@@ -1560,14 +1595,24 @@
                               });
 
                               if(res.ok) {
-                                  showPopup("Deleted successfully");
+                                  showPopup("Deleted successfully!");
                                   
                                   toggleOverlay(els.overlay, false);
                                   
                                   allItems = allItems.filter(x => x.name !== it.name);
                                   ownedNotes = ownedNotes.filter(n => n !== it.name);
                                   
-                                  render();
+                                  let pending = JSON.parse(localStorage.getItem('openNotes_pending') || '[]');
+                                  const pendingIndex = pending.findIndex(p => p.name === it.name);
+                                  if(pendingIndex > -1) {
+                                      pending.splice(pendingIndex, 1);
+                                      localStorage.setItem('openNotes_pending', JSON.stringify(pending));
+                                  }
+
+                                  const cleanUrl = window.location.pathname + window.location.search;
+                                  history.replaceState(null, '', cleanUrl);
+
+                                  render(true);
                               } else {
                                   const err = await res.json();
                                   showPopup(err.error || "Delete failed", "error");
@@ -2166,6 +2211,28 @@
               if (!response.ok) throw new Error(result.error || "Upload failed");
 
               showPopup("Upload successful! (It may take a while to appear)", "success");
+              
+              const pendingItem = {
+                  name: finalFileName,
+                  title: safeTitle + (uploadEls.aiCheck.checked ? " (AI)" : ""),
+                  auth: safeAuthor,
+                  fmt: ext,
+                  upd: new Date().toISOString(),
+                  thumb: 'resources/fallback.png',
+                  dl: '#',
+                  v: 0, d: 0,
+                  ai: uploadEls.aiCheck.checked,
+                  pending: true,
+                  timestamp: Date.now()
+              };
+
+              const currentPending = JSON.parse(localStorage.getItem('openNotes_pending') || '[]');
+              currentPending.unshift(pendingItem);
+              localStorage.setItem('openNotes_pending', JSON.stringify(currentPending));
+
+              allItems.unshift(pendingItem);
+              ownedNotes.push(finalFileName);
+
               toggleOverlay(uploadEls.overlay, false);
               uploadEls.form.reset();
               uploadEls.drop.classList.remove('has-file');
@@ -2173,11 +2240,16 @@
               uploadEls.aiBtn.classList.remove('active-ai');
               uploadEls.author.classList.remove('input-error');
               
+              if (history.state && history.state.method === 'upload') {
+                  history.back();
+              }
+              
+              render(true);
+
               if (window.turnstile) turnstile.reset();
               turnstileToken = null;
               
-              setTimeout(() => window.location.reload(), 1500);
-
+              
           } catch (err) {
               console.error(err);
               showPopup(err.message, "error");
