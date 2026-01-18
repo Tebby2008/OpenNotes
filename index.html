@@ -20,8 +20,12 @@
   <link rel="manifest" href="/resources/manifest-index.json">
   <link rel="apple-touch-icon" href="/resources/icon-square.png">
 
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" 
+        integrity="sha384-9786WpxXvUvT0p7m6/G8NisHw8e5Yn4XidmO4OQshMvXnAnb1wM0l9I5fOnTAnO+" 
+        crossorigin="anonymous" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@2.3.6/dist/purify.min.js" 
+        integrity="sha384-36Oat09YvE/XlQAnmY4C+A75X3uLImS92R8x0lbeF0Y2uY0LzDIsRST9p6m269bA" 
+        crossorigin="anonymous" defer></script>
 
   <meta name="google-site-verification" content="uGUcIkj9dZ3WGdfHBRCSve8bbDMDbsGsWNhfoZPcSZw" />
 
@@ -1289,37 +1293,47 @@
 
 
       const updateCounter = async (id, type) => {
-        try { const res = await fetch(`${API_URL}?type=note&noteId=${id}&counter=${type}`, { method: 'POST' }); if (res.ok) return await res.json(); } catch (e) {} return null;
+        try { 
+            const res = await fetch(`${API_URL}?type=note&noteId=${id}&counter=${type}`, { 
+                method: 'POST',
+                credentials: 'include'
+            }); 
+            if (res.ok) return await res.json(); 
+        } catch (e) {} return null;
       };
       
       async function fetchNotes() {
-          const headers = {};
-          if (currentUser) {
-              headers['Authorization'] = `Bearer ${currentUser.token}`;
-          }
-
           const metaPromise = fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`)
               .then(res => res.ok ? res.json() : []);
             
-          const statsPromise = fetch(`${API_URL}?type=init`, { headers })
-              .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {} })
-              .catch(() => ({ site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {} }));
+          const statsPromise = fetch(`${API_URL}?type=init`, { credentials: 'include' })
+              .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {}, user_profile: null })
+              .catch(() => ({ site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {}, user_profile: null }));
             
           const [metaData, dbData] = await Promise.all([metaPromise, statsPromise]);
             
           if (dbData.site_views) els.webViews.textContent = dbData.site_views;
-          if (dbData.owned_notes) ownedNotes = dbData.owned_notes;
+          
+          if (dbData.user_profile) {
+              currentUser = dbData.user_profile;
+              ownedNotes = dbData.owned_notes || [];
+              isUserAdmin = dbData.is_admin || false;
+          } else {
+              currentUser = null;
+              ownedNotes = [];
+              isUserAdmin = false;
+          }
+          renderAuth();
             
           verifiedFileMap = dbData.verified_map || {};
           verifiedUserMap = dbData.verified_public || {};
-          isUserAdmin = dbData.is_admin || false;
 
           const serverItems = metaData.map(m => {
               const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
               const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
               const cleanKey = m.name;
               
-              const isOrphan = !m.author_username && !dbData.data['o:' + cleanKey];
+              const isOrphan = !m.author_username && !dbData.data.hasOwnProperty('v:' + cleanKey);
 
               return {
                   name: m.name, 
@@ -1332,7 +1346,6 @@
                   auth: m.author, 
                   user: m.author_username,
                   ai: m.is_ai_generated, 
-                  ownerId: dbData.data['o:' + cleanKey] || null,
                   v: parseInt(dbData.data['v:' + cleanKey]) || 0, 
                   d: parseInt(dbData.data['d:' + cleanKey]) || 0,
                   isOrphan: isOrphan 
@@ -1663,7 +1676,7 @@
                           try {
                               const res = await fetch(`${API_URL}?type=delete`, {
                                   method: 'POST',
-                                  headers: { 'Authorization': `Bearer ${currentUser.token}` },
+                                  credentials: 'include',
                                   body: JSON.stringify({ fileName: it.name })
                               });
 
@@ -2174,30 +2187,20 @@
 
       function checkSession() {
           const params = new URLSearchParams(window.location.search);
-          if (params.has('token') && window.opener) {
-              const token = params.get('token');
-              const pic = decodeURIComponent(params.get('picture') || '');
-              const sub = params.get('sub');
-              window.opener.postMessage({ type: 'LOGIN_SUCCESS', user: { token, picture: pic, sub } }, '*');
+          
+          if (params.has('login_success') && window.opener) {
+              window.opener.postMessage({ type: 'LOGIN_SUCCESS' }, window.location.origin);
               window.close();
               return; 
           }
 
-          const stored = localStorage.getItem('openNotesSession');
-          if (stored) {
-              try { currentUser = JSON.parse(stored); } catch(e) { localStorage.removeItem('openNotesSession'); }
-          }
-          
-          renderAuth();
       }
 
       window.addEventListener('message', async (event) => {
+          if (event.origin !== window.location.origin) return;
+
           if (event.data && event.data.type === 'LOGIN_SUCCESS') {
-              currentUser = event.data.user;
-              localStorage.setItem('openNotesSession', JSON.stringify(currentUser));
-              renderAuth();
               showPopup("Logged in successfully");
-              
               allItems = await fetchNotes();
               render();
 
@@ -2208,11 +2211,16 @@
           }
       });
 
-      function logout() {
-          localStorage.removeItem('openNotesSession');
+      async function logout() {
+          try {
+              await fetch(`${API_URL}?type=logout`, { method: 'POST', credentials: 'include' });
+          } catch (e) { console.error("Logout error", e); }
+
           currentUser = null;
           ownedNotes = [];
           isUserAdmin = false;
+          localStorage.removeItem('openNotesSession');
+          
           renderAuth();
           
           if (location.hash === '#/mynotes') {
@@ -2220,10 +2228,8 @@
               activeContext = 'home';
           }
 
-          fetchNotes().then(items => {
-              allItems = items;
-              render(true);
-          });
+          allItems = await fetchNotes();
+          render(true);
           showPopup("Logged out");
       }
 
@@ -2285,7 +2291,8 @@
 
               const response = await fetch(`${API_URL}?type=upload`, {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUser.token}` },
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
                   body: JSON.stringify(payload)
               });
 
@@ -2396,7 +2403,7 @@
 
       async function fetchMessages() {
         try {
-          const res = await fetch(`${API_URL}?type=messages`);
+          const res = await fetch(`${API_URL}?type=messages`, { credentials: 'include' });
           if (!res.ok) return;
           const data = await res.json();
           
