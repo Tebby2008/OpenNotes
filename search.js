@@ -470,7 +470,6 @@ export function searchNotes(items, query, options = {}) {
     
     let workingQuery = normalize(query);
 
-    // 1. CONCEPT LOCKING
     for (const [phrase, conceptId] of Object.entries(CONCEPT_MAP)) {
         const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const regex = new RegExp(`\\b${escapedPhrase}\\b`, 'g');
