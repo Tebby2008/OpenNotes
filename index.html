@@ -1391,10 +1391,12 @@
 
           let authHtml;
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
-              authHtml = `${escapeHtml(it.verifiedName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+              const displayName = verifiedAuthors[it.user];
+              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
           else if (it.ownerId && verifiedAuthors.hasOwnProperty(it.ownerId)) {
-              authHtml = `${escapeHtml(it.verifiedName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+              const displayName = verifiedAuthors[it.ownerId];
+              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
           else {
               authHtml = escapeHtml(it.auth || "Anonymous");
@@ -1527,10 +1529,12 @@
           
 
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
-              authHtml = `${escapeHtml(it.verifiedName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+              const displayName = verifiedAuthors[it.user];
+              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
           else if (it.ownerId && verifiedAuthors.hasOwnProperty(it.ownerId)) {
-              authHtml = `${escapeHtml(it.verifiedName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+              const displayName = verifiedAuthors[it.ownerId];
+              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
           else {
               authHtml = escapeHtml(it.auth || "Anonymous");
