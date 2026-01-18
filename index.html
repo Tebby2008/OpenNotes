@@ -1205,29 +1205,20 @@
           }
 
           const metaPromise = fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`)
-              .then(res => res.ok ? res.json() : [])
-              .catch(() => []);
+              .then(res => res.ok ? res.json() : []);
             
           const statsPromise = fetch(`${API_URL}?type=init`, { headers })
               .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [] })
               .catch(() => ({ site_views: 0, data: {}, owned_notes: [] }));
-
-          const authPromise = fetch(`${API_URL}?type=authors`)
-              .then(r => r.ok ? r.json() : {})
-              .catch(() => ({}));
-
-          const [metaData, dbData, authorsData] = await Promise.all([metaPromise, statsPromise, authPromise]);
-
+          const [metaData, dbData] = await Promise.all([metaPromise, statsPromise]);
           if (dbData.site_views) els.webViews.textContent = dbData.site_views;
           if (dbData.owned_notes) ownedNotes = dbData.owned_notes;
-          verifiedAuthors = authorsData || {}; 
 
           return metaData.map(m => {
               const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
               const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
               const cleanKey = m.name; 
-              const fileStats = dbData.data || {};
-              
+                
               return {
                   name: m.name, 
                   title: m.name.replace(/\.[^/.]+$/, ""), 
@@ -1238,13 +1229,13 @@
                   upd: m.last_updated, 
                   auth: m.author, 
                   user: m.author_username,
-                  ownerId: fileStats['o:' + cleanKey] || null,
                   ai: m.is_ai_generated, 
-                  v: parseInt(fileStats['v:' + cleanKey]) || 0, 
-                  d: parseInt(fileStats['d:' + cleanKey]) || 0
+                  ownerId: dbData.data['o:' + cleanKey] || null,
+                  v: parseInt(dbData.data['v:' + cleanKey]) || 0, 
+                  d: parseInt(dbData.data['d:' + cleanKey]) || 0
               };
           }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl);
-        }
+      }
       
       function render() {
         if (location.hash === '#/mynotes' && !currentUser) {
