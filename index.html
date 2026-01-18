@@ -784,6 +784,19 @@
         pointer-events: none;
     }
 
+    .checkbox-label input { 
+        margin-top: 2px; 
+        accent-color: var(--accent); 
+        
+        min-width: 18px; 
+        min-height: 18px;
+        width: 18px; 
+        height: 18px;
+        
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
     @media (max-width: 768px) {
         .message-container {
             position: relative; top: auto; left: auto;
@@ -1114,6 +1127,7 @@
           ai: true,
           viewMode: 'grid'
       };
+      let isUserAdmin = false;
 
       let initialLoadComplete = false;
 
@@ -1287,12 +1301,16 @@
               .then(res => res.ok ? res.json() : []);
             
           const statsPromise = fetch(`${API_URL}?type=init`, { headers })
-              .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [] })
-              .catch(() => ({ site_views: 0, data: {}, owned_notes: [] }));
-          
+              .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {} })
+              .catch(() => ({ site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {} }));
+            
           const [metaData, dbData] = await Promise.all([metaPromise, statsPromise]);
+            
           if (dbData.site_views) els.webViews.textContent = dbData.site_views;
           if (dbData.owned_notes) ownedNotes = dbData.owned_notes;
+            
+          verifiedAuthors = dbData.verified_map || {};
+          isUserAdmin = dbData.is_admin || false;
 
           const serverItems = metaData.map(m => {
               const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
@@ -1318,16 +1336,14 @@
                   isOrphan: isOrphan 
               };
           }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl && !i.isOrphan);
-
+            
           let pending = JSON.parse(localStorage.getItem('openNotes_pending') || '[]');
           const now = Date.now();
-          
           pending = pending.filter(p => {
               const age = now - p.timestamp;
               const existsOnServer = serverItems.some(si => si.name === p.name);
               return age < 86400000 && !existsOnServer;
           });
-          
           localStorage.setItem('openNotes_pending', JSON.stringify(pending));
 
           return [...pending, ...serverItems];
@@ -1346,13 +1362,11 @@
               const rawTitle = it.title.replace(/\(AI\)$/, '');
               const safeTitle = escapeHtml(rawTitle);
 
+
               let authHtml;
-              if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
-                  const displayName = verifiedAuthors[it.user];
-                  authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
-              } 
-              else if (it.ownerId && verifiedAuthors.hasOwnProperty(it.ownerId)) {
-                  const displayName = verifiedAuthors[it.ownerId];
+
+              if (verifiedAuthors.hasOwnProperty(it.name)) {
+                  const displayName = verifiedAuthors[it.name];
                   authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
               } 
               else {
@@ -1596,7 +1610,7 @@
           const oldWrap = document.getElementById('morphDeleteWrap');
           if(oldWrap) oldWrap.remove();
 
-          const isOwner = ownedNotes.includes(it.name);
+          const isOwner = ownedNotes.includes(it.name) || isUserAdmin;
 
           if (currentUser && isOwner) {
               const wrap = document.createElement('div');
@@ -1677,13 +1691,8 @@
               }, 50);
           }
           
-          let authHtml;
-          if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
-              const displayName = verifiedAuthors[it.user];
-              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
-          } 
-          else if (it.ownerId && verifiedAuthors.hasOwnProperty(it.ownerId)) {
-              const displayName = verifiedAuthors[it.ownerId];
+          if (verifiedAuthors.hasOwnProperty(it.name)) {
+              const displayName = verifiedAuthors[it.name];
               authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
           else {
@@ -2185,6 +2194,7 @@
           localStorage.removeItem('openNotesSession');
           currentUser = null;
           ownedNotes = [];
+          isUserAdmin = false;
           renderAuth();
           
           if (location.hash === '#/mynotes') {
