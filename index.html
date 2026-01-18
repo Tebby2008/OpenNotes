@@ -230,7 +230,7 @@
     .custom-dropdown .option:hover { background: var(--border-soft); }
     .custom-dropdown .option.active { background: var(--accent); color: white; }
 
-    .wrap { padding: 0 24px 48px; }
+    .wrap { padding: 0 24px 24px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; perspective: 2500px; }
     .list { display: flex; flex-direction: column; gap: 16px; }
 
@@ -920,7 +920,7 @@
     </section>
   </main> 
   
-  <div id="loadMoreContainer" style="display:none; justify-content:center; margin-top:32px;">
+  <div id="loadMoreContainer" style="display:none; justify-content:center; margin-bottom: 24px">
       <button id="loadMoreBtn" class="menu-btn neutral" style="width:auto; padding: 12px 32px; font-size:1rem;">
           Load More
       </button>
@@ -1122,7 +1122,7 @@
           status: document.getElementById('uploadStatus'),
       };
 
-      const BATCH_SIZE = 12;
+      const BATCH_SIZE = 6;
       let currentFilteredList = [];
       let currentlyRenderedCount = 0;
 
