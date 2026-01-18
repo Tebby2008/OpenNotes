@@ -1210,23 +1210,32 @@
           const statsPromise = fetch(`${API_URL}?type=init`, { headers })
               .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [] })
               .catch(() => ({ site_views: 0, data: {}, owned_notes: [] }));
-          const [metaData, dbData] = await Promise.all([metaPromise, statsPromise]);
+
+          const authPromise = fetch(`${API_URL}?type=authors`)
+              .then(r => r.ok ? r.json() : {})
+              .catch(() => ({}));
+
+          const [metaData, dbData, authorsData] = await Promise.all([metaPromise, statsPromise, authPromise]);
+
           if (dbData.site_views) els.webViews.textContent = dbData.site_views;
           if (dbData.owned_notes) ownedNotes = dbData.owned_notes;
+          verifiedAuthors = authorsData;
 
           return metaData.map(m => {
               const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
               const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
               const cleanKey = m.name; 
-
+              const ownerId = dbData.data['o:' + cleanKey];
+              
               let vName = "";
+              
               if (m.author_username && verifiedAuthors[m.author_username]) {
                   vName = verifiedAuthors[m.author_username];
               } 
-              else if (dbData.data['o:' + cleanKey] && verifiedAuthors[dbData.data['o:' + cleanKey]]) {
-                  vName = verifiedAuthors[dbData.data['o:' + cleanKey]];
+              else if (ownerId && verifiedAuthors[ownerId]) {
+                  vName = verifiedAuthors[ownerId];
               }
-                
+
               return {
                   name: m.name, 
                   title: m.name.replace(/\.[^/.]+$/, ""), 
@@ -1239,7 +1248,7 @@
                   user: m.author_username,
                   verifiedName: vName,
                   ai: m.is_ai_generated, 
-                  ownerId: dbData.data['o:' + cleanKey] || null,
+                  ownerId: ownerId || null,
                   v: parseInt(dbData.data['v:' + cleanKey]) || 0, 
                   d: parseInt(dbData.data['d:' + cleanKey]) || 0
               };
@@ -2105,8 +2114,6 @@
       
       (async function() {
         try {
-          const authPromise = fetch(`${API_URL}?type=authors`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
-            
           fetchMessages();
 
           allItems = await fetchNotes();
