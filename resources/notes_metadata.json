@@ -242,6 +242,17 @@
     "is_ai_generated": false
   },
   {
+    "name": "TESTING (by Tebby) (AI).docx",
+    "path": "Notes/TESTING (by Tebby) (AI).docx",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/TESTING%20(by%20Tebby)%20(AI).docx",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/TESTING%20(by%20Tebby)%20(AI)_docx.jpg",
+    "author": "Tebby",
+    "author_username": null,
+    "last_updated": "2026-01-18T19:20:29Z",
+    "file_size": "9.63 KiB",
+    "is_ai_generated": true
+  },
+  {
     "name": "THIS IS A TEST IGNORE (by Tebby).docx",
     "path": "Notes/THIS IS A TEST IGNORE (by Tebby).docx",
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/THIS%20IS%20A%20TEST%20IGNORE%20(by%20Tebby).docx",
