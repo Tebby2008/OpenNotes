@@ -1118,7 +1118,8 @@
       const owner = window.__owner || REPO_OWNER, repo = window.__repo || REPO_NAME;
       let turnstileToken = null;
       let turnstileWidgetId = null;
-      let verifiedAuthors = {}; 
+      let verifiedFileMap = {}; 
+      let verifiedUserMap = {};
       let lastRenderState = {
           query: '',
           context: 'home',
@@ -1309,7 +1310,8 @@
           if (dbData.site_views) els.webViews.textContent = dbData.site_views;
           if (dbData.owned_notes) ownedNotes = dbData.owned_notes;
             
-          verifiedAuthors = dbData.verified_map || {};
+          verifiedFileMap = dbData.verified_map || {};
+          verifiedUserMap = dbData.verified_public || {};
           isUserAdmin = dbData.is_admin || false;
 
           const serverItems = metaData.map(m => {
@@ -1364,12 +1366,19 @@
 
 
               let authHtml;
+              let displayName = null;
 
-              if (verifiedAuthors.hasOwnProperty(it.name)) {
-                  const displayName = verifiedAuthors[it.name];
-                  authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+              if (verifiedFileMap.hasOwnProperty(it.name)) {
+                  displayName = verifiedFileMap[it.name];
               } 
-              else {
+
+              else if (it.user && verifiedUserMap.hasOwnProperty(it.user)) {
+                  displayName = verifiedUserMap[it.user];
+              }
+
+              if (displayName) {
+                  authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+              } else {
                   authHtml = escapeHtml(it.auth || "Anonymous");
               }
                       
@@ -1502,7 +1511,8 @@
           currentFilteredList = searchNotes(baseList, q, {
               showAI: showAI,
               currentFormat: currentFormat,
-              verifiedAuthors: verifiedAuthors
+              verifiedFileMap: verifiedFileMap,
+              verifiedUserMap: verifiedUserMap
           });
 
           if (currentSort === 'relevance' && !q) {
@@ -1689,14 +1699,23 @@
               }, 50);
           }
           
-          let authHtml;
-          if (verifiedAuthors.hasOwnProperty(it.name)) {
-              const displayName = verifiedAuthors[it.name];
-              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+          let displayName = null;
+
+          if (verifiedFileMap.hasOwnProperty(it.name)) {
+              displayName = verifiedFileMap[it.name];
           } 
-          else {
+          else if (it.user && verifiedUserMap.hasOwnProperty(it.user)) {
+              displayName = verifiedUserMap[it.user];
+          }
+
+          let authHtml;
+          if (displayName) {
+              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+          } else {
               authHtml = escapeHtml(it.auth || "Anonymous");
           }
+
+
           els.ovAuth.innerHTML = authHtml;
           
           if(it.ai) {

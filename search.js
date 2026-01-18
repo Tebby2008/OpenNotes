@@ -1,7 +1,7 @@
 /**
  * search.js
  * Advanced Concept-Based Search Engine
- * Updated: "Primary Subject" Logic & Expanded Study Guide Terms
+ * Updated: Supports Hybrid Verification Maps & #verified filter
  */
 
 const CONCEPT_MAP = {
@@ -25,9 +25,8 @@ const CONCEPT_MAP = {
     "business": "CONCEPT_BUSMAN", 
     
     // ============================
-    // 2. STUDY GUIDES (Fixed)
+    // 2. STUDY GUIDES
     // ============================
-    // Mapping these ensures "prep" finds "study guide" and "notes" finds "review"
     "study guide": "CONCEPT_GUIDE",
     "guide": "CONCEPT_GUIDE",
     "review": "CONCEPT_GUIDE",
@@ -320,7 +319,7 @@ const CONCEPT_MAP = {
 };
 
 const SYNONYMS = {
-    // --- GUIDES (Expanded) ---
+    // --- GUIDES ---
     "CONCEPT_GUIDE": ["study guide", "review", "prep", "notes", "summary", "cheat sheet", "review sheet", "revision", "packet"],
 
     // --- TECH & BROAD ---
@@ -447,21 +446,6 @@ const MODIFIER_PREFIXES = [
     "CONCEPT_GUIDE"
 ];
 
-function getEditDistance(a, b) {
-    if (a.length === 0) return b.length;
-    if (b.length === 0) return a.length;
-    const matrix = [];
-    for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-    for (let i = 1; i <= b.length; i++) {
-        for (let j = 1; j <= a.length; j++) {
-            if (b.charAt(i - 1) === a.charAt(j - 1)) matrix[i][j] = matrix[i - 1][j - 1];
-            else matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
-        }
-    }
-    return matrix[b.length][a.length];
-}
-
 function normalize(text) {
     if (!text) return "";
     return text.toLowerCase()
@@ -503,10 +487,23 @@ function matchesDate(token, isoDate) {
 // ==========================================
 
 export function searchNotes(items, query, options = {}) {
-    const { showAI = true, currentFormat = "all", verifiedAuthors = {} } = options;
+    const { 
+        showAI = true, 
+        currentFormat = "all", 
+        verifiedFileMap = {}, 
+        verifiedUserMap = {} 
+    } = options;
     
     let workingQuery = normalize(query);
 
+    // --- 1. HANDLE #verified FILTER ---
+    let isVerifiedFilter = false;
+    if (workingQuery.includes("#verified")) {
+        isVerifiedFilter = true;
+        workingQuery = workingQuery.replace("#verified", "").trim();
+    }
+
+    // --- 2. CONCEPT MAPPING ---
     for (const [phrase, conceptId] of Object.entries(CONCEPT_MAP)) {
         const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const regex = new RegExp(`\\b${escapedPhrase}\\b`, 'g');
@@ -518,31 +515,20 @@ export function searchNotes(items, query, options = {}) {
     }
 
     workingQuery = workingQuery.replace(/&/g, "and").replace(/\+/g, "plus").replace(/\s+/g, " ").trim();
-    const tokens = workingQuery.split(" ");
+    
+    const tokens = workingQuery.split(" ").filter(t => t.length > 0);
     const totalQueryTokens = tokens.length;
     
     let hasSubjectQuery = false;
     const searchTargets = [];
-    
-    const targetAuthorIDs = new Set();
 
+    // --- 3. TOKEN ANALYSIS ---
     tokens.forEach(t => {
         const set = new Set();
         set.add(t); 
         
         if (SYNONYMS[t]) {
             SYNONYMS[t].forEach(s => set.add(s));
-        }
-
-        for (const [userId, displayName] of Object.entries(verifiedAuthors)) {
-            const normName = normalize(displayName);
-            const normUser = normalize(userId);
-            
-            if (normName.includes(t) || normUser.includes(t)) {
-                targetAuthorIDs.add(userId);
-
-                set.add(normName);
-            }
         }
 
         const normT = t.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -559,22 +545,34 @@ export function searchNotes(items, query, options = {}) {
         });
     });
 
+    // --- 4. ITEM SCORING LOOP ---
     return items.map(item => {
         if (!showAI && item.ai) return null;
         if (currentFormat !== "all" && item.fmt !== currentFormat) return null;
 
-        const titleNorm = normalize(item.title);
-        const authNorm = normalize(item.auth || "");
-        
+        let isVerified = false;
+        let displayName = null;
+
+        if (verifiedFileMap[item.name]) {
+            isVerified = true;
+            displayName = verifiedFileMap[item.name];
+        } else if (item.user && verifiedUserMap[item.user]) {
+            isVerified = true;
+            displayName = verifiedUserMap[item.user];
+        }
+
+        if (isVerifiedFilter && !isVerified) return null;
+
         let score = 0;
         let matchedTokenCount = 0;
         let matchedASubject = false;
 
-        if (targetAuthorIDs.size > 0) {
-            if (targetAuthorIDs.has(item.user) || targetAuthorIDs.has(item.ownerId)) {
-                score += 100;
-                matchedTokenCount++;
-            }
+        const titleNorm = normalize(item.title);
+        const authNorm = normalize(item.auth || "");
+        const displayNorm = normalize(displayName || "");
+
+        if (isVerifiedFilter && totalQueryTokens === 0) {
+            score = 100;
         }
 
         searchTargets.forEach(({ candidates, rawToken, weight, isModifier }) => {
@@ -587,6 +585,11 @@ export function searchNotes(items, query, options = {}) {
                     if (titleNorm.startsWith(str)) score += 10;
                     if (!isModifier) matchedASubject = true;
                     break; 
+                }
+                else if (displayNorm.includes(str)) {
+                    score += 50; 
+                    tokenMatch = true;
+                    break;
                 }
                 else if (authNorm.includes(str)) {
                     score += 15;
