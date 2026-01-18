@@ -1078,6 +1078,8 @@
           viewMode: 'grid'
       };
 
+      let initialLoadComplete = false;
+
       let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="relevance", currentFormat="all", activeContext = 'home';
 
       const els = {
@@ -1378,19 +1380,24 @@
       function render(force = false) {
           const isMyNotesMode = location.hash === '#/mynotes';
           const newContext = isMyNotesMode ? 'mynotes' : 'home';
+            
+          if (activeContext !== 'mynotes' && newContext === 'mynotes') {
+              els.search.value = '';
+          }
+            
           const q = els.search.value.trim();
 
-
-          if (!force && 
+          if (!force && initialLoadComplete &&
               lastRenderState.context === newContext && 
               lastRenderState.query === q &&
               lastRenderState.sort === currentSort &&
               lastRenderState.format === currentFormat &&
               lastRenderState.ai === showAI &&
               lastRenderState.viewMode === viewMode &&
-              els.container.childElementCount > 0
+              els.container.childElementCount > 0 
+              && !els.container.firstElementChild.classList.contains('skeleton')
           ) {
-              return;
+              return; 
           }
 
           activeContext = newContext;
@@ -1454,7 +1461,7 @@
           els.container.innerHTML = ""; 
           els.container.className = viewMode;
           currentlyRenderedCount = 0;
-           
+            
           if (currentFilteredList.length === 0) {
               els.loadMoreCont.style.display = 'none';
               if (activeContext === 'mynotes' && !q) {
@@ -1471,6 +1478,7 @@
               }
               return;
           }
+
           appendItems();
       }
 
@@ -1592,7 +1600,15 @@
           
           els.ovDown.onclick = null; 
           if (it.dl && isValidUrl(it.dl)) {
-              els.ovRaw.href = els.frame.src = `view.html?file=${encodeURIComponent(it.dl)}`;
+              const viewerUrl = `view.html?file=${encodeURIComponent(it.dl)}`;
+              els.ovRaw.href = els.frame.src = viewerUrl;
+
+              try {
+                  els.frame.contentWindow.location.replace(viewerUrl);
+              } catch(e) {
+                  els.frame.src = viewerUrl;
+              }
+
               els.ovDown.onclick = () => {
                   updateCounter(it.path, 'downloads').then(d => { 
                       if(d) { 
@@ -1610,7 +1626,9 @@
               els.ovRaw.style.display = 'flex';
               els.ovDown.style.display = 'flex';
           } else {
-              els.frame.removeAttribute('src');
+              try { els.frame.contentWindow.location.replace('about:blank'); } 
+              catch(e) { els.frame.removeAttribute('src'); }
+                
               els.ovRaw.style.display = 'none';
               els.ovDown.style.display = 'none';
           }
@@ -1782,6 +1800,11 @@
       }
 
       window.onpopstate = (e) => {
+
+          if (location.hash === '' || location.hash === '#') {
+              history.replaceState(null, '', location.pathname + location.search);
+          }
+
           const wasOverlayOpen = els.overlay.classList.contains('open') || 
                               els.infoOver.classList.contains('open') || 
                               uploadEls.overlay.classList.contains('open');
@@ -2176,7 +2199,8 @@
           const params = new URLSearchParams(window.location.search);
           if (params.has('q')) els.search.value = params.get('q');
             
-          render();
+          initialLoadComplete = true;
+          render(true);
 
           if(location.hash.startsWith('#/notes/')) { 
               const n=decodeURIComponent(location.hash.substr(8)); 
