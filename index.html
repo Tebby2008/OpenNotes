@@ -1309,6 +1309,27 @@
 
         els.container.innerHTML = ""; els.container.className = viewMode;
         const fragment = document.createDocumentFragment();
+
+        const isOverlayOpen = els.overlay.classList.contains("open") || 
+                        els.infoOver.classList.contains("open") || 
+                        (uploadEls && uploadEls.overlay.classList.contains("open"));
+
+        if (!isOverlayOpen) {
+          const query = els.search.value.trim();
+          const url = new URL(window.location);
+          
+          if (query) {
+            url.searchParams.set('q', query);
+          } else {
+            url.searchParams.delete('q'); 
+          }
+
+          if (location.hash !== '#/mynotes' && !location.hash.startsWith('#/notes/') && !location.hash.startsWith('#/upload')) {
+             if (url.search !== window.location.search) {
+                 history.replaceState(null, '', url);
+             }
+          }
+        }
         
         if (list.length === 0 && isMyNotesMode && !q) {
               els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
@@ -1386,26 +1407,6 @@
         });
         els.container.appendChild(fragment);
         
-        const isOverlayOpen = els.overlay.classList.contains("open") || 
-                        els.infoOver.classList.contains("open") || 
-                        (uploadEls && uploadEls.overlay.classList.contains("open"));
-
-        if (!isOverlayOpen) {
-          const query = els.search.value.trim();
-          const url = new URL(window.location);
-          
-          if (query) {
-            url.searchParams.set('q', query);
-          } else {
-            url.searchParams.delete('q'); 
-          }
-
-          if (location.hash !== '#/mynotes' && !location.hash.startsWith('#/notes/') && !location.hash.startsWith('#/upload')) {
-             if (url.search !== window.location.search) {
-                 history.replaceState(null, '', url);
-             }
-          }
-        }
       }
 
       function openOverlay(it) {
