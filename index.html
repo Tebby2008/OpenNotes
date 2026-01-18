@@ -1554,7 +1554,7 @@
           appendItems();
       };
 
-      async function openOverlay(it) {
+      async function openOverlay(it, pushHistory = true) {
           let initialStats = null;
           
           if (!it.user && !it.pending) {
@@ -1585,7 +1585,10 @@
           }
 
 
-          history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
+          if (pushHistory) {
+              history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
+          }
+    
           toggleOverlay(els.overlay, true);
           
           els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
@@ -1771,9 +1774,11 @@
           };
       }
 
-      async function openInfo(md) {
+      async function openInfo(md, pushHistory = true) {
           const name = md.split('/').pop();
-          history.pushState({ info: md }, '', `#/${name}`);
+          if (pushHistory) {
+              history.pushState({ info: md }, '', `#/${name}`);
+          }
             
           toggleOverlay(els.infoOver, true);
           els.infoCont.innerHTML = "";
@@ -1943,11 +1948,11 @@
           }
 
           if (e.state?.note) {
-              openOverlay(e.state.note);
+              openOverlay(e.state.note, false);
               return;
           } 
           else if (e.state?.info) {
-              openInfo(e.state.info);
+              openInfo(e.state.info, false);
               return;
           }
           else if (currentHash.startsWith('#/upload')) {
@@ -1958,7 +1963,7 @@
               const n = decodeURIComponent(currentHash.substr(8));
               const it = allItems.find(i => i.name === n);
               if(it) {
-                  openOverlay(it);
+                  openOverlay(it, false);
                   if(currentlyRenderedCount === 0) render(true);
                   return;
               }
@@ -2351,10 +2356,10 @@
           if(initialHash.startsWith('#/notes/')) { 
               const n = decodeURIComponent(initialHash.substr(8)); 
               const it = allItems.find(i => i.name === n); 
-              if(it) openOverlay(it);
+              if(it) openOverlay(it, false);
           }
           else if(initialHash.endsWith('.md')) {
-              openInfo(`resources/${initialHash.substr(2)}`);
+              openInfo(`resources/${initialHash.substr(2)}`, false);
           }
           else if(initialHash === '#/upload') {
               if (handleUploadAccess()) {
