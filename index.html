@@ -1448,8 +1448,14 @@
           els.sortBtn.classList.toggle("active-sort", isFilterActive);
 
           const isOverlayOpen = document.querySelector('.overlay.open');
-          if (!isOverlayOpen && activeContext !== 'mynotes') {
-              const url = new URL(window.location);
+          const url = new URL(window.location);
+
+          if (activeContext === 'mynotes') {
+              if (url.searchParams.has('q')) {
+                  url.searchParams.delete('q');
+                  history.replaceState(null, '', url);
+              }
+          } else if (!isOverlayOpen) {
               if (q) url.searchParams.set('q', q);
               else url.searchParams.delete('q');
                 
