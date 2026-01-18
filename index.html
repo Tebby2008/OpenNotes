@@ -1610,9 +1610,7 @@
           const oldWrap = document.getElementById('morphDeleteWrap');
           if(oldWrap) oldWrap.remove();
 
-          const isOwner = ownedNotes.includes(it.name) || isUserAdmin;
-
-          if (currentUser && isOwner) {
+          if (currentUser && (ownedNotes.includes(it.name) || isUserAdmin)) {
               const wrap = document.createElement('div');
               wrap.id = 'morphDeleteWrap';
               wrap.className = 'morph-wrap';
@@ -1690,9 +1688,8 @@
                   }
               }, 50);
           }
-
-          let authHtml;
           
+          let authHtml;
           if (verifiedAuthors.hasOwnProperty(it.name)) {
               const displayName = verifiedAuthors[it.name];
               authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
@@ -2342,11 +2339,9 @@
       
       (async function() {
         try {
-          const authPromise = fetch(`${API_URL}?type=authors`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
             
           fetchMessages();
           allItems = await fetchNotes();
-          verifiedAuthors = await authPromise;
                     
           const initialHash = location.hash;
           const params = new URLSearchParams(window.location.search);
