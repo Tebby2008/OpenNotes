@@ -1199,13 +1199,17 @@
         state ? el.classList.add("open") : el.classList.remove("open");
         
         if (!state && !suppressHistory) {
-            if (returnToMyNotes) {
+            const isMyNotesMode = document.getElementById('myNotesHeader').classList.contains('header-visible');
+            
+            if (isMyNotesMode || returnToMyNotes) {
                 history.replaceState(null, null, '#/mynotes');
                 returnToMyNotes = false; 
                 updateHeaderUI(); 
-
             } else {
-                history.replaceState(null, null, window.location.pathname + window.location.search);
+                const url = new URL(window.location);
+                url.hash = ''; 
+                history.replaceState(null, null, url.toString());
+                updateHeaderUI();
             }
         }
       };
@@ -1442,7 +1446,10 @@
       };
 
       function openOverlay(it) {
-          if (location.hash === '#/mynotes') {
+
+          const inMyNotes = document.getElementById('myNotesHeader').classList.contains('header-visible') || location.hash === '#/mynotes';
+          
+          if (inMyNotes) {
               returnToMyNotes = true;
           } else {
               returnToMyNotes = false;
@@ -1595,7 +1602,9 @@
               }
           });
           els.ovShare.onclick = () => { 
-              navigator.clipboard.writeText(window.location.href)
+              const cleanUrl = `${window.location.origin}${window.location.pathname}#/notes/${encodeURIComponent(it.name)}`;
+              
+              navigator.clipboard.writeText(cleanUrl)
                   .then(() => showPopup('Link copied', 'success')).catch(() => {}); 
           };
       }
@@ -1745,25 +1754,34 @@
       }
 
       window.onpopstate = (e) => {
+          const wasOverlayOpen = els.overlay.classList.contains('open') || 
+                                 els.infoOver.classList.contains('open') || 
+                                 uploadEls.overlay.classList.contains('open');
+
           toggleOverlay(els.overlay, false, true);
           toggleOverlay(els.infoOver, false, true);
           toggleOverlay(uploadEls.overlay, false, true);
+          
+          const currentHash = location.hash;
+          const currentQuery = new URLSearchParams(window.location.search).get('q') || '';
+          const previousQuery = els.search.value;
 
-          const params = new URLSearchParams(window.location.search);
-          const query = params.get('q') || '';
-            
-            
-          const isMyNotesHash = location.hash === '#/mynotes';
-          const wasInMyNotes = document.getElementById('myNotesHeader').style.display === 'block';
+          const isMyNotesHash = currentHash === '#/mynotes';
+          const isMyNotesHeaderVisible = document.getElementById('myNotesHeader').classList.contains('header-visible');
+          
+          const queryChanged = currentQuery !== previousQuery;
+          const contextChanged = isMyNotesHash !== isMyNotesHeaderVisible;
+          
+          if (wasOverlayOpen && !contextChanged && !queryChanged) {
+              if (currentHash === '#/mynotes') returnToMyNotes = true;
+              return; 
+          }
 
-          const contextChanged = (isMyNotesHash !== wasInMyNotes);
-          const searchChanged = (query !== els.search.value);
-
-          if (query !== els.search.value) {
-              els.search.value = query;
+          if (queryChanged) {
+              els.search.value = currentQuery;
           }
             
-          if (contextChanged || searchChanged) {
+          if (contextChanged || queryChanged) {
               render();
           }
 
@@ -1771,11 +1789,10 @@
               openOverlay(e.state.note);
           } else if (e.state?.info) {
               openInfo(e.state.info);
-          } else if (location.hash === '#/upload') {
+          } else if (currentHash === '#/upload') {
               handleUploadAccess();
-          } 
-          else if (location.hash.startsWith('#/notes/')) {
-              const n = decodeURIComponent(location.hash.substr(8));
+          } else if (currentHash.startsWith('#/notes/')) {
+              const n = decodeURIComponent(currentHash.substr(8));
               const it = allItems.find(i => i.name === n);
               if(it) openOverlay(it);
           }
