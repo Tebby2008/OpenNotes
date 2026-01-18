@@ -444,7 +444,6 @@ const SYNONYMS = {
     "intl": ["international"]
 };
 
-
 const MODIFIER_PREFIXES = [
     "CONCEPT_GRADE", 
     "CONCEPT_IB_Y", 
@@ -454,6 +453,49 @@ const MODIFIER_PREFIXES = [
     "CONCEPT_GUIDE"
 ];
 
+/**
+ * Standard Levenshtein Distance Algorithm
+ * Calculates how many edits (insert/delete/sub) to turn a into b
+ */
+function getEditDistance(a, b) {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+
+    const matrix = [];
+
+    for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+    }
+
+    for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1,
+                    Math.min(
+                        matrix[i][j - 1] + 1, 
+                        matrix[i - 1][j] + 1  
+                    )
+                );
+            }
+        }
+    }
+
+    return matrix[b.length][a.length];
+}
+
+/**
+ * Normalize text:
+ * 1. Lowercase
+ * 2. Space out symbols
+ * 3. Handle specific character replacements (like + -> plus) BEFORE strictly removing punctuation
+ */
 function normalize(text) {
     if (!text) return "";
     return text.toLowerCase()
@@ -469,6 +511,30 @@ export function searchNotes(items, query, options = {}) {
     const { showAI = true, currentFormat = "all" } = options;
     
     let workingQuery = normalize(query);
+
+    const conceptKeys = Object.keys(CONCEPT_MAP);
+    const rawTokens = workingQuery.split(" ");
+    
+    const correctedTokens = rawTokens.map(token => {
+        if (CONCEPT_MAP[token]) return token;
+        
+        if (token.length < 4) return token;
+
+        for (const key of conceptKeys) {
+            if (Math.abs(token.length - key.length) > 2) continue;
+
+            const dist = getEditDistance(token, key);
+            
+            const allowedErrors = token.length > 6 ? 2 : 1;
+            
+            if (dist <= allowedErrors) {
+                return key;
+            }
+        }
+        return token;
+    });
+    
+    workingQuery = correctedTokens.join(" ");
 
     for (const [phrase, conceptId] of Object.entries(CONCEPT_MAP)) {
         const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -528,7 +594,7 @@ export function searchNotes(items, query, options = {}) {
             
             for (const str of candidates) {
                 if (titleNorm.includes(str)) {
-                    score += weight + (str.length * 1.5); 
+                    score += weight + (str.length * 1.5);
                     tokenMatch = true;
                     if (titleNorm.startsWith(str)) score += 10;
                     break; 
