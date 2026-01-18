@@ -1069,7 +1069,14 @@
       let turnstileToken = null;
       let turnstileWidgetId = null;
       let verifiedAuthors = {}; 
-      let returnToMyNotes = false;
+      let lastRenderState = {
+          query: '',
+          context: 'home',
+          sort: 'relevance',
+          format: 'all',
+          ai: true,
+          viewMode: 'grid'
+      };
 
       let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="relevance", currentFormat="all", activeContext = 'home';
 
@@ -1193,24 +1200,36 @@
       updateView();
 
       const fmtDate = (iso) => !iso ? "—" : new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-      const toggleOverlay = (el, state, suppressHistory = false) => {
-        document.body.style.overflow = state ? 'hidden' : '';
-        el.setAttribute("aria-hidden", !state);
-        state ? el.classList.add("open") : el.classList.remove("open");
-        
-        if (!state && !suppressHistory) {
-            if (activeContext === 'mynotes' || returnToMyNotes) {
-                history.replaceState(null, null, '#/mynotes');
-                returnToMyNotes = false; 
-                updateHeaderUI(); 
-            } else {
-                const url = new URL(window.location);
-                url.hash = ''; 
-                history.replaceState(null, null, url.toString());
-                updateHeaderUI();
-            }
-        }
+      const toggleOverlay = (el, state) => {
+          document.body.style.overflow = state ? 'hidden' : '';
+          el.setAttribute("aria-hidden", !state);
+            
+          if (state) {
+              el.classList.add("open");
+          } else {
+              el.classList.remove("open");
+              if(el.id === 'overlay') {
+                  els.frame.removeAttribute('src');
+              }
+          }
       };
+
+      const goBack = () => {
+          if (history.state || location.hash.length > 1) {
+              history.back();
+          } else {
+              toggleOverlay(els.overlay, false);
+              toggleOverlay(els.infoOver, false);
+              toggleOverlay(uploadEls.overlay, false);
+              history.replaceState(null, '', ' ');
+              render();
+          }
+      };
+
+      const handleOutsideClick = (e, el) => {
+        if (e.target === el) goBack();
+      };
+
 
       const updateCounter = async (id, type) => {
         try { const res = await fetch(`${API_URL}?type=note&noteId=${id}&counter=${type}`, { method: 'POST' }); if (res.ok) return await res.json(); } catch (e) {} return null;
@@ -1356,90 +1375,103 @@
           }
       }
 
-      function render() {
-        const isMyNotesMode = location.hash === '#/mynotes';
-        
-        activeContext = isMyNotesMode ? 'mynotes' : 'home'; 
+      function render(force = false) {
+          const isMyNotesMode = location.hash === '#/mynotes';
+          const newContext = isMyNotesMode ? 'mynotes' : 'home';
+          const q = els.search.value.trim();
 
-        
-        updateHeaderUI();
 
-        if (location.hash === '#/mynotes' && !currentUser) {
-            history.replaceState(null, '', ' ');
-            updateHeaderUI();
-        }
-
-        let baseList = allItems;
-        if (isMyNotesMode) {
-            baseList = allItems.filter(item => ownedNotes.includes(item.name));
-        }
-
-        const q = els.search.value; 
-
-        currentFilteredList = searchNotes(baseList, q, {
-            showAI: showAI,
-            currentFormat: currentFormat,
-            verifiedAuthors: verifiedAuthors
-        });
-        
-        if (currentSort === 'relevance' && !q.trim()) {
-            currentFilteredList.sort((a, b) => (new Date(b.upd||0)) - (new Date(a.upd||0)));
-        }
-        else if (currentSort !== 'relevance') {
-            currentFilteredList.sort((a,b) => {
-                if(currentSort==="title-asc") return a.title.localeCompare(b.title);
-                if(currentSort==="title-desc") return b.title.localeCompare(a.title);
-                if(currentSort==="format-asc") return a.fmt.localeCompare(b.fmt) || a.title.localeCompare(b.title);
-                if(currentSort==="updated-asc") return (new Date(a.upd||0)) - (new Date(b.upd||0));
-                if(currentSort==="updated-desc") return (new Date(b.upd||0)) - (new Date(a.upd||0));
-                return 0;
-            });
-        }
-
-        let isFilterActive = true;
-        if (currentSort === 'relevance') { isFilterActive = false; } 
-        else if (currentSort === 'updated-desc' && !q.trim()) { isFilterActive = false; }
-        els.sortBtn.classList.toggle("active-sort", isFilterActive);
-
-        const isOverlayOpen = els.overlay.classList.contains("open") || 
-                        els.infoOver.classList.contains("open") || 
-                        (uploadEls && uploadEls.overlay.classList.contains("open"));
-
-        if (!isOverlayOpen) {
-          const queryUrl = els.search.value.trim();
-          const url = new URL(window.location);
-          if (queryUrl) url.searchParams.set('q', queryUrl);
-          else url.searchParams.delete('q'); 
-
-          if (location.hash !== '#/mynotes' && !location.hash.startsWith('#/notes/') && !location.hash.startsWith('#/upload')) {
-             if (url.search !== window.location.search) {
-                 history.replaceState(null, '', url);
-             }
+          if (!force && 
+              lastRenderState.context === newContext && 
+              lastRenderState.query === q &&
+              lastRenderState.sort === currentSort &&
+              lastRenderState.format === currentFormat &&
+              lastRenderState.ai === showAI &&
+              lastRenderState.viewMode === viewMode &&
+              els.container.childElementCount > 0
+          ) {
+              return;
           }
-        }
 
-        els.container.innerHTML = ""; 
-        els.container.className = viewMode;
-        currentlyRenderedCount = 0;
-        els.loadMoreCont.style.display = 'none';
+          activeContext = newContext;
+          updateHeaderUI();
 
-        if (currentFilteredList.length === 0) {
-            if (isMyNotesMode && !q.trim()) {
-                els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-                <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">folder_off</span>
-                <p>You haven't uploaded any notes yet.</p></div>`;
-            } else if (q.trim()) {
-                els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-                <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">search_off</span>
-                <p>No results found for "${escapeHtml(q)}"</p></div>`;
-            } else if (!isMyNotesMode) {
-                els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-                <p>No notes available.</p></div>`;
-            }
-            return;
-        }
+          if (isMyNotesMode && !currentUser) {
+              history.replaceState(null, '', ' ');
+              activeContext = 'home';
+              updateHeaderUI();
+          }
 
-        appendItems();
+          lastRenderState = {
+              query: q,
+              context: activeContext,
+              sort: currentSort,
+              format: currentFormat,
+              ai: showAI,
+              viewMode: viewMode
+          };
+
+          let baseList = allItems;
+          if (activeContext === 'mynotes') {
+              baseList = allItems.filter(item => ownedNotes.includes(item.name));
+          }
+
+          currentFilteredList = searchNotes(baseList, q, {
+              showAI: showAI,
+              currentFormat: currentFormat,
+              verifiedAuthors: verifiedAuthors
+          });
+
+          if (currentSort === 'relevance' && !q) {
+              currentFilteredList.sort((a, b) => (new Date(b.upd||0)) - (new Date(a.upd||0)));
+          } else if (currentSort !== 'relevance') {
+              currentFilteredList.sort((a,b) => {
+                  if(currentSort==="title-asc") return a.title.localeCompare(b.title);
+                  if(currentSort==="title-desc") return b.title.localeCompare(a.title);
+                  if(currentSort==="format-asc") return a.fmt.localeCompare(b.fmt) || a.title.localeCompare(b.title);
+                  if(currentSort==="updated-asc") return (new Date(a.upd||0)) - (new Date(b.upd||0));
+                  if(currentSort==="updated-desc") return (new Date(b.upd||0)) - (new Date(a.upd||0));
+                  return 0;
+              });
+          }
+
+          let isFilterActive = true;
+          if (currentSort === 'relevance') { isFilterActive = false; } 
+          else if (currentSort === 'updated-desc' && !q) { isFilterActive = false; }
+          els.sortBtn.classList.toggle("active-sort", isFilterActive);
+
+          const isOverlayOpen = document.querySelector('.overlay.open');
+          if (!isOverlayOpen && activeContext !== 'mynotes') {
+              const url = new URL(window.location);
+              if (q) url.searchParams.set('q', q);
+              else url.searchParams.delete('q');
+                
+              if (url.search !== window.location.search) {
+                  history.replaceState(null, '', url);
+              }
+          }
+
+          els.container.innerHTML = ""; 
+          els.container.className = viewMode;
+          currentlyRenderedCount = 0;
+           
+          if (currentFilteredList.length === 0) {
+              els.loadMoreCont.style.display = 'none';
+              if (activeContext === 'mynotes' && !q) {
+                  els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
+                  <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">folder_off</span>
+                  <p>You haven't uploaded any notes yet.</p></div>`;
+              } else if (q) {
+                  els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
+                  <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">search_off</span>
+                  <p>No results found for "${escapeHtml(q)}"</p></div>`;
+              } else {
+                  els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
+                  <p>No notes available.</p></div>`;
+              }
+              return;
+          }
+          appendItems();
       }
 
       els.loadMoreBtn.onclick = () => {
@@ -1448,16 +1480,8 @@
 
       function openOverlay(it) {
 
-          const inMyNotes = activeContext === 'mynotes';
-          
-          if (inMyNotes) {
-              returnToMyNotes = true;
-          } else {
-              returnToMyNotes = false;
-          }
-
           history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
-          
+    
           toggleOverlay(els.overlay, true);
           
           els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
@@ -1611,19 +1635,15 @@
       }
 
       async function openInfo(md) {
-        if (location.hash === '#/mynotes') {
-            returnToMyNotes = true;
-        } else {
-            returnToMyNotes = false;
-        }
-
-        history.pushState({ info: md }, '', `#/${md.split('/').pop()}`);
-        toggleOverlay(els.infoOver, true);
-        els.infoCont.innerHTML = "";
-        try {
-            const r = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${md}`);
-            els.infoCont.innerHTML = DOMPurify.sanitize(marked.parse(await r.text()));
-        } catch (e) { els.infoCont.innerHTML = "Failed to load."; }
+          const name = md.split('/').pop();
+          history.pushState({ info: md }, '', `#/${name}`);
+            
+          toggleOverlay(els.infoOver, true);
+          els.infoCont.innerHTML = "";
+          try {
+              const r = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${md}`);
+              els.infoCont.innerHTML = DOMPurify.sanitize(marked.parse(await r.text()));
+          } catch (e) { els.infoCont.innerHTML = "Failed to load."; }
       }
 
       els.gridBtn.onclick = () => { viewMode="grid"; localStorage.setItem('openNotesViewMode','grid'); updateView(); render(); };
@@ -1687,11 +1707,18 @@
 
       els.search.addEventListener("input", debounce(render, 300));
       document.querySelector('.search .material-symbols-rounded').onclick = () => els.search.focus();
-      els.backBtn.onclick = () => toggleOverlay(els.overlay, false);
-      els.overlay.onclick = (e) => { if(e.target===els.overlay) toggleOverlay(els.overlay,false); };
-      els.infoBack.onclick = () => toggleOverlay(els.infoOver, false);
-      els.infoOver.onclick = (e) => { if(e.target===els.infoOver) toggleOverlay(els.infoOver,false); };
-      document.onkeydown = (e) => { if(e.key==="Escape") { toggleOverlay(els.overlay,false); toggleOverlay(els.infoOver,false); } };
+      els.backBtn.onclick = goBack;
+      els.overlay.onclick = (e) => handleOutsideClick(e, els.overlay); 
+      els.infoBack.onclick = goBack;
+      els.infoOver.onclick = (e) => handleOutsideClick(e, els.infoOver);
+      
+      document.onkeydown = (e) => { 
+          if(e.key==="Escape") { 
+              const anyOpen = document.querySelector('.overlay.open');
+              if(anyOpen) goBack();
+          } 
+      };
+
       els.infoCont.addEventListener('click', (e) => {
         const link = e.target.closest('a');
         
@@ -1756,58 +1783,61 @@
 
       window.onpopstate = (e) => {
           const wasOverlayOpen = els.overlay.classList.contains('open') || 
-                                 els.infoOver.classList.contains('open') || 
-                                 uploadEls.overlay.classList.contains('open');
+                              els.infoOver.classList.contains('open') || 
+                              uploadEls.overlay.classList.contains('open');
 
-          toggleOverlay(els.overlay, false, true);
-          toggleOverlay(els.infoOver, false, true);
-          toggleOverlay(uploadEls.overlay, false, true);
-          
+          toggleOverlay(els.overlay, false);
+          toggleOverlay(els.infoOver, false);
+          toggleOverlay(uploadEls.overlay, false);
+
           const currentHash = location.hash;
-          const currentQuery = new URLSearchParams(window.location.search).get('q') || '';
-          const previousQuery = els.search.value;
-
           const targetContext = (currentHash === '#/mynotes') ? 'mynotes' : 'home';
-          
-          const queryChanged = currentQuery !== previousQuery;
-          const contextChanged = targetContext !== activeContext;
-          
-          if (wasOverlayOpen && !contextChanged && !queryChanged) {
-              updateHeaderUI();
-              return; 
+          const targetQuery = new URLSearchParams(window.location.search).get('q') || '';
+          const contextUnchanged = targetContext === lastRenderState.context;
+          const queryUnchanged = targetQuery === lastRenderState.query;
+
+          if (wasOverlayOpen && contextUnchanged && queryUnchanged) {
+            return;
           }
 
-          if (queryChanged) {
-              els.search.value = currentQuery;
+          if (els.search.value !== targetQuery) {
+              els.search.value = targetQuery;
           }
-            
-          render();
 
           if (e.state?.note) {
               openOverlay(e.state.note);
-          } else if (e.state?.info) {
+              return;
+          } 
+          else if (e.state?.info) {
               openInfo(e.state.info);
-          } else if (currentHash === '#/upload') {
+              return;
+          }
+          else if (currentHash === '#/upload') {
               handleUploadAccess();
-          } else if (currentHash.startsWith('#/notes/')) {
+              return;
+          } 
+          else if (currentHash.startsWith('#/notes/')) {
               const n = decodeURIComponent(currentHash.substr(8));
               const it = allItems.find(i => i.name === n);
-              if(it) openOverlay(it);
+              if(it) {
+                  openOverlay(it);
+                  if(currentlyRenderedCount === 0) render(true);
+                  return;
+              }
           }
+
+
+          render(true);
       };
 
     
 
       uploadEls.back.onclick = () => {
-          toggleOverlay(uploadEls.overlay, false);
+          goBack;
           turnstileToken = null;
       };
 
-      uploadEls.overlay.onclick = (e) => { 
-          if(e.target === uploadEls.overlay) {
-              toggleOverlay(uploadEls.overlay, false);
-          }
-      };
+      uploadEls.overlay.onclick = (e) => handleOutsideClick(e, uploadEls.overlay);
 
 
       uploadEls.aiBtn.onclick = () => {
