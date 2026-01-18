@@ -1054,7 +1054,8 @@
     </div>
   </footer>
 
-  <script>
+  <script type="module">
+      import { searchNotes } from './search.js';
       const REPO_OWNER = "Tebby2008", REPO_NAME = "OpenNotes", BRANCH = "main", API_URL = "https://open-notes.tebby2008-li.workers.dev";
       const owner = window.__owner || REPO_OWNER, repo = window.__repo || REPO_NAME;
       let turnstileToken = null;
@@ -1246,8 +1247,8 @@
             mainHeader.classList.remove('header-hidden');
             myNotesHeader.style.display = 'none';
             if(uploadBtn) uploadBtn.style.display = '';
-            
         }
+
         const escapeHtml = (str) => {
           if (!str) return '';
           return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -1256,10 +1257,8 @@
         const isMyNotesMode = location.hash === '#/mynotes';
         const mainHeader = document.getElementById('mainHeader');
         const myNotesHeader = document.getElementById('myNotesHeader');
-        
         const uploadBtn = document.getElementById('uploadBtn');
 
-        
         if (isMyNotesMode) {
             if (mainHeader.style.display !== 'none') {
                 mainHeader.classList.add('header-hidden');
@@ -1272,9 +1271,7 @@
                 myNotesHeader.style.display = 'block';
                 myNotesHeader.classList.add('header-visible');
             }
-            
-
-          } else {
+        } else {
              if (myNotesHeader.style.display === 'block') {
                 myNotesHeader.classList.remove('header-visible');
                 setTimeout(() => { 
@@ -1286,7 +1283,6 @@
                 mainHeader.style.display = 'flex';
                 mainHeader.classList.remove('header-hidden');
             }
-            
             if(uploadBtn) uploadBtn.style.display = '';
         }
 
@@ -1295,19 +1291,26 @@
             baseList = allItems.filter(item => ownedNotes.includes(item.name));
         }
 
-        const q = els.search.value.trim().toLowerCase();
-        
-        let list = baseList.filter(x => (showAI || !x.ai) && (currentFormat === "all" || x.fmt === currentFormat) && x.title.toLowerCase().includes(q));
-        
-        list.sort((a,b) => {
-          if(currentSort==="title-asc") return a.title.localeCompare(b.title);
-          if(currentSort==="title-desc") return b.title.localeCompare(a.title);
-          if(currentSort==="format-asc") return a.fmt.localeCompare(b.fmt) || a.title.localeCompare(b.title);
-          if(currentSort==="updated-asc") return (new Date(a.upd||0)) - (new Date(b.upd||0));
-          return (new Date(b.upd||0)) - (new Date(a.upd||0));
-        });
+        const q = els.search.value; 
 
-        els.container.innerHTML = ""; els.container.className = viewMode;
+        let list = searchNotes(baseList, q, {
+            showAI: showAI,
+            currentFormat: currentFormat
+        });
+        
+        
+        if (!q.trim()) {
+            list.sort((a,b) => {
+              if(currentSort==="title-asc") return a.title.localeCompare(b.title);
+              if(currentSort==="title-desc") return b.title.localeCompare(a.title);
+              if(currentSort==="format-asc") return a.fmt.localeCompare(b.fmt) || a.title.localeCompare(b.title);
+              if(currentSort==="updated-asc") return (new Date(a.upd||0)) - (new Date(b.upd||0));
+              return (new Date(b.upd||0)) - (new Date(a.upd||0));
+            });
+        }
+
+        els.container.innerHTML = ""; 
+        els.container.className = viewMode;
         const fragment = document.createDocumentFragment();
 
         const isOverlayOpen = els.overlay.classList.contains("open") || 
@@ -1315,11 +1318,11 @@
                         (uploadEls && uploadEls.overlay.classList.contains("open"));
 
         if (!isOverlayOpen) {
-          const query = els.search.value.trim();
+          const queryUrl = els.search.value.trim();
           const url = new URL(window.location);
           
-          if (query) {
-            url.searchParams.set('q', query);
+          if (queryUrl) {
+            url.searchParams.set('q', queryUrl);
           } else {
             url.searchParams.delete('q'); 
           }
@@ -1331,7 +1334,7 @@
           }
         }
         
-        if (list.length === 0 && isMyNotesMode && !q) {
+        if (list.length === 0 && isMyNotesMode && !q.trim()) {
               els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
               <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">folder_off</span>
               <p>You haven't uploaded any notes yet.</p>
@@ -1339,7 +1342,7 @@
               return;
         }
 
-        if (list.length === 0 && q) {
+        if (list.length === 0 && q.trim()) {
           els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
               <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">search_off</span>
               <p>No results found for "${escapeHtml(q)}"</p>
@@ -1406,7 +1409,6 @@
           fragment.appendChild(el);
         });
         els.container.appendChild(fragment);
-        
       }
 
       function openOverlay(it) {
