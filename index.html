@@ -747,6 +747,37 @@
     100% { background-position: -200% 0; }
     }
 
+    .tag-input-container {
+        background: rgba(0,0,0,0.03); border-radius: 12px;
+        padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 8px;
+        border: 1px solid transparent; transition: 0.2s; cursor: text;
+    }
+    .dark-mode .tag-input-container { background: rgba(255,255,255,0.08); }
+    .tag-input-container:focus-within { background: var(--panel); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+    .tag-chips { display: contents; }
+    .tag-chip {
+        background: var(--panel); border: 1px solid var(--border);
+        padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+        display: inline-flex; align-items: center; gap: 6px; color: var(--text-sec);
+    }
+    .tag-chip span { cursor: pointer; display: flex; border-radius: 50%; padding: 2px; }
+    .tag-chip span:hover { background: rgba(0,0,0,0.1); color: #ef4444; }
+
+    .tag-input-field {
+        background: transparent; border: none; outline: none; flex: 1;
+        min-width: 120px; color: var(--text); font-family: inherit; font-size: 0.95rem;
+        padding: 4px 0;
+    }
+
+    .viewer-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .v-tag {
+        font-size: 0.8rem; font-weight: 700; color: var(--accent);
+        background: var(--accent-glow); padding: 4px 12px; border-radius: 999px;
+        text-decoration: none; transition: 0.2s; cursor: pointer;
+    }
+    .v-tag:hover { background: var(--accent); color: white; transform: translateY(-1px); }
+
     @media (max-width: 768px) {
         .message-container {
             position: relative; top: auto; left: auto;
@@ -927,6 +958,7 @@
         <div class="header-group">
             <div class="pill-wrapper"><span class="pill" id="ovFormat">PDF</span></div>
             <div class="title" id="ovTitle">Title</div>
+            <div id="ovTags" class="viewer-tags"></div>
         </div>
         <div class="viewer-meta">
             <div class="kv"><span>Date</span> <strong id="ovDate">—</strong></div>
@@ -984,6 +1016,16 @@
             <div class="input-group">
                 <label>Title</label>
                 <input type="text" id="upTitle" placeholder="e.g. Physics Unit 1" required class="styled-input">
+            </div>
+            <div class="input-group">
+                <label>Tags</label>
+                <div class="tag-input-container" id="tagInputContainer">
+                    <div id="tagChips" class="tag-chips"></div>
+                    <input type="text" id="upTagsInput" placeholder="Type tag & press comma or enter..." class="tag-input-field">
+                </div>
+                <div style="font-size:0.75rem; color:var(--text-muted); margin-top:6px;">
+                    Separate by comma (",").
+                </div>
             </div>
 
             <div class="row-inputs">
@@ -1057,6 +1099,8 @@
 
   <script type="module">
       import { searchNotes } from './search.js';
+      import { initUploadSystem } from './upload.js';
+
       const REPO_OWNER = "Tebby2008", REPO_NAME = "OpenNotes", BRANCH = "main", API_URL = "https://open-notes.tebby2008-li.workers.dev";
       const owner = window.__owner || REPO_OWNER, repo = window.__repo || REPO_NAME;
       let turnstileToken = null;
@@ -1064,7 +1108,7 @@
       let verifiedAuthors = {}; 
       let returnToMyNotes = false;
 
-      let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="relevance", currentFormat="all";
+      let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="relevance", currentFormat="all", uploadTags = [];
 
       const els = {
         auth: document.getElementById('authContainer'),
@@ -1200,39 +1244,54 @@
       
       async function fetchNotes() {
           const headers = {};
-          if (currentUser) {
-              headers['Authorization'] = `Bearer ${currentUser.token}`;
-          }
-
-          const metaPromise = fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`)
-              .then(res => res.ok ? res.json() : []);
+          if (currentUser) headers['Authorization'] = `Bearer ${currentUser.token}`;
+           const [metaData, dbData] = await Promise.all([
+              fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`).then(r => r.ok ? r.json() : []),
+              fetch(`${API_URL}?type=init`, { headers }).then(r => r.ok ? r.json() : { data: {}, owned_notes: [] }).catch(() => ({ data: {}, owned_notes: [] }))
+          ]);
             
-          const statsPromise = fetch(`${API_URL}?type=init`, { headers })
-              .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [] })
-              .catch(() => ({ site_views: 0, data: {}, owned_notes: [] }));
-          const [metaData, dbData] = await Promise.all([metaPromise, statsPromise]);
           if (dbData.site_views) els.webViews.textContent = dbData.site_views;
           if (dbData.owned_notes) ownedNotes = dbData.owned_notes;
 
           return metaData.map(m => {
               const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
-              const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
-              const cleanKey = m.name; 
+              const fmt = (m.name.split('.').pop()||"").toLowerCase();
                 
+              let cleanName = m.name.replace(/\.[^/.]+$/, "");
+                
+              let tags = [];
+              const tagMatch = cleanName.match(/#\{([^}]+)\}/);
+              if (tagMatch) {
+                  tags = tagMatch[1].split(',').map(t => t.trim()).filter(t => t);
+                  cleanName = cleanName.replace(tagMatch[0], ''); 
+              }
+                
+              let isAi = m.is_ai_generated;
+              if (cleanName.includes('{AI}')) {
+                  isAi = true;
+                  cleanName = cleanName.replace('{AI}', '');
+              } else if (cleanName.includes('(AI)')) {
+                  isAi = true;
+                  cleanName = cleanName.replace('(AI)', '');
+              }
+
+              cleanName = cleanName.trim();
+
               return {
                   name: m.name, 
-                  title: m.name.replace(/\.[^/.]+$/, ""), 
+                  title: cleanName, 
+                  tags: tags,
                   path: m.path,
                   dl: safeDl,
-                  thumb: safeThumb, 
-                  fmt: (m.name.split('.').pop()||"").toLowerCase(),
+                  thumb: isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png', 
+                  fmt: fmt,
                   upd: m.last_updated, 
                   auth: m.author, 
                   user: m.author_username,
-                  ai: m.is_ai_generated, 
-                  ownerId: dbData.data['o:' + cleanKey] || null,
-                  v: parseInt(dbData.data['v:' + cleanKey]) || 0, 
-                  d: parseInt(dbData.data['d:' + cleanKey]) || 0
+                  ai: isAi, 
+                  ownerId: dbData.data['o:' + m.name] || null,
+                  v: parseInt(dbData.data['v:' + m.name]) || 0, 
+                  d: parseInt(dbData.data['d:' + m.name]) || 0
               };
           }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl);
       }
@@ -1437,8 +1496,26 @@
           history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
           
           toggleOverlay(els.overlay, true);
+
+          const tagContainer = document.getElementById('ovTags');
+          tagContainer.innerHTML = '';
+          if (it.tags && it.tags.length > 0) {
+              it.tags.forEach(tag => {
+                  const t = document.createElement('span');
+                  t.className = 'v-tag';
+                  t.textContent = '#' + tag;
+                  t.onclick = (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleOverlay(els.overlay, false);
+                      els.search.value = '#' + tag;
+                      els.search.dispatchEvent(new Event('input')); 
+                  };
+                  tagContainer.appendChild(t);
+              });
+          }
           
-          els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
+          els.ovTitle.textContent = it.title;
           els.ovFmt.textContent = it.fmt.toUpperCase();
           els.ovFmt.style.background = it.fmt==='pdf'?'var(--bg-pdf)':'var(--bg-docx)';
           els.ovFmt.style.color = it.fmt==='pdf'?'var(--c-pdf)':'var(--c-docx)';
@@ -2002,87 +2079,15 @@
           showPopup("Logged out");
       }
 
-      uploadEls.form.onsubmit = async (e) => {
-          e.preventDefault();
-          if (!turnstileToken) { showPopup("Please complete the security check.", "error"); return; }
-          const file = uploadEls.file.files[0];
-          if (!file) { showPopup("Please select a file.", "error"); return; }
-          if (uploadEls.author.classList.contains('input-error') || uploadEls.title.classList.contains('input-error')) {
-              showPopup("Please keep the highlighted fields shorter.", "error"); return;
-          }
-
-          uploadEls.submit.classList.add('btn-loading');
-          uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
-          uploadEls.status.textContent = "Processing file...";
-
-          try {
-              const cleanText = (txt) => txt.replace(/[^a-zA-Z0-9\-\s\(\)]/g, '').trim().replace(/\s+/g, ' ');
-              const safeTitle = cleanText(uploadEls.title.value);
-              const safeAuthor = cleanText(uploadEls.author.value);
-              const ext = file.name.split('.').pop();
-
-              if (safeTitle.length > 60) throw new Error("Title too long");
-              if (safeAuthor.length > 25) throw new Error("Author name too long");
-
-              let baseName = `${safeTitle} (by ${safeAuthor})`;
-              let finalFileName = `${baseName}.${ext}`;
-              let counter = 1;
-              while (allItems.some(item => item.name === finalFileName)) {
-                  finalFileName = `${baseName} (${counter}).${ext}`;
-                  counter++;
-              }
-
-              const toBase64 = file => new Promise((resolve, reject) => {
-                  const reader = new FileReader();
-                  reader.readAsDataURL(file);
-                  reader.onload = () => resolve(reader.result.split(',')[1]);
-                  reader.onerror = error => reject(error);
-              });
-
-              const base64Content = await toBase64(file);
-              uploadEls.status.textContent = "Uploading to servers...";
-              
-              const payload = {
-                  fileName: finalFileName,
-                  fileContent: base64Content,
-                  author: safeAuthor,
-                  isAi: uploadEls.aiCheck.checked,
-                  token: turnstileToken
-              };
-
-              const response = await fetch(`${API_URL}?type=upload`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentUser.token}` },
-                  body: JSON.stringify(payload)
-              });
-
-              const result = await response.json();
-              if (!response.ok) throw new Error(result.error || "Upload failed");
-
-              showPopup("Upload successful!", "success");
-              toggleOverlay(uploadEls.overlay, false);
-              uploadEls.form.reset();
-              uploadEls.drop.classList.remove('has-file');
-              uploadEls.msg.textContent = "Drag & drop or click to upload PDF/DOCX (MAX. 35MiB)";
-              uploadEls.aiBtn.classList.remove('active-ai');
-              uploadEls.author.classList.remove('input-error');
-              
-              if (window.turnstile) turnstile.reset();
-              turnstileToken = null;
-              
-              setTimeout(() => window.location.reload(), 1500);
-
-          } catch (err) {
-              console.error(err);
-              showPopup(err.message, "error");
-              if (window.turnstile) turnstile.reset();
-              turnstileToken = null;
-          } finally {
-              uploadEls.submit.classList.remove('btn-loading');
-              uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
-              uploadEls.status.textContent = "";
-          }
-      };
+      initUploadSystem({
+          currentUser,
+          API_URL,
+          allItems,
+          showPopup,
+          toggleOverlay,
+          render,
+          getTurnstileToken: () => turnstileToken // Helper to get latest token
+      });
 
       checkSession();
 
