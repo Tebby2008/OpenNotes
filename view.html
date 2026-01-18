@@ -4,20 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doc Viewer - OpenNotes</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #f3f4f6; 
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
         }
         #doc {
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             border: none;
+            display: block;
+        }
+        .error-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            font-family: sans-serif;
+            color: #4b5563;
+            text-align: center;
+            padding: 20px;
+        }
+        .error-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            font-weight: bold;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center m-0 p-0">
-    <iframe src="" id="doc" style="border:none"></iframe>
+<body>
+    <iframe src="" id="doc"></iframe>
     <script>
         function displayDocument() {
             const params = new URLSearchParams(window.location.search);
@@ -29,10 +54,14 @@
             const showError = (message) => {
                 console.error(message);
                 docIframe.contentDocument.body.innerHTML = `
-                    <div style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; font-family:sans-serif; color:#4b5563;">
-                        <h2 style="font-size:1.5rem; margin-bottom:10px;">Access Denied</h2>
+                    <div class="error-container">
+                        <div class="error-title">Access Denied</div>
                         <p>${message}</p>
-                    </div>`;
+                    </div>
+                    <style>
+                        .error-container { display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; font-family: sans-serif; color: #4b5563; text-align: center; }
+                        .error-title { font-size: 1.5rem; margin-bottom: 10px; font-weight: bold; }
+                    </style>`;
             };
 
             if (!fileUrl) {
