@@ -1217,7 +1217,7 @@
       };
 
       const goBack = () => {
-          if (history.state) {
+          if (history.state || location.hash.length > 1) {
               history.back();
           } else {
               const cleanUrl = window.location.pathname + window.location.search;
@@ -1227,7 +1227,6 @@
               toggleOverlay(uploadEls.overlay, false);
               
               history.replaceState(null, '', cleanUrl);
-              
               render(true);
           }
       };
@@ -1697,12 +1696,6 @@
              return false;
          }
         
-         if (location.hash === '#/mynotes') {
-            returnToMyNotes = true;
-         } else {
-             returnToMyNotes = false;
-         }
-        
          toggleOverlay(uploadEls.overlay, true);
 
          setTimeout(() => {
@@ -1729,7 +1722,7 @@
                history.pushState({ method: 'upload' }, '', '#/upload');
           }
       };
-      
+
       const types=["ALL","PDF","DOCX"]; let tidx=0;
       els.typeBtn.onclick = () => { tidx=(tidx+1)%3; els.typeBtn.querySelector('b').textContent=types[tidx]; currentFormat=types[tidx].toLowerCase(); render(); };
       
@@ -2214,27 +2207,33 @@
           const authPromise = fetch(`${API_URL}?type=authors`).then(r => r.ok ? r.json() : {}).catch(() => ({}));
             
           fetchMessages();
-
           allItems = await fetchNotes();
-            
           verifiedAuthors = await authPromise;
                     
+          const initialHash = location.hash;
           const params = new URLSearchParams(window.location.search);
           if (params.has('q')) els.search.value = params.get('q');
-            
+
+          if (initialHash.startsWith('#/notes/') || initialHash.startsWith('#/upload') || initialHash.endsWith('.md')) {
+              const cleanUrl = window.location.pathname + window.location.search;
+              history.replaceState(null, '', cleanUrl);
+          }
+
           initialLoadComplete = true;
           render(true);
 
-          if(location.hash.startsWith('#/notes/')) { 
-              const n=decodeURIComponent(location.hash.substr(8)); 
-              const it=allItems.find(i=>i.name===n); 
-              if(it) openOverlay(it); 
+          if(initialHash.startsWith('#/notes/')) { 
+              const n = decodeURIComponent(initialHash.substr(8)); 
+              const it = allItems.find(i => i.name === n); 
+              if(it) openOverlay(it);
           }
-          else if(location.hash.endsWith('.md')) {
-              openInfo(`resources/${location.hash.substr(2)}`);
+          else if(initialHash.endsWith('.md')) {
+              openInfo(`resources/${initialHash.substr(2)}`);
           }
-          else if(location.hash === '#/upload') {
-              handleUploadAccess();
+          else if(initialHash === '#/upload') {
+              if (handleUploadAccess()) {
+                  history.pushState({ method: 'upload' }, '', '#/upload');
+              }
           }
 
       } catch(e) { 
@@ -2350,7 +2349,10 @@
           panels.forEach(p => updatePanelLogic(p, isSingle));
 
         } catch (e) { console.error("Message fetch failed", e); }
-    }
+      }
+
+      window.logout = logout;
+      window.triggerLogin = triggerLogin;
   </script>
 </body>
 </html>
