@@ -1071,7 +1071,7 @@
       let verifiedAuthors = {}; 
       let returnToMyNotes = false;
 
-      let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="relevance", currentFormat="all";
+      let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="relevance", currentFormat="all", activeContext = 'home';
 
       const els = {
         auth: document.getElementById('authContainer'),
@@ -1199,9 +1199,7 @@
         state ? el.classList.add("open") : el.classList.remove("open");
         
         if (!state && !suppressHistory) {
-            const isMyNotesMode = document.getElementById('myNotesHeader').classList.contains('header-visible');
-            
-            if (isMyNotesMode || returnToMyNotes) {
+            if (activeContext === 'mynotes' || returnToMyNotes) {
                 history.replaceState(null, null, '#/mynotes');
                 returnToMyNotes = false; 
                 updateHeaderUI(); 
@@ -1361,6 +1359,9 @@
       function render() {
         const isMyNotesMode = location.hash === '#/mynotes';
         
+        activeContext = isMyNotesMode ? 'mynotes' : 'home'; 
+
+        
         updateHeaderUI();
 
         if (location.hash === '#/mynotes' && !currentUser) {
@@ -1447,7 +1448,7 @@
 
       function openOverlay(it) {
 
-          const inMyNotes = document.getElementById('myNotesHeader').classList.contains('header-visible') || location.hash === '#/mynotes';
+          const inMyNotes = activeContext === 'mynotes';
           
           if (inMyNotes) {
               returnToMyNotes = true;
@@ -1766,14 +1767,13 @@
           const currentQuery = new URLSearchParams(window.location.search).get('q') || '';
           const previousQuery = els.search.value;
 
-          const isMyNotesHash = currentHash === '#/mynotes';
-          const isMyNotesHeaderVisible = document.getElementById('myNotesHeader').classList.contains('header-visible');
+          const targetContext = (currentHash === '#/mynotes') ? 'mynotes' : 'home';
           
           const queryChanged = currentQuery !== previousQuery;
-          const contextChanged = isMyNotesHash !== isMyNotesHeaderVisible;
+          const contextChanged = targetContext !== activeContext;
           
           if (wasOverlayOpen && !contextChanged && !queryChanged) {
-              if (currentHash === '#/mynotes') returnToMyNotes = true;
+              updateHeaderUI();
               return; 
           }
 
@@ -1781,9 +1781,7 @@
               els.search.value = currentQuery;
           }
             
-          if (contextChanged || queryChanged) {
-              render();
-          }
+          render();
 
           if (e.state?.note) {
               openOverlay(e.state.note);
