@@ -762,6 +762,28 @@
         z-index: 20;
     }
 
+    .card.pending .thumb, .row.pending .thumb {
+        position: relative;
+    }
+
+    .card.pending .thumb::before, .row.pending .thumb::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.1) 30%, 
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0.1) 70%,
+            transparent 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        z-index: 5;
+        pointer-events: none;
+    }
+
     @media (max-width: 768px) {
         .message-container {
             position: relative; top: auto; left: auto;
