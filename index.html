@@ -878,7 +878,7 @@
           </button>
           <div id="sortDropdown" class="custom-dropdown">
             <div data-sort="relevance" class="option active">Relevance</div>
-            <div data-sort="updated-desc" class="option active">Last updated ↓</div>
+            <div data-sort="updated-desc" class="option">Last updated ↓</div>
             <div data-sort="updated-asc" class="option">Last updated ↑</div>
             <div data-sort="title-asc" class="option">Title A→Z</div>
             <div data-sort="title-desc" class="option">Title Z→A</div>
@@ -1218,6 +1218,14 @@
               const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
               const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
               const cleanKey = m.name; 
+
+              let vName = "";
+              if (m.author_username && verifiedAuthors[m.author_username]) {
+                  vName = verifiedAuthors[m.author_username];
+              } 
+              else if (dbData.data['o:' + cleanKey] && verifiedAuthors[dbData.data['o:' + cleanKey]]) {
+                  vName = verifiedAuthors[dbData.data['o:' + cleanKey]];
+              }
                 
               return {
                   name: m.name, 
@@ -1229,6 +1237,7 @@
                   upd: m.last_updated, 
                   auth: m.author, 
                   user: m.author_username,
+                  verifiedName: vName,
                   ai: m.is_ai_generated, 
                   ownerId: dbData.data['o:' + cleanKey] || null,
                   v: parseInt(dbData.data['v:' + cleanKey]) || 0, 
@@ -1382,12 +1391,10 @@
 
           let authHtml;
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
-              const displayName = verifiedAuthors[it.user];
-              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+              authHtml = `${escapeHtml(it.verifiedName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
           else if (it.ownerId && verifiedAuthors.hasOwnProperty(it.ownerId)) {
-              const displayName = verifiedAuthors[it.ownerId];
-              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+              authHtml = `${escapeHtml(it.verifiedName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
           else {
               authHtml = escapeHtml(it.auth || "Anonymous");
@@ -1520,12 +1527,10 @@
           
 
           if (it.user && verifiedAuthors.hasOwnProperty(it.user)) {
-              const displayName = verifiedAuthors[it.user];
-              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+              authHtml = `${escapeHtml(it.verifiedName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
           else if (it.ownerId && verifiedAuthors.hasOwnProperty(it.ownerId)) {
-              const displayName = verifiedAuthors[it.ownerId];
-              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
+              authHtml = `${escapeHtml(it.verifiedName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
           } 
           else {
               authHtml = escapeHtml(it.auth || "Anonymous");

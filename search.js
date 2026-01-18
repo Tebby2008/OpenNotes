@@ -427,7 +427,11 @@ const SYNONYMS = {
     "&": ["and"],
     "+": ["and", "plus"],
     "vs": ["versus"],
-    "intl": ["international"]
+    "intl": ["international"],
+
+    // --- SPECIAL ---
+    "tebby": ["tebby2008"],
+    "tebby2008": ["tebby"]
 };
 
 // ==========================================
@@ -547,7 +551,11 @@ export function searchNotes(items, query, options = {}) {
         if (currentFormat !== "all" && item.fmt !== currentFormat) return null;
 
         const titleNorm = normalize(item.title);
-        const authNorm = normalize(item.auth || "");
+        const authNorm = normalize(
+            (item.auth || "") + " " + 
+            (item.user || "") + " " + 
+            (item.verifiedName || "")
+        );
         
         let score = 0;
         let matchedTokenCount = 0;
