@@ -34,6 +34,7 @@ async function generateNotesData() {
         const notesPath = 'Notes';
         const metadataPath = path.join('resources', 'notes_metadata.json');
 
+        // 1. Load Previous Metadata (for diff logging)
         let oldFiles = new Set();
         try {
             if (fs.existsSync(metadataPath)) {
@@ -47,6 +48,7 @@ async function generateNotesData() {
 
         console.log(`Scanning notes in ${owner}/${repo}/${notesPath}...`);
 
+        // 2. Get list of all current files from GitHub API
         const { data: fileData } = await octokit.repos.getContent({
             owner, repo, path: notesPath, ref: 'main',
         });
@@ -65,7 +67,7 @@ async function generateNotesData() {
                 let lastUpdated = commitsData[0].commit.author.date;
                 let authorDisplay = "Unknown";
                 let authorUsername = null;
-                let isAiGenerated = file.name.includes('{AI}');
+                let isAiGenerated = file.name.includes('(AI)');
 
                 let metadataFound = false;
                 const metadataRegex = /Author:\s*([^|]+)\|\s*AI:\s*(true|false)/i;
@@ -120,12 +122,14 @@ async function generateNotesData() {
             }
         }
 
+        // 3. Check for DELETED files
         oldFiles.forEach(oldName => {
             if (!currentFiles.has(oldName)) {
                 appendLog(`Note deleted from repo: **${oldName}**`, 'DEL', 'Removal');
             }
         });
 
+        // 4. Save
         fs.writeFileSync(metadataPath, JSON.stringify(notesMetadata, null, 2));
         console.log(`Successfully generated ${metadataPath}!`);
 

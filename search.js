@@ -505,15 +505,7 @@ function matchesDate(token, isoDate) {
 export function searchNotes(items, query, options = {}) {
     const { showAI = true, currentFormat = "all", verifiedAuthors = {} } = options;
     
-    const rawQuery = query.trim();
-    const isTagSearch = rawQuery.startsWith('#');
-    let tagQuery = "";
-    
-    if (isTagSearch) {
-        tagQuery = rawQuery.substring(1).toLowerCase();
-    }
-
-    let workingQuery = normalize(rawQuery);
+    let workingQuery = normalize(query);
 
     for (const [phrase, conceptId] of Object.entries(CONCEPT_MAP)) {
         const escapedPhrase = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -542,13 +534,13 @@ export function searchNotes(items, query, options = {}) {
             SYNONYMS[t].forEach(s => set.add(s));
         }
 
-
         for (const [userId, displayName] of Object.entries(verifiedAuthors)) {
             const normName = normalize(displayName);
             const normUser = normalize(userId);
             
             if (normName.includes(t) || normUser.includes(t)) {
                 targetAuthorIDs.add(userId);
+
                 set.add(normName);
             }
         }
@@ -571,21 +563,8 @@ export function searchNotes(items, query, options = {}) {
         if (!showAI && item.ai) return null;
         if (currentFormat !== "all" && item.fmt !== currentFormat) return null;
 
-
-        if (isTagSearch) {
-            if (!item.tags || item.tags.length === 0) return null;
-            
-            const hasTag = item.tags.some(t => t.toLowerCase().includes(tagQuery));
-            
-            if (!hasTag) return null;
-            
-            return { item, score: 1000 }; 
-        }
-
         const titleNorm = normalize(item.title);
         const authNorm = normalize(item.auth || "");
-        
-        const tagString = item.tags ? item.tags.join(" ").toLowerCase() : "";
         
         let score = 0;
         let matchedTokenCount = 0;
@@ -612,12 +591,6 @@ export function searchNotes(items, query, options = {}) {
                 else if (authNorm.includes(str)) {
                     score += 15;
                     tokenMatch = true;
-                    break;
-                }
-                else if (tagString.includes(str)) {
-                    score += weight; 
-                    tokenMatch = true;
-                    if (!isModifier) matchedASubject = true; 
                     break;
                 }
             }
