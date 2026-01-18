@@ -1554,9 +1554,38 @@
           appendItems();
       };
 
-      function openOverlay(it) {
+      async function openOverlay(it) {
+          let initialStats = null;
+          
+          if (!it.user && !it.pending) {
+              try {
+                  const res = await fetch(`${API_URL}?type=note&noteId=${encodeURIComponent(it.name)}&counter=views&check=true`, { method: 'POST' });
+                  
+                  if (res.status === 404) {
+                      showPopup("This file has been deleted by the owner.", "error");
+                      
+                      allItems = allItems.filter(x => x.name !== it.name);
+                      ownedNotes = ownedNotes.filter(n => n !== it.name);
+                      
+                      const card = document.querySelector(`article[data-name="${CSS.escape(it.name)}"]`);
+                      if(card) {
+                          card.style.transition = "all 0.3s ease";
+                          card.style.opacity = "0";
+                          card.style.transform = "scale(0.9)";
+                          setTimeout(() => card.remove(), 300);
+                      }
+                      return;
+                  }
+                  
+                  if (res.ok) initialStats = await res.json();
+
+              } catch(e) {
+                  console.warn("Could not verify file existence", e);
+              }
+          }
+
+
           history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
-    
           toggleOverlay(els.overlay, true);
           
           els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
@@ -1618,7 +1647,6 @@
 
                               if(res.ok) {
                                   showPopup("Deleted successfully!");
-                                  
                                   toggleOverlay(els.overlay, false);
                                   
                                   allItems = allItems.filter(x => x.name !== it.name);
@@ -1683,18 +1711,25 @@
               }
           };
 
-          els.ovView.textContent = it.v; 
-          els.ovDl.textContent = it.d;
-
-          updateCounter(it.path, 'views').then(d => { 
-              if(d) {
-                  if (d.views !== undefined) it.v = d.views;
-                  if (d.downloads !== undefined) it.d = d.downloads;
-                  els.ovView.textContent = it.v; 
-                  els.ovDl.textContent = it.d; 
-                  updateTileParams(); 
+          if (initialStats && initialStats.views !== undefined) {
+              it.v = initialStats.views;
+              els.ovView.textContent = it.v;
+              els.ovDl.textContent = it.d;
+              updateTileParams();
+          } else {
+              els.ovView.textContent = it.v; 
+              els.ovDl.textContent = it.d;
+              
+              if(it.user) {
+                  updateCounter(it.path, 'views').then(d => { 
+                      if(d) {
+                          if (d.views !== undefined) it.v = d.views;
+                          els.ovView.textContent = it.v; 
+                          updateTileParams(); 
+                      }
+                  });
               }
-          });
+          }
 
           els.ovDown.onclick = null; 
           if (it.dl && isValidUrl(it.dl)) {
@@ -1710,9 +1745,7 @@
               els.ovDown.onclick = () => {
                   updateCounter(it.path, 'downloads').then(d => { 
                       if(d) { 
-                          if (d.views !== undefined) it.v = d.views;
                           if (d.downloads !== undefined) it.d = d.downloads;
-                          els.ovView.textContent = it.v; 
                           els.ovDl.textContent = it.d; 
                           updateTileParams();
                       }
@@ -1733,7 +1766,6 @@
           
           els.ovShare.onclick = () => { 
               const cleanUrl = `${window.location.origin}${window.location.pathname}#/notes/${encodeURIComponent(it.name)}`;
-              
               navigator.clipboard.writeText(cleanUrl)
                   .then(() => showPopup('Link copied', 'success')).catch(() => {}); 
           };
