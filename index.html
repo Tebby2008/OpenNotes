@@ -1313,18 +1313,16 @@
             });
         }
 
-        const isDefault = (!q.trim() && currentSort === 'relevance') || (!q.trim() && currentSort === 'updated-desc');
-        els.sortBtn.classList.toggle("active-sort", !isDefault);
-
-        if (!q.trim()) {
-            list.sort((a,b) => {
-              if(currentSort==="title-asc") return a.title.localeCompare(b.title);
-              if(currentSort==="title-desc") return b.title.localeCompare(a.title);
-              if(currentSort==="format-asc") return a.fmt.localeCompare(b.fmt) || a.title.localeCompare(b.title);
-              if(currentSort==="updated-asc") return (new Date(a.upd||0)) - (new Date(b.upd||0));
-              return (new Date(b.upd||0)) - (new Date(a.upd||0));
-            });
+        let isFilterActive = true;
+        
+        if (currentSort === 'relevance') {
+            isFilterActive = false;
+        } else if (currentSort === 'updated-desc' && !q.trim()) {
+            isFilterActive = false;
         }
+
+        els.sortBtn.classList.toggle("active-sort", isFilterActive);
+
 
         els.container.innerHTML = ""; 
         els.container.className = viewMode;
