@@ -1785,7 +1785,7 @@
           uploadEls.aiCheck.checked = !uploadEls.aiCheck.checked;
           const isAi = uploadEls.aiCheck.checked;
           uploadEls.aiBtn.classList.toggle('active-ai', isAi);
-          uploadEls.aiBtn.querySelector('span:last-child').textContent = isAi ? "Yes (AI)" : "No";
+          uploadEls.aiBtn.querySelector('span:last-child').textContent = isAi ? "Yes" : "No";
       };
 
       const handleFile = (file) => {
@@ -2009,6 +2009,11 @@
           if (!file) { showPopup("Please select a file.", "error"); return; }
           if (uploadEls.author.classList.contains('input-error') || uploadEls.title.classList.contains('input-error')) {
               showPopup("Please keep the highlighted fields shorter.", "error"); return;
+          }
+
+          if (/\(ai\)/i.test(uploadEls.title.value)) {
+              showPopup("Please refrain from including '(AI)' in the title.", "error");
+              return;
           }
 
           uploadEls.submit.classList.add('btn-loading');
