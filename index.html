@@ -2067,7 +2067,7 @@
               const result = await response.json();
               if (!response.ok) throw new Error(result.error || "Upload failed");
 
-              showPopup("Upload successful!", "success");
+              showPopup("Upload successful! (It may take a while to appear)", "success");
               toggleOverlay(uploadEls.overlay, false);
               uploadEls.form.reset();
               uploadEls.drop.classList.remove('has-file');
