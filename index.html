@@ -1385,35 +1385,25 @@
 
       function renderBatch(items) {
           const fragment = document.createDocumentFragment();
-          
+            
+          els.container.className = viewMode;
+
           items.forEach((it, i) => {
               const el = document.createElement("article");
               el.className = (viewMode === "grid" ? "card" : "row") + (it.pending ? " pending" : "");
               el.style.animationDelay = `${50 * i}ms`; 
               el.dataset.name = it.name; 
 
-              const rawTitle = it.title.replace(/\(AI\)$/, '');
-              const safeTitle = escapeHtml(rawTitle);
+              const safeTitle = escapeHtml(it.title.replace(/\(AI\)$/, ''));
+              const displayName = verifiedFileMap[it.name] || (it.author_username && verifiedUserMap[it.author_username]);
+              const authHtml = displayName 
+                  ? `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`
+                  : escapeHtml(it.author || "Anonymous");
 
-              let authHtml;
-              let displayName = null;
-
-              if (verifiedFileMap.hasOwnProperty(it.name)) {
-                  displayName = verifiedFileMap[it.name];
-              } else if (it.author_username && verifiedUserMap.hasOwnProperty(it.author_username)) {
-                  displayName = verifiedUserMap[it.author_username];
-              }
-
-              if (displayName) {
-                  authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
-              } else {
-                  authHtml = escapeHtml(it.author || "Anonymous");
-              }
-                        
               if (viewMode === 'grid') {
                   el.innerHTML = `
                       <div class="thumb">
-                          <img draggable="false" src="${it.thumb}" loading="lazy" decoding="async" onerror="this.style.display='none'">
+                          <img src="${it.thumb}" onerror="this.src='resources/fallback.svg'">
                           <span class="fmt-badge fmt-${it.fmt}">${it.fmt.toUpperCase()}</span>
                       </div>
                       <div class="body">
@@ -1424,34 +1414,27 @@
                           <span class="dot"></span><span>${fmtDate(it.upd)}</span>
                       </div>
                       <div class="stats">
-                          <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v}</span></span>
-                          <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d}</span></span>
+                          <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v || 0}</span></span>
+                          <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d || 0}</span></span>
                       </div>
                       </div>`;
               } else {
                   el.innerHTML = `
-                      <div class="thumb">
-                          <img draggable="false" src="${it.thumb}" loading="lazy" decoding="async" onerror="this.style.display='none'">
-                      </div>
+                      <div class="thumb"><img src="${it.thumb}" onerror="this.src='resources/fallback.svg'"></div>
                       <div class="main">
                       <div class="cell"><div class="title-line">${safeTitle}</div></div>
-                      <div class="cell">${authHtml} ${it.ai ? `<span class="ai-tag" style="margin-left:4px"><span class="material-symbols-rounded" style="font-size:12px">auto_awesome</span>AI</span>` : ''}</div>
+                      <div class="cell">${authHtml}</div>
                       <div class="cell">${fmtDate(it.upd)}</div>
                       <div class="cell"><span class="pill">${it.fmt.toUpperCase()}</span></div>
                       </div>
                       <div class="right-end" style="display:flex;gap:16px;padding-right:12px;color:var(--text-muted)">
-                      <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v}</span></span>
-                      <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d}</span></span>
+                      <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v || 0}</span></span>
+                      <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d || 0}</span></span>
                       </div>`;
               }
-
-              if (!it.pending) {
-                  el.onclick = () => openOverlay(it);
-              }
-                
+              el.onclick = () => openOverlay(it);
               fragment.appendChild(el);
           });
-
           els.container.appendChild(fragment);
       }
 
@@ -1680,9 +1663,24 @@
           } catch (e) { els.infoCont.innerHTML = "Failed to load."; }
       }
 
-      els.gridBtn.onclick = () => { viewMode="grid"; localStorage.setItem('openNotesViewMode','grid'); updateView(); render(); };
-      els.listBtn.onclick = () => { viewMode="list"; localStorage.setItem('openNotesViewMode','list'); updateView(); render(); };
-      if(els.mobTog) els.mobTog.onclick = () => { viewMode = viewMode==="grid"?"list":"grid"; localStorage.setItem('openNotesViewMode',viewMode); updateView(); render(); };
+      els.gridBtn.onclick = () => { 
+          viewMode = "grid"; 
+          localStorage.setItem('openNotesViewMode', 'grid'); 
+          updateView(); 
+          render(true); 
+      };
+      els.listBtn.onclick = () => { 
+          viewMode = "list"; 
+          localStorage.setItem('openNotesViewMode', 'list'); 
+          updateView(); 
+          render(true); 
+      };
+      if (els.mobTog) els.mobTog.onclick = () => { 
+          viewMode = viewMode === "grid" ? "list" : "grid"; 
+          localStorage.setItem('openNotesViewMode', viewMode); 
+          updateView(); 
+          render(true); 
+      };
       
       els.aiBtn.onclick = () => { showAI=!showAI; els.aiBtn.classList.toggle("active-ai"); render(); };
       const handleUploadAccess = () => {
@@ -2373,6 +2371,59 @@
       window.logout = logout;
       window.triggerLogin = triggerLogin;
       window.render = render;
+
+      function setupDeleteButton(it) {
+          const oldWrap = document.getElementById('morphDeleteWrap');
+          if (oldWrap) oldWrap.remove();
+
+          if (currentUser && (ownedNotes.includes(it.name) || isUserAdmin)) {
+              const wrap = document.createElement('div');
+              wrap.id = 'morphDeleteWrap';
+              wrap.className = 'morph-wrap';
+              wrap.innerHTML = `
+                  <div class="morph-btn" id="deleteMorphBtn">
+                      <span class="material-symbols-rounded icon-state" style="color:#ef4444">delete</span>
+                      <div class="morph-content" style="padding:12px;"> 
+                          <div style="font-weight:600; font-size:0.9rem; color:var(--text)">Delete note?</div>
+                          <button class="confirm-action-btn" id="realDeleteBtn">
+                              <span class="material-symbols-rounded" style="font-size:18px">delete</span> Yes
+                          </button>
+                      </div>
+                  </div>`;
+              
+              document.querySelector('.sub-actions').appendChild(wrap);
+              const btn = document.getElementById('deleteMorphBtn');
+              const realDel = document.getElementById('realDeleteBtn');
+
+              btn.onclick = (e) => {
+                  if (e.target.closest('#realDeleteBtn')) return;
+                  btn.classList.add('expanded');
+                  btn.style.width = '160px';
+              };
+
+              realDel.onclick = async () => {
+                  realDel.disabled = true;
+                  realDel.innerHTML = '...';
+                  const token = localStorage.getItem('auth_token_fallback');
+                  const res = await fetch(`${API_URL}?type=delete`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                      body: JSON.stringify({ fileName: it.name })
+                  });
+
+                  if (res.ok) {
+                      showPopup("Deleted successfully!");
+                      toggleOverlay(els.overlay, false);
+                      await fetchInit();
+                      render(true);
+                  } else {
+                      showPopup("Delete failed", "error");
+                      realDel.disabled = false;
+                      realDel.innerHTML = 'Retry';
+                  }
+              };
+          }
+      }
   </script>
 </body>
 </html>
