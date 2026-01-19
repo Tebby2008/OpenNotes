@@ -240,16 +240,5 @@
     "last_updated": "2025-08-19T03:41:58Z",
     "file_size": "3.41 MiB",
     "is_ai_generated": false
-  },
-  {
-    "name": "TESTING.docx",
-    "path": "Notes/TESTING.docx",
-    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/TESTING.docx",
-    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/TESTING_docx.jpg",
-    "author": "Tebby2008",
-    "author_username": "Tebby2008",
-    "last_updated": "2026-01-19T02:54:46Z",
-    "file_size": "9.63 KiB",
-    "is_ai_generated": false
   }
 ]
