@@ -1394,10 +1394,15 @@
 
               const safeTitle = escapeHtml(it.title.replace(/\(AI\)$/i, ''));
                 
-                // Use the 'verified' property from the database
-              const authHtml = it.verified 
-                  ? `${escapeHtml(it.author)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`
-                  : escapeHtml(it.author || "Anonymous");
+              // LOGIC: 
+              // 1. If backend sent a verified_name (from the map), use it.
+              // 2. Otherwise, use the author string stored in the DB.
+              const displayName = it.verified_name || it.author || "Anonymous";
+              const isVerified = it.is_verified; // Boolean from enriched backend
+
+              const authHtml = isVerified 
+                  ? `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`
+                  : escapeHtml(displayName);
               if (viewMode === 'grid') {
                   el.innerHTML = `
                       <div class="thumb">
@@ -1434,7 +1439,6 @@
               if (!it.pending) el.onclick = () => openOverlay(it);
               fragment.appendChild(el);
           });
-            
           els.container.appendChild(fragment);
       }
 
