@@ -178,13 +178,11 @@ jobs:
           done
           rm valid_thumbnails.txt
 
-      # --- 5. METADATA JSON & DB SYNC ---
-      - name: Generate Metadata & Sync D1
+      # --- 5. METADATA JSON ---
+      - name: Generate Metadata JSON
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
-          WORKER_URL: ${{ secrets.WORKER_URL }}
         run: |
           node .github/workflows/generate-notes-metadata.js
 

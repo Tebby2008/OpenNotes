@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 
-// --- UTILITIES ---
-
 function formatBytes(bytes, decimals = 2) {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -33,10 +31,6 @@ async function generateNotesData() {
         const { Octokit } = await import('@octokit/rest');
         const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
         const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
-        
-        const SYNC_SECRET = process.env.SYNC_SECRET;
-        const WORKER_URL = process.env.WORKER_URL;
-
         const notesPath = 'Notes';
         const metadataPath = path.join('resources', 'notes_metadata.json');
 
@@ -54,17 +48,16 @@ async function generateNotesData() {
 
         console.log(`Scanning notes in ${owner}/${repo}/${notesPath}...`);
 
-        // 2. Get list of all current files
+        // 2. Get list of all current files from GitHub API
         const { data: fileData } = await octokit.repos.getContent({
             owner, repo, path: notesPath, ref: 'main',
         });
 
         const notesMetadata = [];
         const currentFiles = new Set();
-        const syncBatch = []; // Data formatted for Cloudflare D1
 
         for (const file of fileData) {
-            if (file.type === 'file' && (file.name.endsWith('.pdf') || file.name.endsWith('.docx'))) {
+            if (file.type === 'file') {
                 currentFiles.add(file.name);
 
                 const { data: commitsData } = await octokit.repos.listCommits({
@@ -76,16 +69,17 @@ async function generateNotesData() {
                 let authorUsername = null;
                 let isAiGenerated = file.name.includes('(AI)');
 
-                // Metadata parsing from commit messages
                 let metadataFound = false;
                 const metadataRegex = /Author:\s*([^|]+)\|\s*AI:\s*(true|false)/i;
 
                 for (const commit of commitsData) {
                     const msg = commit.commit.message;
                     const match = msg.match(metadataRegex);
+
                     if (match) {
                         authorDisplay = match[1].trim();
                         isAiGenerated = (match[2].toLowerCase() === 'true');
+                        authorUsername = null; 
                         metadataFound = true;
                         break; 
                     }
@@ -94,7 +88,7 @@ async function generateNotesData() {
                 if (!metadataFound) {
                     const realUserCommit = commitsData.find(c => 
                         c.commit.author.name !== 'github-actions[bot]' && 
-                        c.commit.author.name !== 'OpenNotesPlatformBot'
+                        c.commit.author.name !== 'NotesPlatformBot'
                     ) || commitsData[0]; 
 
                     authorDisplay = realUserCommit.commit.author.name;
@@ -106,7 +100,6 @@ async function generateNotesData() {
                     }
                 }
 
-                // Log if new
                 if (!oldFiles.has(file.name)) {
                     appendLog(`New note added: **${file.name}** by ${authorDisplay}`, 'ADD', 'New Entry');
                 }
@@ -115,9 +108,6 @@ async function generateNotesData() {
                 const thumbnailName = fileNameWithoutExt.replace(/\.([^.]+)$/, '_$1');
                 const thumbnailUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/resources/thumbnails/${encodeURIComponent(thumbnailName)}.jpg`;
                 
-                const format = file.name.split('.').pop().toLowerCase();
-
-                // Object for local JSON
                 notesMetadata.push({
                     name: file.name,
                     path: file.path,
@@ -129,19 +119,6 @@ async function generateNotesData() {
                     file_size: formatBytes(file.size),
                     is_ai_generated: isAiGenerated,
                 });
-
-                // Object for Cloudflare D1 (Matching Worker column names)
-                syncBatch.push({
-                    name: file.name,
-                    title: file.name.replace(/\.[^/.]+$/, ""),
-                    author: authorDisplay,
-                    author_username: authorUsername,
-                    format: format,
-                    is_ai: isAiGenerated,
-                    upd: lastUpdated,
-                    thumb_url: thumbnailUrl,
-                    dl_url: file.download_url
-                });
             }
         }
 
@@ -152,27 +129,7 @@ async function generateNotesData() {
             }
         });
 
-        // 4. SYNC TO CLOUDFLARE
-        if (WORKER_URL && SYNC_SECRET && syncBatch.length > 0) {
-            console.log(`Syncing ${syncBatch.length} notes to Cloudflare D1...`);
-            const res = await fetch(`${WORKER_URL}?type=sync_batch`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${SYNC_SECRET}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ notes: syncBatch })
-            });
-
-            if (res.ok) {
-                console.log("✅ Successfully synced to D1!");
-            } else {
-                const err = await res.text();
-                console.error(`❌ Sync failed (Status ${res.status}):`, err);
-            }
-        }
-
-        // 5. SAVE LOCAL JSON
+        // 4. Save
         fs.writeFileSync(metadataPath, JSON.stringify(notesMetadata, null, 2));
         console.log(`Successfully generated ${metadataPath}!`);
 
