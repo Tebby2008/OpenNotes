@@ -123,41 +123,35 @@ jobs:
           fi
 
       # --- 3. THUMBNAILS ---
+      # --- 3. THUMBNAILS ---
       - name: Generate Thumbnails
         run: |
           mkdir -p resources/thumbnails
           LOG_FILE="resources/system_log.md"
           DATE=$(date -u +"%Y-%m-%d %H:%M")
           
-          CHANGED_FILES=$(git diff --name-only --diff-filter=AM HEAD^ HEAD || true)
-
           find Notes/ -type f \( -name "*.pdf" -o -name "*.docx" \) | while read -r NOTE; do
             NOTE_NAME=$(basename "$NOTE" | sed 's/\(.*\)\./\1_/')
             THUMBNAIL_PATH="resources/thumbnails/${NOTE_NAME}.jpg"
-            GENERATE=false
-            REASON=""
 
-            if [[ ! -f "$THUMBNAIL_PATH" ]]; then
-              GENERATE=true
-              REASON="Missing"
-            elif echo "$CHANGED_FILES" | grep -Fq "$NOTE"; then
-              GENERATE=true
-              REASON="Updated"
-            fi
-
-            if [ "$GENERATE" = true ]; then
+            # Only generate if missing or note is newer than thumbnail
+            if [[ ! -f "$THUMBNAIL_PATH" || "$NOTE" -nt "$THUMBNAIL_PATH" ]]; then
                 echo "Generating thumb for $NOTE..."
+                
                 if [[ "$NOTE" == *.pdf ]]; then
-                  pdftocairo -jpeg -singlefile -scale-to 600 "$NOTE" "${THUMBNAIL_PATH%.jpg}"
+                  # Generate directly to a temporary high-quality buffer
+                  pdftocairo -jpeg -singlefile -scale-to-x 400 -scale-to-y -1 "$NOTE" temp_gen
                 elif [[ "$NOTE" == *.docx ]]; then
                   unoconv --stdout -f pdf "$NOTE" > temp.pdf
-                  pdftocairo -jpeg -singlefile -scale-to 600 temp.pdf "${THUMBNAIL_PATH%.jpg}"
+                  pdftocairo -jpeg -singlefile -scale-to-x 400 -scale-to-y -1 temp.pdf temp_gen
                   rm temp.pdf
                 fi
-                if [[ -f "${THUMBNAIL_PATH%.jpg}.jpg" ]]; then
-                  mogrify -quality 70 "${THUMBNAIL_PATH%.jpg}.jpg"
-                  # Log the generation
-                  echo "| $DATE | 🟢 THUMB | Generated | File: \`$NOTE\` <br> Reason: $REASON |" >> "$LOG_FILE"
+
+                # Finalize the size immediately and delete the temp buffer
+                if [[ -f "temp_gen.jpg" ]]; then
+                  convert temp_gen.jpg -gravity north -thumbnail 369x180^ -extent 369x180 -quality 75 "$THUMBNAIL_PATH"
+                  rm temp_gen.jpg
+                  echo "| $DATE | 🟢 THUMB | Generated | File: \`$NOTE\` |" >> "$LOG_FILE"
                 fi
             fi
           done
