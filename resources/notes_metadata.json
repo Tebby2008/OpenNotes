@@ -240,27 +240,5 @@
     "last_updated": "2025-08-19T03:41:58Z",
     "file_size": "3.41 MiB",
     "is_ai_generated": false
-  },
-  {
-    "name": "TESTING (by 1810) (AI).docx",
-    "path": "Notes/TESTING (by 1810) (AI).docx",
-    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/TESTING%20(by%201810)%20(AI).docx",
-    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/TESTING%20(by%201810)%20(AI)_docx.jpg",
-    "author": "1810",
-    "author_username": null,
-    "last_updated": "2026-01-19T00:11:02Z",
-    "file_size": "9.63 KiB",
-    "is_ai_generated": true
-  },
-  {
-    "name": "TESTING2222222 (by 1813).docx",
-    "path": "Notes/TESTING2222222 (by 1813).docx",
-    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/TESTING2222222%20(by%201813).docx",
-    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/TESTING2222222%20(by%201813)_docx.jpg",
-    "author": "1813",
-    "author_username": null,
-    "last_updated": "2026-01-19T00:13:25Z",
-    "file_size": "9.63 KiB",
-    "is_ai_generated": false
   }
 ]
