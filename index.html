@@ -1281,17 +1281,15 @@
       };
 
       const goBack = () => {
-          if (history.state || location.hash.length > 1) {
+          els.frame.src = 'about:blank'; 
+            
+          if (history.state || location.hash.includes('/notes/')) {
               history.back();
           } else {
-              const cleanUrl = window.location.pathname + window.location.search;
-              
               toggleOverlay(els.overlay, false);
               toggleOverlay(els.infoOver, false);
               toggleOverlay(uploadEls.overlay, false);
-              
-              history.replaceState(null, '', cleanUrl);
-              render(true);
+              history.replaceState(null, '', window.location.pathname + window.location.search);
           }
       };
 
@@ -1373,7 +1371,7 @@
               }
 
               allItems = isNewSearch ? data : [...allItems, ...data];
-              renderBatch(data);
+              displayItems(data, !isNewSearch);
 
               hasMore = data.length === 12;
               els.loadMoreCont.style.display = hasMore ? 'flex' : 'none';
@@ -1383,18 +1381,19 @@
           }
       }
 
-      function renderBatch(items) {
-          const fragment = document.createDocumentFragment();
-            
+      function displayItems(items, append = false) {
+          if (!append) els.container.innerHTML = "";
           els.container.className = viewMode;
 
+          const fragment = document.createDocumentFragment();
           items.forEach((it, i) => {
               const el = document.createElement("article");
               el.className = (viewMode === "grid" ? "card" : "row") + (it.pending ? " pending" : "");
-              el.style.animationDelay = `${50 * i}ms`; 
-              el.dataset.name = it.name; 
+              el.style.animationDelay = `${50 * i}ms`;
+              el.dataset.name = it.name;
 
-              const safeTitle = escapeHtml(it.title.replace(/\(AI\)$/, ''));
+              const safeTitle = escapeHtml(it.title.replace(/\(AI\)$/i, ''));
+                
               const displayName = verifiedFileMap[it.name] || (it.author_username && verifiedUserMap[it.author_username]);
               const authHtml = displayName 
                   ? `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`
@@ -1407,34 +1406,36 @@
                           <span class="fmt-badge fmt-${it.fmt}">${it.fmt.toUpperCase()}</span>
                       </div>
                       <div class="body">
-                      <div class="title-line">${safeTitle}</div>
-                      <div class="meta">
-                          <span class="author-line">${authHtml}</span>
-                          ${it.ai ? `<span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>` : ''}
-                          <span class="dot"></span><span>${fmtDate(it.upd)}</span>
-                      </div>
-                      <div class="stats">
-                          <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v || 0}</span></span>
-                          <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d || 0}</span></span>
-                      </div>
+                          <div class="title-line">${safeTitle}</div>
+                          <div class="meta">
+                              <span class="author-line">${authHtml}</span>
+                              ${it.ai ? `<span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>` : ''}
+                              <span class="dot"></span><span>${fmtDate(it.upd)}</span>
+                          </div>
+                          <div class="stats">
+                              <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v || 0}</span></span>
+                              <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d || 0}</span></span>
+                          </div>
                       </div>`;
               } else {
                   el.innerHTML = `
                       <div class="thumb"><img src="${it.thumb}" onerror="this.src='resources/fallback.svg'"></div>
                       <div class="main">
-                      <div class="cell"><div class="title-line">${safeTitle}</div></div>
-                      <div class="cell">${authHtml}</div>
-                      <div class="cell">${fmtDate(it.upd)}</div>
-                      <div class="cell"><span class="pill">${it.fmt.toUpperCase()}</span></div>
+                          <div class="cell"><div class="title-line">${safeTitle}</div></div>
+                          <div class="cell">${authHtml}</div>
+                          <div class="cell">${fmtDate(it.upd)}</div>
+                          <div class="cell"><span class="pill">${it.fmt.toUpperCase()}</span></div>
                       </div>
                       <div class="right-end" style="display:flex;gap:16px;padding-right:12px;color:var(--text-muted)">
-                      <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v || 0}</span></span>
-                      <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d || 0}</span></span>
+                          <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v || 0}</span></span>
+                          <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d || 0}</span></span>
                       </div>`;
               }
-              el.onclick = () => openOverlay(it);
+                
+              if (!it.pending) el.onclick = () => openOverlay(it);
               fragment.appendChild(el);
           });
+            
           els.container.appendChild(fragment);
       }
 
@@ -1445,83 +1446,6 @@
               </span>
               <p>${isMyNotes ? "You haven't uploaded any notes yet." : (q ? `No results found for "${escapeHtml(q)}"` : "No notes available.")}</p>
           </div>`;
-      }
-      
-      function appendItems() {
-          const fragment = document.createDocumentFragment();
-          const nextBatch = currentFilteredList.slice(currentlyRenderedCount, currentlyRenderedCount + BATCH_SIZE);
-          
-          nextBatch.forEach((it, i) => {
-              const el = document.createElement("article");
-              el.className = (viewMode === "grid" ? "card" : "row") + (it.pending ? " pending" : "");
-              el.style.animationDelay = `${50 * i}ms`; 
-              el.dataset.name = it.name; 
-
-              const rawTitle = it.title.replace(/\(AI\)$/, '');
-              const safeTitle = escapeHtml(rawTitle);
-
-
-              let authHtml;
-              let displayName = null;
-
-              if (verifiedFileMap.hasOwnProperty(it.name)) {
-                  displayName = verifiedFileMap[it.name];
-              } 
-
-              else if (it.user && verifiedUserMap.hasOwnProperty(it.user)) {
-                  displayName = verifiedUserMap[it.user];
-              }
-
-              if (displayName) {
-                  authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
-              } else {
-                  authHtml = escapeHtml(it.auth || "Anonymous");
-              }
-                      
-              el.innerHTML = `
-                <div class="thumb">
-                    <img draggable="false" src="${it.thumb}" loading="lazy" decoding="async" onerror="this.style.display='none'">
-                    ${viewMode==='grid'?`<span class="fmt-badge fmt-${it.fmt}">${it.fmt.toUpperCase()}</span>`:''}
-                </div>
-                ${viewMode==='grid'? `<div class="body">
-                  <div class="title-line">${safeTitle}</div>
-                  <div class="meta">
-                    <span class="author-line">${authHtml}</span>
-                    ${it.ai?`<span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>`:''}
-                    <span class="dot"></span><span>${fmtDate(it.upd)}</span>
-                  </div>
-                  <div class="stats">
-                    <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v}</span></span>
-                    <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d}</span></span>
-                  </div>
-                </div>` : `<div class="main">
-                  <div class="cell"><div class="title-line">${safeTitle}</div></div>
-                  <div class="cell">${authHtml} ${it.ai?`<span class="ai-tag" style="margin-left:4px"><span class="material-symbols-rounded" style="font-size:12px">auto_awesome</span>AI</span>`:''}</div>
-                  <div class="cell">${fmtDate(it.upd)}</div>
-                  <div class="cell"><span class="pill">${it.fmt.toUpperCase()}</span></div>
-                </div>
-                <div class="right-end" style="display:flex;gap:16px;padding-right:12px;color:var(--text-muted)">
-                  <span class="stat"><span class="material-symbols-rounded">visibility</span> <span class="stat-value-v">${it.v}</span></span>
-                  <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d}</span></span>
-                </div>`}
-              `;
-              
-              if (!it.pending) {
-                  el.onclick = () => openOverlay(it);
-              }
-              
-              fragment.appendChild(el);
-          });
-
-          els.container.appendChild(fragment);
-          currentlyRenderedCount += nextBatch.length;
-
-          if (currentlyRenderedCount < currentFilteredList.length) {
-              els.loadMoreCont.style.display = 'flex';
-              els.loadMoreBtn.textContent = `Load More (${currentFilteredList.length - currentlyRenderedCount} remaining)`;
-          } else {
-              els.loadMoreCont.style.display = 'none';
-          }
       }
 
       function updateHeaderUI() {
@@ -1596,7 +1520,10 @@
       };
 
       async function openOverlay(it) {
-          history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
+          const noteHash = `#/notes/${encodeURIComponent(it.name)}`;
+          if (location.hash !== noteHash) {
+              history.pushState({ note: it }, '', noteHash);
+          }
           toggleOverlay(els.overlay, true);
           
           els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
@@ -1621,7 +1548,7 @@
           if (it.dl && isValidUrl(it.dl)) {
               const viewerUrl = `view.html?file=${encodeURIComponent(it.dl)}`;
               els.ovRaw.href = viewerUrl;
-              els.frame.src = viewerUrl;
+              els.frame.contentWindow.location.replace(viewerUrl);
 
               els.ovDown.onclick = () => {
                   updateCounter(it.name, 'downloads').then(d => { 
@@ -1664,16 +1591,19 @@
       }
 
       els.gridBtn.onclick = () => { 
+          if (viewMode === "grid") return;
           viewMode = "grid"; 
           localStorage.setItem('openNotesViewMode', 'grid'); 
           updateView(); 
-          render(true); 
+          displayItems(allItems);
       };
+
       els.listBtn.onclick = () => { 
+          if (viewMode === "list") return;
           viewMode = "list"; 
           localStorage.setItem('openNotesViewMode', 'list'); 
           updateView(); 
-          render(true); 
+          displayItems(allItems);
       };
       if (els.mobTog) els.mobTog.onclick = () => { 
           viewMode = viewMode === "grid" ? "list" : "grid"; 
