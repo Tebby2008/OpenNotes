@@ -242,25 +242,14 @@
     "is_ai_generated": false
   },
   {
-    "name": "TESTING final i think (by 1827).docx",
-    "path": "Notes/TESTING final i think (by 1827).docx",
-    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/TESTING%20final%20i%20think%20(by%201827).docx",
-    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/TESTING%20final%20i%20think%20(by%201827)_docx.jpg",
-    "author": "1827",
+    "name": "TESTING nvm actual final (by 1841).docx",
+    "path": "Notes/TESTING nvm actual final (by 1841).docx",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/TESTING%20nvm%20actual%20final%20(by%201841).docx",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/TESTING%20nvm%20actual%20final%20(by%201841)_docx.jpg",
+    "author": "1841",
     "author_username": null,
-    "last_updated": "2026-01-19T00:27:18Z",
+    "last_updated": "2026-01-19T00:41:25Z",
     "file_size": "9.63 KiB",
     "is_ai_generated": false
-  },
-  {
-    "name": "actual final test (by 1836) (AI).docx",
-    "path": "Notes/actual final test (by 1836) (AI).docx",
-    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/actual%20final%20test%20(by%201836)%20(AI).docx",
-    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/actual%20final%20test%20(by%201836)%20(AI)_docx.jpg",
-    "author": "1836",
-    "author_username": null,
-    "last_updated": "2026-01-19T00:36:29Z",
-    "file_size": "9.63 KiB",
-    "is_ai_generated": true
   }
 ]
