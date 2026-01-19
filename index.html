@@ -2459,10 +2459,10 @@
               }
           }
 
-      } catch(e) { 
-          console.error(e);
-          els.container.innerHTML="<p style='padding:20px;text-align:center'>Failed to load notes.</p>"; 
-      }
+        } catch(e) { 
+            console.error(e);
+            els.container.innerHTML="<p style='padding:20px;text-align:center'>Failed to load notes.</p>"; 
+        }
       })();
 
       async function fetchMessages() {
