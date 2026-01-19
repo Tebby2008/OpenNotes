@@ -1673,41 +1673,61 @@
                           }
                       };
                       realDel.onclick = async () => {
-                           realDel.innerHTML = '...';
-                          try {
-                              const res = await fetch(`${API_URL}?type=delete`, {
-                                  method: 'POST',
-                                  credentials: 'include',
-                                  body: JSON.stringify({ fileName: it.name })
-                              });
+                        if (realDel.dataset.loading === "true") return; 
+                            
+                        realDel.dataset.loading = "true";
+                        realDel.disabled = true; // Visually and functionally disable
+                        realDel.style.pointerEvents = 'none'; // Extra safety
+                        realDel.style.opacity = '0.7';
+                        realDel.innerHTML = '...';
 
-                              if(res.ok) {
-                                  showPopup("Deleted successfully!");
-                                  toggleOverlay(els.overlay, false);
-                                  
-                                  allItems = allItems.filter(x => x.name !== it.name);
-                                  ownedNotes = ownedNotes.filter(n => n !== it.name);
-                                  
-                                  let pending = JSON.parse(localStorage.getItem('openNotes_pending') || '[]');
-                                  const pendingIndex = pending.findIndex(p => p.name === it.name);
-                                  if(pendingIndex > -1) {
-                                      pending.splice(pendingIndex, 1);
-                                      localStorage.setItem('openNotes_pending', JSON.stringify(pending));
-                                  }
+                        try {
+                            const res = await fetch(`${API_URL}?type=delete`, {
+                                method: 'POST',
+                                credentials: 'include', // Ensure cookies are sent
+                                body: JSON.stringify({ fileName: it.name })
+                            });
 
-                                  const cleanUrl = window.location.pathname + window.location.search;
-                                  history.replaceState(null, '', cleanUrl);
+                            if(res.ok) {
+                                showPopup("Deleted successfully!");
+                                toggleOverlay(els.overlay, false);
+                                
+                                // UI Cleanup logic (Keep your existing code here)
+                                allItems = allItems.filter(x => x.name !== it.name);
+                                ownedNotes = ownedNotes.filter(n => n !== it.name);
+                                
+                                let pending = JSON.parse(localStorage.getItem('openNotes_pending') || '[]');
+                                const pendingIndex = pending.findIndex(p => p.name === it.name);
+                                if(pendingIndex > -1) {
+                                    pending.splice(pendingIndex, 1);
+                                    localStorage.setItem('openNotes_pending', JSON.stringify(pending));
+                                }
 
-                                  render(true);
-                              } else {
-                                  const err = await res.json();
-                                  showPopup(err.error || "Delete failed", "error");
-                                  realDel.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px">close</span> Retry';
-                              }
-                          } catch(e) { 
-                              showPopup("Error deleting", "error"); 
-                              realDel.innerHTML = 'Error';
-                          }
+                                const cleanUrl = window.location.pathname + window.location.search;
+                                history.replaceState(null, '', cleanUrl);
+
+                                render(true);
+                            } else {
+                                const err = await res.json();
+                                showPopup(err.error || "Delete failed", "error");
+                                    
+                                // 2. Re-enable on error so user can try again
+                                realDel.disabled = false;
+                                realDel.dataset.loading = "false";
+                                realDel.style.pointerEvents = 'auto';
+                                realDel.style.opacity = '1';
+                                realDel.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px">close</span> Retry';
+                            }
+                        } catch(e) { 
+                            showPopup("Error deleting", "error"); 
+                                
+                            // 2. Re-enable on error
+                            realDel.disabled = false;
+                            realDel.dataset.loading = "false";
+                            realDel.style.pointerEvents = 'auto';
+                            realDel.style.opacity = '1';
+                            realDel.innerHTML = 'Error';
+                        }
                       };
                   }
               }, 50);
@@ -2248,6 +2268,7 @@
               return;
           }
 
+          uploadEls.submit.disabled = true; 
           uploadEls.submit.classList.add('btn-loading');
           uploadEls.submit.querySelector('span:last-child').textContent = "Uploading...";
           uploadEls.status.textContent = "Processing file...";
@@ -2346,6 +2367,7 @@
               if (window.turnstile) turnstile.reset();
               turnstileToken = null;
           } finally {
+              uploadEls.submit.disabled = false;
               uploadEls.submit.classList.remove('btn-loading');
               uploadEls.submit.querySelector('span:last-child').textContent = "Upload Note";
               uploadEls.status.textContent = "";
