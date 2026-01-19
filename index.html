@@ -1294,9 +1294,11 @@
 
 
       const updateCounter = async (id, type) => {
+        const token = localStorage.getItem('auth_token_fallback'); // Get token
         try { 
             const res = await fetch(`${API_URL}?type=note&noteId=${id}&counter=${type}`, { 
                 method: 'POST',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}, // Add header
                 credentials: 'include'
             }); 
             if (res.ok) return await res.json(); 
@@ -1307,9 +1309,15 @@
           const metaPromise = fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`)
               .then(res => res.ok ? res.json() : []);
             
-          const statsPromise = fetch(`${API_URL}?type=init`, { credentials: 'include' })
-              .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {}, user_profile: null })
-              .catch(() => ({ site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {}, user_profile: null }));
+          const token = localStorage.getItem('auth_token_fallback');
+          const statsPromise = fetch(`${API_URL}?type=init`, { 
+              method: 'GET',
+              headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+              credentials: 'include' 
+          })
+          .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {}, user_profile: null })
+          .catch(() => ({ site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {}, user_profile: null }));
+      
             
           const [metaData, dbData] = await Promise.all([metaPromise, statsPromise]);
             
@@ -2200,10 +2208,19 @@
 
       function triggerLogin(isForUpload = false) {
           if(isForUpload) sessionStorage.setItem('pendingUpload', 'true');
-          const width = 500, height = 600;
-          const left = (window.innerWidth - width) / 2;
-          const top = (window.innerHeight - height) / 2;
-          window.open(`${API_URL}/auth/login`, 'Google Login', `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`);
+            
+          const loginUrl = `${API_URL}/auth/login`;
+            
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+          if (isMobile) {
+              window.location.href = loginUrl;
+          } else {
+              const width = 500, height = 600;
+              const left = (window.innerWidth - width) / 2;
+              const top = (window.innerHeight - height) / 2;
+              window.open(loginUrl, 'Google Login', `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=yes`);
+          }
       }
 
       function checkSession() {
@@ -2237,6 +2254,7 @@
               await fetch(`${API_URL}?type=logout`, { method: 'POST', credentials: 'include' });
           } catch (e) { console.error("Logout error", e); }
 
+          localStorage.removeItem('auth_token_fallback'); 
           currentUser = null;
           ownedNotes = [];
           isUserAdmin = false;
@@ -2311,9 +2329,13 @@
                   token: turnstileToken
               };
 
+              const tokenFallback = localStorage.getItem('auth_token_fallback');
               const response = await fetch(`${API_URL}?type=upload`, {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: { 
+                      'Content-Type': 'application/json',
+                      ...(tokenFallback ? { 'Authorization': `Bearer ${tokenFallback}` } : {})
+                  },
                   credentials: 'include',
                   body: JSON.stringify(payload)
               });
@@ -2389,11 +2411,25 @@
       (async function() {
         try {
             
+          const params = new URLSearchParams(window.location.search);
+          if (params.has('login_success')) {
+              const token = params.get('t');
+                  if (token) {
+                      localStorage.setItem('auth_token_fallback', token);
+                  }
+               
+              const cleanUrl = window.location.pathname + window.location.hash;
+              history.replaceState(null, '', cleanUrl);
+
+              if (sessionStorage.getItem('pendingUpload') === 'true') {
+                  sessionStorage.removeItem('pendingUpload');
+                  toggleOverlay(uploadEls.overlay, true);
+              }
+          }
           fetchMessages();
           allItems = await fetchNotes();
                     
           const initialHash = location.hash;
-          const params = new URLSearchParams(window.location.search);
           if (params.has('q')) els.search.value = params.get('q');
 
           if (initialHash.startsWith('#/notes/') || initialHash.startsWith('#/upload') || initialHash.endsWith('.md')) {
