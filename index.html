@@ -1340,17 +1340,13 @@
           if (isNewSearch) {
               currentPage = 1;
               allItems = [];
-              els.container.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+              els.container.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div>';
           }
 
           const q = els.search.value.trim();
           const isMyNotes = location.hash.startsWith('#/mynotes');
-            
           let searchUrl = `${API_URL}?type=search&q=${encodeURIComponent(q)}&format=${currentFormat}&ai=${showAI}&page=${currentPage}&sort=${currentSort}`;
-            
-          if (isMyNotes) {
-              searchUrl += `&mine=true`; 
-          }
+          if (isMyNotes) searchUrl += `&mine=true`; 
 
           try {
               const token = localStorage.getItem('auth_token_fallback');
@@ -1358,7 +1354,14 @@
                   headers: token ? { 'Authorization': `Bearer ${token}` } : {},
                   credentials: 'include'
               });
+              
               const data = await res.json();
+
+              if (!Array.isArray(data)) {
+                  console.error("Server Error:", data.error);
+                  renderEmptyState(isMyNotes, q);
+                  return;
+              }
 
               if (isNewSearch) {
                   els.container.innerHTML = "";
@@ -1370,16 +1373,13 @@
               }
 
               allItems = isNewSearch ? data : [...allItems, ...data];
-              
               renderBatch(data);
 
               hasMore = data.length === 12;
               els.loadMoreCont.style.display = hasMore ? 'flex' : 'none';
-              if(hasMore) els.loadMoreBtn.textContent = `Load More`;
-
           } catch (e) {
-              console.error("Search failed", e);
-              els.container.innerHTML = "<p style='text-align:center; padding:20px;'>Error connecting to server.</p>";
+              console.error("Fetch failed:", e);
+              els.container.innerHTML = "<p style='text-align:center; padding:20px;'>Connection error.</p>";
           }
       }
 
@@ -1613,248 +1613,59 @@
       };
 
       async function openOverlay(it) {
-          let initialStats = null;
-          
-          if (!it.user && !it.pending) {
-              try {
-                  const res = await fetch(`${API_URL}?type=note&noteId=${encodeURIComponent(it.name)}&counter=views&check=true`, { method: 'POST' });
-                  
-                  if (res.status === 404) {
-                      showPopup("This file has been deleted by the owner.", "error");
-                      
-                      allItems = allItems.filter(x => x.name !== it.name);
-                      ownedNotes = ownedNotes.filter(n => n !== it.name);
-                      
-                      const card = document.querySelector(`article[data-name="${CSS.escape(it.name)}"]`);
-                      if(card) {
-                          card.style.transition = "all 0.3s ease";
-                          card.style.opacity = "0";
-                          card.style.transform = "scale(0.9)";
-                          setTimeout(() => card.remove(), 300);
-                      }
-                      return;
-                  }
-                  
-                  if (res.ok) initialStats = await res.json();
-
-              } catch(e) {
-                  console.warn("Could not verify file existence", e);
-              }
-          }
-
-
           history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
           toggleOverlay(els.overlay, true);
           
           els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
           els.ovFmt.textContent = it.fmt.toUpperCase();
-          els.ovFmt.style.background = it.fmt==='pdf'?'var(--bg-pdf)':'var(--bg-docx)';
-          els.ovFmt.style.color = it.fmt==='pdf'?'var(--c-pdf)':'var(--c-docx)';
+          els.ovFmt.style.background = it.fmt === 'pdf' ? 'var(--bg-pdf)' : 'var(--bg-docx)';
+          els.ovFmt.style.color = it.fmt === 'pdf' ? 'var(--c-pdf)' : 'var(--c-docx)';
           
-          const oldWrap = document.getElementById('morphDeleteWrap');
-          if(oldWrap) oldWrap.remove();
-
-          if (currentUser && (ownedNotes.includes(it.name) || isUserAdmin)) {
-              const wrap = document.createElement('div');
-              wrap.id = 'morphDeleteWrap';
-              wrap.className = 'morph-wrap';
-              wrap.innerHTML = `
-                  <div class="morph-btn" id="deleteMorphBtn">
-                      <span class="material-symbols-rounded icon-state" style="color:#ef4444">delete</span>
-                      <div class="morph-content" style="padding:12px;"> 
-                          <div style="font-weight:600; font-size:0.9rem; color:var(--text)">Delete note?</div>
-                          <button class="confirm-action-btn" id="realDeleteBtn">
-                              <span class="material-symbols-rounded" style="font-size:18px">delete</span> Yes
-                          </button>
-                      </div>
-                  </div>`;
-              
-              const subActions = document.querySelector('.sub-actions');
-              subActions.appendChild(wrap);
-
-              setTimeout(() => {
-                  const btn = document.getElementById('deleteMorphBtn');
-                  const realDel = document.getElementById('realDeleteBtn');
-                  
-                  if (btn && realDel) {
-                      btn.onclick = (e) => {
-                          if (e.target.closest('#realDeleteBtn')) return; 
-                          if (!btn.classList.contains('expanded')) {
-                              btn.classList.add('expanded');
-                              btn.style.width = '160px'; 
-                              const close = (evt) => {
-                                  if(!btn.contains(evt.target)) {
-                                      btn.classList.remove('expanded');
-                                      btn.style.width = ''; 
-                                      document.removeEventListener('click', close);
-                                  }
-                              };
-                              setTimeout(() => document.addEventListener('click', close), 0);
-                          }
-                      };
-                      realDel.onclick = async () => {
-                        if (realDel.dataset.loading === "true") return; 
-                            
-                        realDel.dataset.loading = "true";
-                        realDel.disabled = true;
-                        realDel.style.pointerEvents = 'none';
-                        realDel.style.opacity = '0.7';
-                        realDel.innerHTML = '...';
-
-                        try {
-                            const tokenFallback = localStorage.getItem('auth_token_fallback');
-
-                            const res = await fetch(`${API_URL}?type=delete`, {
-                                method: 'POST',
-                                headers: { 
-                                    'Content-Type': 'application/json',
-                                    ...(tokenFallback ? { 'Authorization': `Bearer ${tokenFallback}` } : {})
-                                },
-                                credentials: 'include', 
-                                body: JSON.stringify({ fileName: it.name })
-                            });
-
-                            if(res.ok) {
-                                showPopup("Deleted successfully!");
-                                toggleOverlay(els.overlay, false);
-                                
-                                allItems = allItems.filter(x => x.name !== it.name);
-                                ownedNotes = ownedNotes.filter(n => n !== it.name);
-                                
-                                let pending = JSON.parse(localStorage.getItem('openNotes_pending') || '[]');
-                                const pendingIndex = pending.findIndex(p => p.name === it.name);
-                                if(pendingIndex > -1) {
-                                    pending.splice(pendingIndex, 1);
-                                    localStorage.setItem('openNotes_pending', JSON.stringify(pending));
-                                }
-
-                                const cleanUrl = window.location.pathname + window.location.search;
-                                history.replaceState(null, '', cleanUrl);
-
-                                render(true);
-                            } else {
-                                const err = await res.json();
-                                showPopup(err.error || "Delete failed", "error");
-                                    
-                                // 2. Re-enable on error so user can try again
-                                realDel.disabled = false;
-                                realDel.dataset.loading = "false";
-                                realDel.style.pointerEvents = 'auto';
-                                realDel.style.opacity = '1';
-                                realDel.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px">close</span> Retry';
-                            }
-                        } catch(e) { 
-                            showPopup("Error deleting", "error"); 
-                                
-                            // 2. Re-enable on error
-                            realDel.disabled = false;
-                            realDel.dataset.loading = "false";
-                            realDel.style.pointerEvents = 'auto';
-                            realDel.style.opacity = '1';
-                            realDel.innerHTML = 'Error';
-                        }
-                      };
-                  }
-              }, 50);
-          }
-          
-          let displayName = null;
-
-          if (verifiedFileMap.hasOwnProperty(it.name)) {
-              displayName = verifiedFileMap[it.name];
-          } 
-          else if (it.user && verifiedUserMap.hasOwnProperty(it.user)) {
-              displayName = verifiedUserMap[it.user];
-          }
-
-          let authHtml;
-          if (displayName) {
-              authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
-          } else {
-              authHtml = escapeHtml(it.auth || "Anonymous");
-          }
-
+          let displayName = verifiedFileMap[it.name] || (it.author_username && verifiedUserMap[it.author_username]);
+          let authHtml = displayName 
+            ? `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`
+            : escapeHtml(it.author || "Anonymous");
 
           els.ovAuth.innerHTML = authHtml;
-          
-          if(it.ai) {
-             const aiSpan = document.createElement('span');
-             aiSpan.className = 'ai-tag';
-             aiSpan.innerHTML = '<span class="material-symbols-rounded">auto_awesome</span>AI';
-             els.ovAuth.appendChild(document.createTextNode(" "));
-             els.ovAuth.appendChild(aiSpan);
+          if (it.ai) {
+             els.ovAuth.innerHTML += ` <span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>`;
           }
           
           els.ovDate.textContent = fmtDate(it.upd);
-          
-          const updateTileParams = () => {
-              const card = document.querySelector(`article[data-name="${CSS.escape(it.name)}"]`);
-              if(card) {
-                  const vEl = card.querySelector('.stat-value-v');
-                  const dEl = card.querySelector('.stat-value-d');
-                  if(vEl) vEl.textContent = it.v;
-                  if(dEl) dEl.textContent = it.d;
-              }
-          };
+          els.ovView.textContent = it.v || 0;
+          els.ovDl.textContent = it.d || 0;
 
-          if (initialStats && initialStats.views !== undefined) {
-              it.v = initialStats.views;
-              els.ovView.textContent = it.v;
-              els.ovDl.textContent = it.d;
-              updateTileParams();
-          } else {
-              els.ovView.textContent = it.v; 
-              els.ovDl.textContent = it.d;
-              
-              if(it.user) {
-                  updateCounter(it.path, 'views').then(d => { 
-                      if(d) {
-                          if (d.views !== undefined) it.v = d.views;
-                          els.ovView.textContent = it.v; 
-                          updateTileParams(); 
-                      }
-                  });
-              }
-          }
-
-          els.ovDown.onclick = null; 
           if (it.dl && isValidUrl(it.dl)) {
               const viewerUrl = `view.html?file=${encodeURIComponent(it.dl)}`;
               els.ovRaw.href = viewerUrl;
-
-              try {
-                  els.frame.contentWindow.location.replace(viewerUrl);
-              } catch(e) {
-                  els.frame.src = viewerUrl;
-              }
+              els.frame.src = viewerUrl;
 
               els.ovDown.onclick = () => {
-                  updateCounter(it.path, 'downloads').then(d => { 
-                      if(d) { 
-                          if (d.downloads !== undefined) it.d = d.downloads;
-                          els.ovDl.textContent = it.d; 
-                          updateTileParams();
-                      }
+                  updateCounter(it.name, 'downloads').then(d => { 
+                      if(d) { it.d = d.downloads; els.ovDl.textContent = it.d; updateTileStats(it); }
                   });
-                  const a = document.createElement("a"); 
-                  a.href = it.dl; a.download = it.name; 
+                  const a = document.createElement("a"); a.href = it.dl; a.download = it.name; 
                   document.body.appendChild(a); a.click(); a.remove();
               };
               els.ovRaw.style.display = 'flex';
               els.ovDown.style.display = 'flex';
-          } else {
-              try { els.frame.contentWindow.location.replace('about:blank'); } 
-              catch(e) { els.frame.removeAttribute('src'); }
-                
-              els.ovRaw.style.display = 'none';
-              els.ovDown.style.display = 'none';
           }
-          
-          els.ovShare.onclick = () => { 
-              const cleanUrl = `${window.location.origin}${window.location.pathname}#/notes/${encodeURIComponent(it.name)}`;
-              navigator.clipboard.writeText(cleanUrl)
-                  .then(() => showPopup('Link copied', 'success')).catch(() => {}); 
-          };
+
+          updateCounter(it.name, 'views').then(d => { 
+              if(d) { it.v = d.views; els.ovView.textContent = it.v; updateTileStats(it); }
+          });
+
+          setupDeleteButton(it); 
+      }
+
+      function updateTileStats(it) {
+          const card = document.querySelector(`article[data-name="${CSS.escape(it.name)}"]`);
+          if (card) {
+              const v = card.querySelector('.stat-value-v');
+              const d = card.querySelector('.stat-value-d');
+              if (v) v.textContent = it.v;
+              if (d) d.textContent = it.d;
+          }
       }
 
       async function openInfo(md) {
@@ -2277,7 +2088,7 @@
           
           renderAuth();
 
-          allItems = await fetchInit();;
+          await fetchInit();;
           render(true);
           showPopup("Logged out");
       }
@@ -2420,50 +2231,34 @@
       
       (async function() {
         try {
-            
           const params = new URLSearchParams(window.location.search);
           if (params.has('login_success')) {
               const token = params.get('t');
-                  if (token) {
-                      localStorage.setItem('auth_token_fallback', token);
-                  }
-               
-              const cleanUrl = window.location.pathname + window.location.hash;
-              history.replaceState(null, '', cleanUrl);
-
-              if (sessionStorage.getItem('pendingUpload') === 'true') {
-                  sessionStorage.removeItem('pendingUpload');
-                  toggleOverlay(uploadEls.overlay, true);
-              }
+              if (token) localStorage.setItem('auth_token_fallback', token);
+              history.replaceState(null, '', window.location.pathname + window.location.hash);
           }
+
           fetchMessages();
-          allItems = await fetchInit();
+          await fetchInit(); 
                     
           const initialHash = location.hash;
           if (params.has('q')) els.search.value = params.get('q');
 
-
           initialLoadComplete = true;
-          render(true);
+          render(true); 
 
-          if(initialHash.startsWith('#/notes/')) { 
+          if (initialHash.startsWith('#/notes/')) { 
               const n = decodeURIComponent(initialHash.substr(8)); 
-              const it = allItems.find(i => i.name === n); 
-              if(it) openOverlay(it);
+              const it = allItems.find(i => i.name === n);
+              if (it) openOverlay(it);
           }
-          else if(initialHash.endsWith('.md')) {
+          else if (initialHash.endsWith('.md')) {
               openInfo(`resources/${initialHash.substr(2)}`);
           }
-          else if(initialHash === '#/upload') {
-              if (handleUploadAccess()) {
-                  history.pushState({ method: 'upload' }, '', '#/upload');
-              }
-          }
-
-      } catch(e) { 
-          console.error(e);
-          els.container.innerHTML="<p style='padding:20px;text-align:center'>Failed to load notes.</p>"; 
-      }
+        } catch(e) { 
+            console.error(e);
+            els.container.innerHTML = "<p style='text-align:center'>Failed to initialize.</p>"; 
+        }
       })();
 
       async function fetchMessages() {
