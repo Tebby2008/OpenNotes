@@ -168,7 +168,7 @@ async function generateNotesData() {
                 console.log("✅ Successfully synced to D1!");
             } else {
                 const err = await res.text();
-                console.error("❌ Sync failed:", err);
+                console.error(`❌ Sync failed (Status ${res.status}):`, err);
             }
         }
 
