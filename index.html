@@ -1331,7 +1331,7 @@
 
           const serverItems = metaData.map(m => {
               const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
-              const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.png';
+              const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.svg';
               const cleanKey = m.name;
               
               const isOrphan = !m.author_username && !dbData.data.hasOwnProperty('v:' + cleanKey);
@@ -2329,7 +2329,7 @@
                   auth: safeAuthor,
                   fmt: ext,
                   upd: new Date().toISOString(),
-                  thumb: 'resources/fallback.png',
+                  thumb: 'resources/svg.png',
                   dl: '#',
                   v: 0, d: 0,
                   ai: uploadEls.aiCheck.checked,
