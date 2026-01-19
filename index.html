@@ -1684,15 +1684,21 @@
                         if (realDel.dataset.loading === "true") return; 
                             
                         realDel.dataset.loading = "true";
-                        realDel.disabled = true; // Visually and functionally disable
-                        realDel.style.pointerEvents = 'none'; // Extra safety
+                        realDel.disabled = true;
+                        realDel.style.pointerEvents = 'none';
                         realDel.style.opacity = '0.7';
                         realDel.innerHTML = '...';
 
                         try {
+                            const tokenFallback = localStorage.getItem('auth_token_fallback');
+
                             const res = await fetch(`${API_URL}?type=delete`, {
                                 method: 'POST',
-                                credentials: 'include', // Ensure cookies are sent
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                    ...(tokenFallback ? { 'Authorization': `Bearer ${tokenFallback}` } : {})
+                                },
+                                credentials: 'include', 
                                 body: JSON.stringify({ fileName: it.name })
                             });
 
@@ -1700,7 +1706,6 @@
                                 showPopup("Deleted successfully!");
                                 toggleOverlay(els.overlay, false);
                                 
-                                // UI Cleanup logic (Keep your existing code here)
                                 allItems = allItems.filter(x => x.name !== it.name);
                                 ownedNotes = ownedNotes.filter(n => n !== it.name);
                                 
