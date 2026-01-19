@@ -1394,11 +1394,10 @@
 
               const safeTitle = escapeHtml(it.title.replace(/\(AI\)$/i, ''));
                 
-              const displayName = verifiedFileMap[it.name] || (it.author_username && verifiedUserMap[it.author_username]);
-              const authHtml = displayName 
-                  ? `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`
+                // Use the 'verified' property from the database
+              const authHtml = it.verified 
+                  ? `${escapeHtml(it.author)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`
                   : escapeHtml(it.author || "Anonymous");
-
               if (viewMode === 'grid') {
                   el.innerHTML = `
                       <div class="thumb">
@@ -1595,7 +1594,7 @@
           viewMode = "grid"; 
           localStorage.setItem('openNotesViewMode', 'grid'); 
           updateView(); 
-          displayItems(allItems);
+          displayItems(allItems); // Redraw existing data, no network request
       };
 
       els.listBtn.onclick = () => { 
@@ -1704,7 +1703,8 @@
           els.sortDrop.querySelectorAll(".option").forEach(x=>x.classList.remove("active"));
           o.classList.add("active"); 
           currentSort = o.dataset.sort;
-          render();
+          els.sortDrop.classList.remove("open");
+          render(true); 
       });
       document.onclick = (e) => { if(!els.sortBtn.contains(e.target) && !els.sortDrop.contains(e.target)) els.sortDrop.classList.remove("open"); };
 
