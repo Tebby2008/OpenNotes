@@ -1393,16 +1393,12 @@
               el.dataset.name = it.name;
 
               const safeTitle = escapeHtml(it.title.replace(/\(AI\)$/i, ''));
-                
-              // LOGIC: 
-              // 1. If backend sent a verified_name (from the map), use it.
-              // 2. Otherwise, use the author string stored in the DB.
-              const displayName = it.verified_name || it.author || "Anonymous";
-              const isVerified = it.is_verified; // Boolean from enriched backend
+              const safeAuthor = escapeHtml(it.author);
 
-              const authHtml = isVerified 
-                  ? `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`
-                  : escapeHtml(displayName);
+              const authHtml = it.is_verified 
+                  ? `${safeAuthor} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`
+                  : safeAuthor;
+
               if (viewMode === 'grid') {
                   el.innerHTML = `
                       <div class="thumb">
@@ -1435,7 +1431,7 @@
                           <span class="stat"><span class="material-symbols-rounded">download</span> <span class="stat-value-d">${it.d || 0}</span></span>
                       </div>`;
               }
-                
+              
               if (!it.pending) el.onclick = () => openOverlay(it);
               fragment.appendChild(el);
           });
@@ -1939,8 +1935,21 @@
               if(btn) {
                   if (navBtn) {
                       navBtn.onclick = () => {
+                          // 1. Clear search input and internal state
+                          els.search.value = '';
+                          lastRenderState.query = '';
+                            
+                          // 2. Clear URL parameters so returning home goes to / and not /?q=...
+                          const url = new URL(window.location);
+                          url.searchParams.delete('q');
+                            
+                          // 3. Update hash and history
                           window.location.hash = '#/mynotes';
+                          history.replaceState(null, '', url.pathname + url.hash);
+                            
+                          // 4. Close menu and force render
                           btn.classList.remove('expanded', 'profile-menu-expanded', 'logged-out');
+                          render(true);
                       };
                   }
 
