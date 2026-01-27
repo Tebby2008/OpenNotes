@@ -148,3 +148,5 @@
 | 2026-01-22 04:26:38 | ✨ ADD | New Entry | New note added: **IB Physics (Atomic Structure) (by Chenyu Li).pdf** by Chenyu Li |
 | 2026-01-27 13:26 | 🟢 THUMB | Generated | File: `Notes/Hui IB Music Journal (by Yuqian).docx` |
 | 2026-01-27 13:26:54 | ✨ ADD | New Entry | New note added: **Hui IB Music Journal (by Yuqian).docx** by Yuqian |
+| 2026-01-27 13:28 | 🟢 THUMB | Generated | File: `Notes/Notes for Psych (by Yuqian).docx` |
+| 2026-01-27 13:28:11 | ✨ ADD | New Entry | New note added: **Notes for Psych (by Yuqian).docx** by Yuqian |
