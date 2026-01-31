@@ -2478,7 +2478,9 @@
 
           const panels = container.querySelectorAll('.msg-panel');
           const isSingle = panels.length === 1;
-          panels.forEach(p => updatePanelLogic(p, isSingle));
+          requestAnimationFrame(() => {
+              panels.forEach(p => updatePanelLogic(p, isSingle));
+          });
 
         } catch (e) { console.error("Message fetch failed", e); }
       }
