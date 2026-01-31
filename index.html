@@ -1122,24 +1122,6 @@
       import { searchNotes } from './search.js';
       const REPO_OWNER = "Tebby2008", REPO_NAME = "OpenNotes", BRANCH = "main", API_URL = "https://open-notes.tebby2008-li.workers.dev";
       const owner = window.__owner || REPO_OWNER, repo = window.__repo || REPO_NAME;
-
-      (async function runMigration() {
-            console.log("⚠️ Attempting DB Migration...");
-            try {
-                const res = await fetch(`${API_URL}?type=migrate_db`, { 
-                    method: 'POST' 
-                });
-                
-                if (!res.ok) throw new Error(res.statusText);
-                
-                const result = await res.json();
-                console.log("✅ Migration Success:", result);
-                alert(`Migration Complete! Migrated ${result.migrated} items.`);
-            } catch (e) {
-                console.error("❌ Migration Failed:", e);
-                alert("Migration Failed. Check console.");
-            }
-        })();
       let turnstileToken = null;
       let turnstileWidgetId = null;
       let verifiedFileMap = {}; 
