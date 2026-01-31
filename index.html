@@ -1288,7 +1288,8 @@
           } else {
               const url = new URL(window.location);
               url.hash = ''; 
-              history.replaceState(null, '', url);
+              
+              history.pushState(null, '', url.pathname + url.search);
               
               toggleOverlay(els.overlay, false);
               toggleOverlay(els.infoOver, false);
@@ -1569,27 +1570,36 @@
       }
 
       async function openOverlay(it) {
+          const gridCard = document.querySelector(`article[data-name="${CSS.escape(it.name)}"]`);
+          
           if (!it.pending) {
-              try {
-                  const res = await fetch(`${API_URL}?type=note&noteId=${encodeURIComponent(it.name)}&counter=views&check=true`, { method: 'POST' });
+              // 1. Background request: Record view and check existence
+              fetch(`${API_URL}?type=note&noteId=${encodeURIComponent(it.name)}&counter=views&check=true`, { method: 'POST' })
+              .then(res => {
                   if (res.status === 404) {
                       showPopup("This file has been deleted by the owner.", "error");
-                      // Remove from local list so user can't click it again
-                      allItems = allItems.filter(x => x.name !== it.name);
-                      const card = document.querySelector(`article[data-name="${CSS.escape(it.name)}"]`);
-                      if(card) card.remove();
-                      return;
+                      if(gridCard) gridCard.remove();
+                      goBack(); // Close overlay immediately if it was deleted
                   }
-              } catch(e) { console.warn("Verification failed", e); }
+              }).catch(e => console.warn("Counter background sync failed", e));
+
+              // 2. Immediate Local Increment (+1)
+              it.v = (parseInt(it.v) || 0) + 1;
+              
+              // Update Grid Tile view count
+              if(gridCard) {
+                  const vEl = gridCard.querySelector('.stat-value-v');
+                  if(vEl) vEl.textContent = it.v;
+              }
           }
 
-          // 2. Push state so "Back" works without reloading the grid
+          // 3. Setup History State
           const state = { modal: 'note', noteName: it.name };
           history.pushState(state, '', `#/notes/${encodeURIComponent(it.name)}`);
           isOverlayActive = true;
-
           toggleOverlay(els.overlay, true);
           
+          // 4. Fill UI
           els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
           els.ovFmt.textContent = it.fmt.toUpperCase();
           els.ovFmt.style.background = it.fmt==='pdf'?'var(--bg-pdf)':'var(--bg-docx)';
@@ -1598,7 +1608,6 @@
           const oldWrap = document.getElementById('morphDeleteWrap');
           if(oldWrap) oldWrap.remove();
 
-          // Check ownership using the backend flag is_owner
           if (currentUser && (it.is_owner || isUserAdmin)) {
               const wrap = document.createElement('div');
               wrap.id = 'morphDeleteWrap';
@@ -1722,16 +1731,34 @@
           if(it.ai) els.ovAuth.innerHTML += ` <span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>`;
           
           els.ovDate.textContent = fmtDate(it.upd);
-          els.ovView.textContent = it.v; 
+          els.ovView.textContent = it.v; // Uses the locally incremented value
           els.ovDl.textContent = it.d;
 
           if (it.dl && isValidUrl(it.dl)) {
               const viewerUrl = `view.html?file=${encodeURIComponent(it.dl)}`;
               els.ovRaw.href = viewerUrl;
-              els.frame.src = viewerUrl;
+              
+              // Use location.replace to fix the "click twice back" bug
+              if (els.frame.contentWindow) {
+                  els.frame.contentWindow.location.replace(viewerUrl);
+              } else {
+                  els.frame.src = viewerUrl;
+              }
+
               els.ovDown.onclick = () => {
+                  it.d = (parseInt(it.d) || 0) + 1;
+                  els.ovDl.textContent = it.d;
+                  if(gridCard) {
+                      const dEl = gridCard.querySelector('.stat-value-d');
+                      if(dEl) dEl.textContent = it.d;
+                  }
+                  
                   updateCounter(it.name, 'downloads');
-                  const a = document.createElement("a"); a.href = it.dl; a.download = it.name; a.click();
+                  
+                  const a = document.createElement("a"); 
+                  a.href = it.dl; 
+                  a.download = it.name; 
+                  a.click();
               };
               els.ovRaw.style.display = els.ovDown.style.display = 'flex';
           } else {
