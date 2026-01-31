@@ -1146,7 +1146,6 @@
       let offset = 0;
       let isLoading = false;
       let hasMore = true;
-      let isOverlayActive = false;
 
       const els = {
         auth: document.getElementById('authContainer'),
@@ -1283,27 +1282,17 @@
       };
 
       const goBack = () => {
-          if (history.state && history.state.modal) {
+          if (history.state || location.hash.length > 1) {
               history.back();
-          } 
-          else {
-              const url = new URL(window.location);
-              url.hash = ''; 
-              
-              if (url.searchParams.get('q')) {
-                  els.search.value = url.searchParams.get('q');
-              }
-
-              history.replaceState(null, '', url);
+          } else {
+              const cleanUrl = window.location.pathname + window.location.search;
               
               toggleOverlay(els.overlay, false);
               toggleOverlay(els.infoOver, false);
               toggleOverlay(uploadEls.overlay, false);
-              isOverlayActive = false;
-
-              if (allItems.length === 0) {
-                  render(true);
-              }
+              
+              history.replaceState(null, '', cleanUrl);
+              render(true);
           }
       };
 
@@ -1600,16 +1589,7 @@
           }
 
 
-          const state = { 
-              modal: 'note', 
-              noteName: it.name,
-              context: activeContext,
-              q: els.search.value 
-          };
-          
-          history.pushState(state, '', `#/notes/${encodeURIComponent(it.name)}`);
-          
-          isOverlayActive = true;
+          history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
           toggleOverlay(els.overlay, true);
           
           els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
@@ -1825,10 +1805,9 @@
 
       async function openInfo(md) {
           const name = md.split('/').pop();
-          history.pushState({ modal: 'info', info: md }, '', `#/${name}`);
-          isOverlayActive = true; 
+          history.pushState({ info: md }, '', `#/${name}`);
+            
           toggleOverlay(els.infoOver, true);
-
           els.infoCont.innerHTML = "";
           try {
               const r = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/${md}`);
@@ -1871,8 +1850,7 @@
 
       uploadEls.btn.onclick = () => {
           if (handleUploadAccess()) {
-               history.pushState({ modal: 'upload' }, '', '#/upload');
-               isOverlayActive = true;
+               history.pushState({ method: 'upload' }, '', '#/upload');
           }
       };
 
@@ -1968,35 +1946,57 @@
       }
 
       window.onpopstate = (e) => {
-          if (isOverlayActive && (!e.state || !e.state.modal)) {
-              toggleOverlay(els.overlay, false);
-              toggleOverlay(els.infoOver, false);
-              toggleOverlay(uploadEls.overlay, false);
-              isOverlayActive = false;
-              
-              return; 
+          if (location.hash === '' || location.hash === '#') {
+              history.replaceState(null, '', location.pathname + location.search);
           }
 
-          if (e.state && e.state.modal === 'note') {
-              return; 
-          }
-          
+          const wasOverlayOpen = els.overlay.classList.contains('open') || 
+                              els.infoOver.classList.contains('open') || 
+                              uploadEls.overlay.classList.contains('open');
+
+          toggleOverlay(els.overlay, false);
+          toggleOverlay(els.infoOver, false);
+          toggleOverlay(uploadEls.overlay, false);
+
           const currentHash = location.hash;
+          const targetContext = (currentHash.startsWith('#/mynotes')) ? 'mynotes' : 'home';
           
-          if (currentHash.startsWith('#/upload')) {
-              if (handleUploadAccess()) {
-                  history.replaceState({ modal: 'upload' }, '', '#/upload');
-                  isOverlayActive = true;
-              }
+          const targetQuery = new URLSearchParams(window.location.search).get('q') || '';
+          
+          const contextUnchanged = targetContext === lastRenderState.context;
+          const queryUnchanged = targetQuery === lastRenderState.query;
+
+          if (wasOverlayOpen && contextUnchanged && queryUnchanged) {
+            return;
+          }
+
+          if (els.search.value !== targetQuery) {
+              els.search.value = targetQuery;
+          }
+
+          if (e.state?.note) {
+              openOverlay(e.state.note);
+              return;
+          } 
+          else if (e.state?.info) {
+              openInfo(e.state.info);
               return;
           }
+          else if (currentHash.startsWith('#/upload')) {
+              handleUploadAccess();
+              return;
+          } 
+          else if (currentHash.startsWith('#/notes/')) {
+              const n = decodeURIComponent(currentHash.substr(8));
+              const it = allItems.find(i => i.name === n);
+              if(it) {
+                  openOverlay(it);
+                  if(currentlyRenderedCount === 0) render(true);
+                  return;
+              }
+          }
 
-          const targetContext = (currentHash.startsWith('#/mynotes')) ? 'mynotes' : 'home';
-          const targetQuery = new URLSearchParams(window.location.search).get('q') || '';
-
-          if (els.search.value !== targetQuery) els.search.value = targetQuery;
-
-          render();
+          render(true);
       };
 
     
