@@ -1119,7 +1119,6 @@
   </footer>
 
   <script type="module">
-      // import { searchNotes } from './search.js';
       const REPO_OWNER = "Tebby2008", REPO_NAME = "OpenNotes", BRANCH = "main", API_URL = "https://open-notes.tebby2008-li.workers.dev";
       const owner = window.__owner || REPO_OWNER, repo = window.__repo || REPO_NAME;
       let turnstileToken = null;
@@ -1304,13 +1303,34 @@
         if (e.target === el) goBack();
       };
 
+      const verifyExistence = async (noteName) => {
+          try {
+              const res = await fetch(`${API_URL}?type=note&noteId=${encodeURIComponent(noteName)}&check=true`, { method: 'POST' });
+                
+              if (res.status === 404) {
+                  showPopup("This note no longer exists.", "error");
+                    
+                  allItems = allItems.filter(x => x.name !== noteName);
+                    
+                  const tile = document.querySelector(`article[data-name="${CSS.escape(noteName)}"]`);
+                  if (tile) tile.remove();
+                    
+                  goBack();
+                  return false;
+              }
+              return true; 
+          } catch (e) {
+              return true; 
+          }
+        };
+
 
       const updateCounter = async (id, type) => {
-        const token = localStorage.getItem('auth_token_fallback'); // Get token
+        const token = localStorage.getItem('auth_token_fallback'); 
         try { 
             const res = await fetch(`${API_URL}?type=note&noteId=${id}&counter=${type}`, { 
                 method: 'POST',
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {}, // Add header
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
                 credentials: 'include'
             }); 
             if (res.ok) return await res.json(); 
@@ -1330,8 +1350,7 @@
               hasMore = true;
               allItems = [];
               
-              // Add skeletons for initial load
-              if(initialLoadComplete) { // Don't wipe skeletons on first run
+              if(initialLoadComplete) {
                  els.container.innerHTML = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
               }
           }
@@ -1341,7 +1360,6 @@
           try {
               const token = localStorage.getItem('auth_token_fallback');
               
-              // Prepare Params
               const params = new URLSearchParams({
                   type: 'list',
                   q: els.search.value.trim(),
@@ -1360,7 +1378,6 @@
               if (!res.ok) throw new Error("API Error");
               const data = await res.json();
               
-              // 1. Handle Metadata (Views & Auth)
               if (data.meta) {
                   if (data.meta.views) els.webViews.textContent = data.meta.views;
                   if (data.meta.user) {
@@ -1373,15 +1390,12 @@
                   renderAuth();
               }
 
-              // 2. Handle Items
               const newItems = data.items || [];
-              if (newItems.length < 20) hasMore = false; // Limit is 20 in backend
+              if (newItems.length < 20) hasMore = false;
               offset += newItems.length;
 
-              // 3. Clear skeletons on first valid render
               if (!isAppend) els.container.innerHTML = '';
 
-              // 4. Handle Empty State
               if (!isAppend && newItems.length === 0) {
                   const q = els.search.value.trim();
                   if (activeContext === 'mynotes' && !q) {
@@ -1393,11 +1407,9 @@
                   }
               }
 
-              // 5. Merge Pending (Client-side immediate feedback for uploads)
               if (!isAppend && offset === newItems.length) {
                   let pending = JSON.parse(localStorage.getItem('openNotes_pending') || '[]');
                   const now = Date.now();
-                  // Remove expired pending or ones that now exist in server response
                   pending = pending.filter(p => {
                       const age = now - p.timestamp;
                       const exists = newItems.some(si => si.name === p.name);
@@ -1405,12 +1417,10 @@
                   });
                   localStorage.setItem('openNotes_pending', JSON.stringify(pending));
                   
-                  // Prepend pending items
                   appendItems([...pending]); 
                   allItems = [...pending, ...allItems];
               }
 
-              // 6. Append New Items
               appendItems(newItems);
               allItems = [...allItems, ...newItems];
 
@@ -1423,7 +1433,6 @@
               els.loadMoreCont.style.display = hasMore ? 'flex' : 'none';
               els.loadMoreBtn.textContent = hasMore ? "Load More" : "No more notes";
               
-              // Init logic helper
               if (!initialLoadComplete) initialLoadComplete = true;
           }
       }
@@ -1434,20 +1443,17 @@
           items.forEach((it, i) => {
               const el = document.createElement("article");
               el.className = (viewMode === "grid" ? "card" : "row") + (it.pending ? " pending" : "");
-              // Stagger animation for new batches
               el.style.animationDelay = `${50 * (i % 20)}ms`; 
               el.dataset.name = it.name; 
 
               const rawTitle = it.title.replace(/\(AI\)$/, '');
               const safeTitle = escapeHtml(rawTitle);
 
-              // --- UPDATED AUTH DISPLAY LOGIC ---
               let authHtml = escapeHtml(it.auth || "Anonymous");
               
               if (it.is_verified) {
                   authHtml += ` <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
               }
-              // ----------------------------------
                       
               el.innerHTML = `
                 <div class="thumb">
@@ -1526,13 +1532,10 @@
           const newContext = isMyNotesMode ? 'mynotes' : 'home';
           const q = els.search.value.trim();
 
-          // 1. If we switched context (e.g. Home -> MyNotes), reset search 
-          // (Unless this render was triggered BY a search input)
           if (!force && activeContext !== newContext && !initialLoadComplete) {
               els.search.value = '';
           }
 
-          // 2. Prevent redundant renders
           if (!force && initialLoadComplete &&
               activeContext === newContext && 
               lastRenderState.query === q &&
@@ -1545,14 +1548,11 @@
           activeContext = newContext;
           updateHeaderUI();
 
-          // 3. URL Logic
           const url = new URL(window.location);
           if (activeContext === 'mynotes') {
-              // ALWAYS remove ?q from URL when in My Notes
               url.searchParams.delete('q');
               history.replaceState(null, '', url);
           } else {
-              // Update ?q only when on Home page
               if (q) url.searchParams.set('q', q);
               else url.searchParams.delete('q');
               
@@ -1576,33 +1576,29 @@
           const gridCard = document.querySelector(`article[data-name="${CSS.escape(it.name)}"]`);
           
           if (!it.pending) {
-              // 1. Background request: Record view and check existence
               fetch(`${API_URL}?type=note&noteId=${encodeURIComponent(it.name)}&counter=views&check=true`, { method: 'POST' })
               .then(res => {
                   if (res.status === 404) {
                       showPopup("This file has been deleted by the owner.", "error");
                       if(gridCard) gridCard.remove();
-                      goBack(); // Close overlay immediately if it was deleted
+                      goBack();
                   }
               }).catch(e => console.warn("Counter background sync failed", e));
 
-              // 2. Immediate Local Increment (+1)
+
               it.v = (parseInt(it.v) || 0) + 1;
               
-              // Update Grid Tile view count
               if(gridCard) {
                   const vEl = gridCard.querySelector('.stat-value-v');
                   if(vEl) vEl.textContent = it.v;
               }
           }
 
-          // 3. Setup History State
           const state = { modal: 'note', noteName: it.name };
           history.pushState(state, '', `#/notes/${encodeURIComponent(it.name)}`);
           isOverlayActive = true;
           toggleOverlay(els.overlay, true);
           
-          // 4. Fill UI
           els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
           els.ovFmt.textContent = it.fmt.toUpperCase();
           els.ovFmt.style.background = it.fmt==='pdf'?'var(--bg-pdf)':'var(--bg-docx)';
@@ -1687,11 +1683,16 @@
                                 history.replaceState(null, '', cleanUrl);
 
                                 render(true);
+                            } else if (res.status === 404) {
+                                showPopup("Note already deleted.", "error");
+                                allItems = allItems.filter(x => x.name !== it.name);
+                                const tile = document.querySelector(`article[data-name="${CSS.escape(it.name)}"]`);
+                                if (tile) tile.remove();
+                                goBack();
                             } else {
                                 const err = await res.json();
                                 showPopup(err.error || "Delete failed", "error");
                                     
-                                // 2. Re-enable on error so user can try again
                                 realDel.disabled = false;
                                 realDel.dataset.loading = "false";
                                 realDel.style.pointerEvents = 'auto';
@@ -1701,7 +1702,6 @@
                         } catch(e) { 
                             showPopup("Error deleting", "error"); 
                                 
-                            // 2. Re-enable on error
                             realDel.disabled = false;
                             realDel.dataset.loading = "false";
                             realDel.style.pointerEvents = 'auto';
@@ -1734,21 +1734,23 @@
           if(it.ai) els.ovAuth.innerHTML += ` <span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>`;
           
           els.ovDate.textContent = fmtDate(it.upd);
-          els.ovView.textContent = it.v; // Uses the locally incremented value
+          els.ovView.textContent = it.v;
           els.ovDl.textContent = it.d;
 
           if (it.dl && isValidUrl(it.dl)) {
               const viewerUrl = `view.html?file=${encodeURIComponent(it.dl)}`;
               els.ovRaw.href = viewerUrl;
               
-              // Use location.replace to fix the "click twice back" bug
               if (els.frame.contentWindow) {
                   els.frame.contentWindow.location.replace(viewerUrl);
               } else {
                   els.frame.src = viewerUrl;
               }
 
-              els.ovDown.onclick = () => {
+              els.ovDown.onclick = async () => {
+                  const exists = await verifyExistence(it.name);
+                  if (!exists) return;
+
                   it.d = (parseInt(it.d) || 0) + 1;
                   els.ovDl.textContent = it.d;
                   if(gridCard) {
@@ -1925,26 +1927,20 @@
       window.onpopstate = (e) => {
           const currentHash = location.hash;
 
-          // 1. If we are closing a modal, just hide the UI and STOP.
           if (isOverlayActive && (!e.state || !e.state.modal)) {
               toggleOverlay(els.overlay, false);
               toggleOverlay(els.infoOver, false);
               toggleOverlay(uploadEls.overlay, false);
               isOverlayActive = false;
-              // IMPORTANT: Do not call render() here. 
-              // This keeps the current scroll position and loaded results.
               return; 
           }
 
-          // 2. Detect Context from Hash
           const targetContext = currentHash.startsWith('#/mynotes') ? 'mynotes' : 'home';
           const urlParams = new URLSearchParams(window.location.search);
           const targetQuery = urlParams.get('q') || '';
 
-          // 3. Handle Context switch or Search sync
           if (activeContext !== targetContext || els.search.value !== targetQuery) {
               if (activeContext !== targetContext) {
-                  // If switching context via browser Back button, clear search
                   els.search.value = targetQuery; 
               } else {
                   els.search.value = targetQuery;
@@ -1952,7 +1948,6 @@
               render(true);
           }
           
-          // 4. Handle Modal Forward navigation
           if (currentHash.startsWith('#/upload')) {
              handleUploadAccess();
           }
@@ -2335,7 +2330,6 @@
           const params = new URLSearchParams(window.location.search);
           const initialHash = location.hash;
           
-          // 1. Handle Login Redirects
           if (params.has('login_success')) {
               const token = params.get('t');
               if (token) localStorage.setItem('auth_token_fallback', token);
@@ -2345,7 +2339,6 @@
           
           fetchMessages();
           
-          // 2. SET CONTEXT
           activeContext = initialHash.startsWith('#/mynotes') ? 'mynotes' : 'home';
           if (params.get('q') && activeContext === 'home') els.search.value = params.get('q');
 
@@ -2354,7 +2347,6 @@
               history.replaceState({ modal: null }, '', cleanUrl); 
           }
 
-          // 4. Handle Deep Link Fetching
           let deepLinkItem = null;
           if (initialHash.startsWith('#/notes/')) {
               const fileName = decodeURIComponent(initialHash.substr(8));
@@ -2365,10 +2357,8 @@
               } catch (e) { console.error("Deep link fetch failed", e); }
           }
 
-          // 5. Initial Render
           await fetchNotes(); 
 
-          // 6. Open Modals
           if (deepLinkItem) {
               openOverlay(deepLinkItem);
           } else if (initialHash.startsWith('#/notes/')) {
