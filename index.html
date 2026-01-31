@@ -1522,7 +1522,13 @@
           const newContext = isMyNotesMode ? 'mynotes' : 'home';
           const q = els.search.value.trim();
 
-          // Debounce/Prevent loop
+          // 1. If we switched context (e.g. Home -> MyNotes), reset search 
+          // (Unless this render was triggered BY a search input)
+          if (!force && activeContext !== newContext && !initialLoadComplete) {
+              els.search.value = '';
+          }
+
+          // 2. Prevent redundant renders
           if (!force && initialLoadComplete &&
               activeContext === newContext && 
               lastRenderState.query === q &&
@@ -1535,31 +1541,32 @@
           activeContext = newContext;
           updateHeaderUI();
 
-          // Sync URL
+          // 3. URL Logic
           const url = new URL(window.location);
-          if (activeContext === 'home') {
-             if(q) url.searchParams.set('q', q);
-             else url.searchParams.delete('q');
-             if(url.search !== window.location.search) history.replaceState(null, '', url);
+          if (activeContext === 'mynotes') {
+              // ALWAYS remove ?q from URL when in My Notes
+              url.searchParams.delete('q');
+              history.replaceState(null, '', url);
+          } else {
+              // Update ?q only when on Home page
+              if (q) url.searchParams.set('q', q);
+              else url.searchParams.delete('q');
+              
+              if (url.search !== window.location.search) {
+                  history.replaceState(null, '', url);
+              }
           }
 
-          // Update State Tracker
           lastRenderState = {
               query: q, context: activeContext, sort: currentSort, 
               format: currentFormat, ai: showAI, viewMode: viewMode
           };
 
-          // Trigger Server Fetch (True = Reset list)
           fetchNotes(false);
           
-          // Toggle UI Sort Button
           const isFilterActive = currentSort !== 'relevance' || (currentSort === 'updated-desc' && q);
           els.sortBtn.classList.toggle("active-sort", isFilterActive);
       }
-
-      els.loadMoreBtn.onclick = () => {
-          fetchNotes(true); // true = isAppend
-      };
 
       async function openOverlay(it) {
           if (!it.pending) {
@@ -1882,28 +1889,38 @@
       }
 
       window.onpopstate = (e) => {
-          // 1. If we are closing a modal, just hide UI and STOP.
+          const currentHash = location.hash;
+
+          // 1. If we are closing a modal, just hide the UI and STOP.
           if (isOverlayActive && (!e.state || !e.state.modal)) {
               toggleOverlay(els.overlay, false);
               toggleOverlay(els.infoOver, false);
               toggleOverlay(uploadEls.overlay, false);
               isOverlayActive = false;
-              return; // Do NOT call render()
+              // IMPORTANT: Do not call render() here. 
+              // This keeps the current scroll position and loaded results.
+              return; 
           }
 
-          const currentHash = location.hash;
-          
-          // 2. Handle context switches (e.g. going from Note -> MyNotes)
+          // 2. Detect Context from Hash
           const targetContext = currentHash.startsWith('#/mynotes') ? 'mynotes' : 'home';
-          const targetQuery = new URLSearchParams(window.location.search).get('q') || '';
+          const urlParams = new URLSearchParams(window.location.search);
+          const targetQuery = urlParams.get('q') || '';
 
-          if (els.search.value !== targetQuery) els.search.value = targetQuery;
-
-          // 3. Handle specific modals on Forward navigation
+          // 3. Handle Context switch or Search sync
+          if (activeContext !== targetContext || els.search.value !== targetQuery) {
+              if (activeContext !== targetContext) {
+                  // If switching context via browser Back button, clear search
+                  els.search.value = targetQuery; 
+              } else {
+                  els.search.value = targetQuery;
+              }
+              render(true);
+          }
+          
+          // 4. Handle Modal Forward navigation
           if (currentHash.startsWith('#/upload')) {
              handleUploadAccess();
-          } else {
-             render(); // Re-render only if context changed or not closing a modal
           }
       };
 
@@ -2294,8 +2311,13 @@
           const initialHash = location.hash;
           const queryParam = params.get('q');
           
-          // Set search value BEFORE initial render
-          if (queryParam) els.search.value = queryParam;
+          // Set active context based on hash
+          activeContext = initialHash.startsWith('#/mynotes') ? 'mynotes' : 'home';
+          
+          // Only load search param if we are on HOME
+          if (queryParam && activeContext === 'home') {
+              els.search.value = queryParam;
+          }
 
           let deepLinkItem = null;
           if (initialHash.startsWith('#/notes/')) {
@@ -2307,7 +2329,7 @@
               } catch (e) { console.error("Deep link fetch failed", e); }
           }
 
-          // Initial Render
+          // Force initial load
           await fetchNotes(); 
 
           if (deepLinkItem) {
@@ -2321,7 +2343,7 @@
               handleUploadAccess();
           }
 
-          initialLoadComplete = true; // Set this AFTER first render to avoid URL overwrite loops
+          initialLoadComplete = true; 
 
       } catch(e) { console.error(e); }
       })();
