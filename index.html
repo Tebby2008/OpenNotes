@@ -1146,6 +1146,7 @@
       let offset = 0;
       let isLoading = false;
       let hasMore = true;
+      let isOverlayActive = false;
 
       const els = {
         auth: document.getElementById('authContainer'),
@@ -1282,17 +1283,19 @@
       };
 
       const goBack = () => {
-          if (history.state || location.hash.length > 1) {
+          if (history.state && history.state.modal) {
               history.back();
           } else {
-              const cleanUrl = window.location.pathname + window.location.search;
+              const url = new URL(window.location);
+              url.hash = ''; 
+              history.replaceState(null, '', url);
               
               toggleOverlay(els.overlay, false);
               toggleOverlay(els.infoOver, false);
               toggleOverlay(uploadEls.overlay, false);
-              
-              history.replaceState(null, '', cleanUrl);
-              render(true);
+              isOverlayActive = false;
+
+              if (allItems.length === 0) render(true);
           }
       };
 
@@ -1559,37 +1562,25 @@
       };
 
       async function openOverlay(it) {
-          let initialStats = null;
-          
-          if (!it.user && !it.pending) {
+          if (!it.pending) {
               try {
                   const res = await fetch(`${API_URL}?type=note&noteId=${encodeURIComponent(it.name)}&counter=views&check=true`, { method: 'POST' });
-                  
                   if (res.status === 404) {
                       showPopup("This file has been deleted by the owner.", "error");
-                      
+                      // Remove from local list so user can't click it again
                       allItems = allItems.filter(x => x.name !== it.name);
-                      ownedNotes = ownedNotes.filter(n => n !== it.name);
-                      
                       const card = document.querySelector(`article[data-name="${CSS.escape(it.name)}"]`);
-                      if(card) {
-                          card.style.transition = "all 0.3s ease";
-                          card.style.opacity = "0";
-                          card.style.transform = "scale(0.9)";
-                          setTimeout(() => card.remove(), 300);
-                      }
+                      if(card) card.remove();
                       return;
                   }
-                  
-                  if (res.ok) initialStats = await res.json();
-
-              } catch(e) {
-                  console.warn("Could not verify file existence", e);
-              }
+              } catch(e) { console.warn("Verification failed", e); }
           }
 
+          // 2. Push state so "Back" works without reloading the grid
+          const state = { modal: 'note', noteName: it.name };
+          history.pushState(state, '', `#/notes/${encodeURIComponent(it.name)}`);
+          isOverlayActive = true;
 
-          history.pushState({ note: it }, '', `#/notes/${encodeURIComponent(it.name)}`);
           toggleOverlay(els.overlay, true);
           
           els.ovTitle.textContent = it.title.replace(/\(AI\)$/, ''); 
@@ -1600,7 +1591,8 @@
           const oldWrap = document.getElementById('morphDeleteWrap');
           if(oldWrap) oldWrap.remove();
 
-          if (currentUser && (it.is_owner || isUserAdmin)) { 
+          // Check ownership using the backend flag is_owner
+          if (currentUser && (it.is_owner || isUserAdmin)) {
               const wrap = document.createElement('div');
               wrap.id = 'morphDeleteWrap';
               wrap.className = 'morph-wrap';
@@ -1614,9 +1606,7 @@
                           </button>
                       </div>
                   </div>`;
-              
-              const subActions = document.querySelector('.sub-actions');
-              subActions.appendChild(wrap);
+              document.querySelector('.sub-actions').appendChild(wrap);
 
               setTimeout(() => {
                   const btn = document.getElementById('deleteMorphBtn');
@@ -1721,92 +1711,37 @@
           }
 
 
-          els.ovAuth.innerHTML = authHtml;
-          
-          if(it.ai) {
-             const aiSpan = document.createElement('span');
-             aiSpan.className = 'ai-tag';
-             aiSpan.innerHTML = '<span class="material-symbols-rounded">auto_awesome</span>AI';
-             els.ovAuth.appendChild(document.createTextNode(" "));
-             els.ovAuth.appendChild(aiSpan);
-          }
+          els.ovAuth.innerHTML = (it.is_verified) ? `${escapeHtml(it.auth)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>` : escapeHtml(it.auth || "Anonymous");
+          if(it.ai) els.ovAuth.innerHTML += ` <span class="ai-tag"><span class="material-symbols-rounded">auto_awesome</span>AI</span>`;
           
           els.ovDate.textContent = fmtDate(it.upd);
-          
-          const updateTileParams = () => {
-              const card = document.querySelector(`article[data-name="${CSS.escape(it.name)}"]`);
-              if(card) {
-                  const vEl = card.querySelector('.stat-value-v');
-                  const dEl = card.querySelector('.stat-value-d');
-                  if(vEl) vEl.textContent = it.v;
-                  if(dEl) dEl.textContent = it.d;
-              }
-          };
+          els.ovView.textContent = it.v; 
+          els.ovDl.textContent = it.d;
 
-          if (initialStats && initialStats.views !== undefined) {
-              it.v = initialStats.views;
-              els.ovView.textContent = it.v;
-              els.ovDl.textContent = it.d;
-              updateTileParams();
-          } else {
-              els.ovView.textContent = it.v; 
-              els.ovDl.textContent = it.d;
-              
-              if(it.user) {
-                  updateCounter(it.path, 'views').then(d => { 
-                      if(d) {
-                          if (d.views !== undefined) it.v = d.views;
-                          els.ovView.textContent = it.v; 
-                          updateTileParams(); 
-                      }
-                  });
-              }
-          }
-
-          els.ovDown.onclick = null; 
           if (it.dl && isValidUrl(it.dl)) {
               const viewerUrl = `view.html?file=${encodeURIComponent(it.dl)}`;
               els.ovRaw.href = viewerUrl;
-
-              try {
-                  els.frame.contentWindow.location.replace(viewerUrl);
-              } catch(e) {
-                  els.frame.src = viewerUrl;
-              }
-
+              els.frame.src = viewerUrl;
               els.ovDown.onclick = () => {
-                  updateCounter(it.path, 'downloads').then(d => { 
-                      if(d) { 
-                          if (d.downloads !== undefined) it.d = d.downloads;
-                          els.ovDl.textContent = it.d; 
-                          updateTileParams();
-                      }
-                  });
-                  const a = document.createElement("a"); 
-                  a.href = it.dl; a.download = it.name; 
-                  document.body.appendChild(a); a.click(); a.remove();
+                  updateCounter(it.name, 'downloads');
+                  const a = document.createElement("a"); a.href = it.dl; a.download = it.name; a.click();
               };
-              els.ovRaw.style.display = 'flex';
-              els.ovDown.style.display = 'flex';
+              els.ovRaw.style.display = els.ovDown.style.display = 'flex';
           } else {
-              try { els.frame.contentWindow.location.replace('about:blank'); } 
-              catch(e) { els.frame.removeAttribute('src'); }
-                
-              els.ovRaw.style.display = 'none';
-              els.ovDown.style.display = 'none';
+              els.frame.src = 'about:blank';
+              els.ovRaw.style.display = els.ovDown.style.display = 'none';
           }
           
           els.ovShare.onclick = () => { 
-              const cleanUrl = `${window.location.origin}${window.location.pathname}#/notes/${encodeURIComponent(it.name)}`;
-              navigator.clipboard.writeText(cleanUrl)
-                  .then(() => showPopup('Link copied', 'success')).catch(() => {}); 
+              const url = `${window.location.origin}${window.location.pathname}#/notes/${encodeURIComponent(it.name)}`;
+              navigator.clipboard.writeText(url).then(() => showPopup('Link copied', 'success')); 
           };
       }
 
       async function openInfo(md) {
           const name = md.split('/').pop();
-          history.pushState({ info: md }, '', `#/${name}`);
-            
+          history.pushState({ modal: 'info', info: md }, '', `#/${name}`);
+          isOverlayActive = true;
           toggleOverlay(els.infoOver, true);
           els.infoCont.innerHTML = "";
           try {
@@ -1850,7 +1785,8 @@
 
       uploadEls.btn.onclick = () => {
           if (handleUploadAccess()) {
-               history.pushState({ method: 'upload' }, '', '#/upload');
+              history.pushState({ modal: 'upload' }, '', '#/upload');
+              isOverlayActive = true;
           }
       };
 
@@ -1946,57 +1882,29 @@
       }
 
       window.onpopstate = (e) => {
-          if (location.hash === '' || location.hash === '#') {
-              history.replaceState(null, '', location.pathname + location.search);
+          // 1. If we are closing a modal, just hide UI and STOP.
+          if (isOverlayActive && (!e.state || !e.state.modal)) {
+              toggleOverlay(els.overlay, false);
+              toggleOverlay(els.infoOver, false);
+              toggleOverlay(uploadEls.overlay, false);
+              isOverlayActive = false;
+              return; // Do NOT call render()
           }
-
-          const wasOverlayOpen = els.overlay.classList.contains('open') || 
-                              els.infoOver.classList.contains('open') || 
-                              uploadEls.overlay.classList.contains('open');
-
-          toggleOverlay(els.overlay, false);
-          toggleOverlay(els.infoOver, false);
-          toggleOverlay(uploadEls.overlay, false);
 
           const currentHash = location.hash;
-          const targetContext = (currentHash.startsWith('#/mynotes')) ? 'mynotes' : 'home';
           
+          // 2. Handle context switches (e.g. going from Note -> MyNotes)
+          const targetContext = currentHash.startsWith('#/mynotes') ? 'mynotes' : 'home';
           const targetQuery = new URLSearchParams(window.location.search).get('q') || '';
-          
-          const contextUnchanged = targetContext === lastRenderState.context;
-          const queryUnchanged = targetQuery === lastRenderState.query;
 
-          if (wasOverlayOpen && contextUnchanged && queryUnchanged) {
-            return;
-          }
+          if (els.search.value !== targetQuery) els.search.value = targetQuery;
 
-          if (els.search.value !== targetQuery) {
-              els.search.value = targetQuery;
+          // 3. Handle specific modals on Forward navigation
+          if (currentHash.startsWith('#/upload')) {
+             handleUploadAccess();
+          } else {
+             render(); // Re-render only if context changed or not closing a modal
           }
-
-          if (e.state?.note) {
-              openOverlay(e.state.note);
-              return;
-          } 
-          else if (e.state?.info) {
-              openInfo(e.state.info);
-              return;
-          }
-          else if (currentHash.startsWith('#/upload')) {
-              handleUploadAccess();
-              return;
-          } 
-          else if (currentHash.startsWith('#/notes/')) {
-              const n = decodeURIComponent(currentHash.substr(8));
-              const it = allItems.find(i => i.name === n);
-              if(it) {
-                  openOverlay(it);
-                  if(currentlyRenderedCount === 0) render(true);
-                  return;
-              }
-          }
-
-          render(true);
       };
 
     
@@ -2379,53 +2287,41 @@
               if (token) localStorage.setItem('auth_token_fallback', token);
               const cleanUrl = window.location.pathname + window.location.hash;
               history.replaceState(null, '', cleanUrl);
-              
-              if (sessionStorage.getItem('pendingUpload') === 'true') {
-                  sessionStorage.removeItem('pendingUpload');
-                  toggleOverlay(uploadEls.overlay, true);
-              }
           }
           
           fetchMessages();
           
           const initialHash = location.hash;
-          let deepLinkItem = null;
+          const queryParam = params.get('q');
+          
+          // Set search value BEFORE initial render
+          if (queryParam) els.search.value = queryParam;
 
+          let deepLinkItem = null;
           if (initialHash.startsWith('#/notes/')) {
               const fileName = decodeURIComponent(initialHash.substr(8));
-            
-              // Fetch SPECIFIC note from backend
               try {
-                  // We reuse the list endpoint but ask for a specific name
                   const res = await fetch(`${API_URL}?type=list&name=${encodeURIComponent(fileName)}`, { credentials: 'include' });
                   const data = await res.json();
-                  if (data.items && data.items.length > 0) {
-                      deepLinkItem = data.items[0];
-                  }
+                  if (data.items && data.items.length > 0) deepLinkItem = data.items[0];
               } catch (e) { console.error("Deep link fetch failed", e); }
           }
 
-          // 2. Initial List Load (Page 1)
+          // Initial Render
           await fetchNotes(); 
 
-          // 3. Open Deep Link (if found)
           if (deepLinkItem) {
-              // If the item isn't in the current page 1 list, add it invisibly or just open overlay
-              // We just need to pass the object to openOverlay
               openOverlay(deepLinkItem);
           } else if (initialHash.startsWith('#/notes/')) {
-              // File not found in DB
-              showPopup("Note not found or deleted", "error");
+              showPopup("Note not found", "error");
               history.replaceState(null, '', ' ');
-          }
-          else if(initialHash.endsWith('.md')) {
+          } else if (initialHash.endsWith('.md')) {
               openInfo(`resources/${initialHash.substr(2)}`);
+          } else if (initialHash === '#/upload') {
+              handleUploadAccess();
           }
-          else if(initialHash === '#/upload') {
-              if (handleUploadAccess()) {
-                  history.pushState({ method: 'upload' }, '', '#/upload');
-              }
-          }
+
+          initialLoadComplete = true; // Set this AFTER first render to avoid URL overwrite loops
 
       } catch(e) { console.error(e); }
       })();
