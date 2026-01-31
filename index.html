@@ -745,6 +745,14 @@
         border-radius: var(--radius);
         height: 280px;
         border: 1px solid var(--border);
+        transition: height 0.3s ease;
+    }
+
+
+    .list .skeleton {
+        height: 80px;
+        border-radius: var(--radius-sm);
+        margin-bottom: 4px; 
     }
 
     @keyframes shimmer {
@@ -1336,6 +1344,16 @@
             if (res.ok) return await res.json(); 
         } catch (e) {} return null;
       };
+
+      function refreshDisplay() {
+          els.container.innerHTML = '';
+            
+          els.container.className = viewMode;
+            
+          appendItems(allItems);
+            
+          els.loadMoreCont.style.display = hasMore ? 'flex' : 'none';
+      }
       
       async function fetchNotes(isAppend = false) {
           if (isLoading) return;
@@ -1350,8 +1368,8 @@
               hasMore = true;
               allItems = [];
               
-              if(initialLoadComplete) {
-                 els.container.innerHTML = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
+              if(initialLoadComplete) { 
+                  els.container.innerHTML = '<div class="skeleton"></div>'.repeat(6);
               }
           }
 
@@ -1789,9 +1807,9 @@
           } catch (e) { els.infoCont.innerHTML = "Failed to load."; }
       }
 
-      els.gridBtn.onclick = () => { viewMode="grid"; localStorage.setItem('openNotesViewMode','grid'); updateView(); render(); };
-      els.listBtn.onclick = () => { viewMode="list"; localStorage.setItem('openNotesViewMode','list'); updateView(); render(); };
-      if(els.mobTog) els.mobTog.onclick = () => { viewMode = viewMode==="grid"?"list":"grid"; localStorage.setItem('openNotesViewMode',viewMode); updateView(); render(); };
+      els.gridBtn.onclick = () => { viewMode="grid"; localStorage.setItem('openNotesViewMode','grid'); updateView(); refreshDisplay(); };
+      els.listBtn.onclick = () => { viewMode="list"; localStorage.setItem('openNotesViewMode','list'); updateView(); refreshDisplay(); };
+      if(els.mobTog) els.mobTog.onclick = () => { viewMode = viewMode==="grid"?"list":"grid"; localStorage.setItem('openNotesViewMode',viewMode); updateView(); refreshDisplay(); };
       
       els.aiBtn.onclick = () => { showAI=!showAI; els.aiBtn.classList.toggle("active-ai"); render(); };
       els.loadMoreBtn.onclick = () => {
