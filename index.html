@@ -1119,7 +1119,7 @@
   </footer>
 
   <script type="module">
-      import { searchNotes } from './search.js';
+      // import { searchNotes } from './search.js';
       const REPO_OWNER = "Tebby2008", REPO_NAME = "OpenNotes", BRANCH = "main", API_URL = "https://open-notes.tebby2008-li.workers.dev";
       const owner = window.__owner || REPO_OWNER, repo = window.__repo || REPO_NAME;
       let turnstileToken = null;
@@ -1134,11 +1134,18 @@
           ai: true,
           viewMode: 'grid'
       };
+
       let isUserAdmin = false;
 
       let initialLoadComplete = false;
 
-      let allItems=[], viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="relevance", currentFormat="all", activeContext = 'home';
+      let allItems=[];
+
+      let viewMode=localStorage.getItem('openNotesViewMode')||'grid', showAI=true, currentSort="relevance", currentFormat="all", activeContext = 'home';
+
+      let offset = 0;
+      let isLoading = false;
+      let hasMore = true;
 
       const els = {
         auth: document.getElementById('authContainer'),
@@ -1306,104 +1313,134 @@
         } catch (e) {} return null;
       };
       
-      async function fetchNotes() {
-          const metaPromise = fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/notes_metadata.json`)
-              .then(res => res.ok ? res.json() : []);
-            
-          const token = localStorage.getItem('auth_token_fallback');
-          const statsPromise = fetch(`${API_URL}?type=init`, { 
-              method: 'GET',
-              headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-              credentials: 'include' 
-          })
-          .then(res => res.ok ? res.json() : { site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {}, user_profile: null })
-          .catch(() => ({ site_views: 0, data: {}, owned_notes: [], is_admin: false, verified_map: {}, user_profile: null }));
-      
-            
-          const [metaData, dbData] = await Promise.all([metaPromise, statsPromise]);
-            
-          if (dbData.site_views) els.webViews.textContent = dbData.site_views;
+      async function fetchNotes(isAppend = false) {
+          if (isLoading) return;
+          isLoading = true;
           
-          if (dbData.user_profile) {
-              currentUser = dbData.user_profile;
-              ownedNotes = dbData.owned_notes || [];
-              isUserAdmin = dbData.is_admin || false;
-          } else {
-              currentUser = null;
-              ownedNotes = [];
-              isUserAdmin = false;
-          }
-          renderAuth();
-            
-          verifiedFileMap = dbData.verified_map || {};
-          verifiedUserMap = dbData.verified_public || {};
-
-          const serverItems = metaData.map(m => {
-              const safeDl = isValidUrl(m.download_url) ? m.download_url : null;
-              const safeThumb = isValidUrl(m.thumbnail_url) ? m.thumbnail_url : 'resources/fallback.svg';
-              const cleanKey = m.name;
+          if (!isAppend) {
+              offset = 0;
+              els.container.innerHTML = '';
+              els.container.className = viewMode;
+              hasMore = true;
+              allItems = [];
               
-              const isOrphan = !m.author_username && !dbData.data.hasOwnProperty('v:' + cleanKey);
+              // Add skeletons for initial load
+              if(initialLoadComplete) { // Don't wipe skeletons on first run
+                 els.container.innerHTML = `<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>`;
+              }
+          }
 
-              return {
-                  name: m.name, 
-                  title: m.name.replace(/\.[^/.]+$/, ""), 
-                  path: m.path,
-                  dl: safeDl,
-                  thumb: safeThumb, 
-                  fmt: (m.name.split('.').pop()||"").toLowerCase(),
-                  upd: m.last_updated, 
-                  auth: m.author, 
-                  user: m.author_username,
-                  ai: m.is_ai_generated, 
-                  v: parseInt(dbData.data['v:' + cleanKey]) || 0, 
-                  d: parseInt(dbData.data['d:' + cleanKey]) || 0,
-                  isOrphan: isOrphan 
-              };
-          }).filter(i => (i.fmt === "pdf" || i.fmt === "docx") && i.dl && !i.isOrphan);
-            
-          let pending = JSON.parse(localStorage.getItem('openNotes_pending') || '[]');
-          const now = Date.now();
-          pending = pending.filter(p => {
-              const age = now - p.timestamp;
-              const existsOnServer = serverItems.some(si => si.name === p.name);
-              return age < 86400000 && !existsOnServer;
-          });
-          localStorage.setItem('openNotes_pending', JSON.stringify(pending));
+          els.loadMoreBtn.textContent = "Loading...";
 
-          return [...pending, ...serverItems];
+          try {
+              const token = localStorage.getItem('auth_token_fallback');
+              
+              // Prepare Params
+              const params = new URLSearchParams({
+                  type: 'list',
+                  q: els.search.value.trim(),
+                  sort: currentSort,
+                  format: currentFormat,
+                  ai: showAI,
+                  context: activeContext,
+                  offset: offset
+              });
+
+              const res = await fetch(`${API_URL}?${params}`, {
+                  headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                  credentials: 'include'
+              });
+
+              if (!res.ok) throw new Error("API Error");
+              const data = await res.json();
+              
+              // 1. Handle Metadata (Views & Auth)
+              if (data.meta) {
+                  if (data.meta.views) els.webViews.textContent = data.meta.views;
+                  if (data.meta.user) {
+                      currentUser = { ...data.meta.user, picture: data.meta.user.picture };
+                      isUserAdmin = data.meta.user.is_admin;
+                  } else {
+                      currentUser = null;
+                      isUserAdmin = false;
+                  }
+                  renderAuth();
+              }
+
+              // 2. Handle Items
+              const newItems = data.items || [];
+              if (newItems.length < 20) hasMore = false; // Limit is 20 in backend
+              offset += newItems.length;
+
+              // 3. Clear skeletons on first valid render
+              if (!isAppend) els.container.innerHTML = '';
+
+              // 4. Handle Empty State
+              if (!isAppend && newItems.length === 0) {
+                  const q = els.search.value.trim();
+                  if (activeContext === 'mynotes' && !q) {
+                      els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);"><span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">folder_off</span><p>You haven't uploaded any notes yet.</p></div>`;
+                  } else if (q) {
+                      els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);"><span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">search_off</span><p>No results found.</p></div>`;
+                  } else {
+                      els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);"><p>No notes available.</p></div>`;
+                  }
+              }
+
+              // 5. Merge Pending (Client-side immediate feedback for uploads)
+              if (!isAppend && offset === newItems.length) {
+                  let pending = JSON.parse(localStorage.getItem('openNotes_pending') || '[]');
+                  const now = Date.now();
+                  // Remove expired pending or ones that now exist in server response
+                  pending = pending.filter(p => {
+                      const age = now - p.timestamp;
+                      const exists = newItems.some(si => si.name === p.name);
+                      return age < 86400000 && !exists;
+                  });
+                  localStorage.setItem('openNotes_pending', JSON.stringify(pending));
+                  
+                  // Prepend pending items
+                  appendItems([...pending]); 
+                  allItems = [...pending, ...allItems];
+              }
+
+              // 6. Append New Items
+              appendItems(newItems);
+              allItems = [...allItems, ...newItems];
+
+          } catch (e) {
+              console.error(e);
+              if(!isAppend) els.container.innerHTML = `<div style="padding:20px;text-align:center;width:100%">Failed to load notes.</div>`;
+          } finally {
+              isLoading = false;
+              els.loadMoreCont.style.display = hasMore ? 'flex' : 'none';
+              els.loadMoreBtn.textContent = hasMore ? "Load More" : "No more notes";
+              
+              // Init logic helper
+              if (!initialLoadComplete) initialLoadComplete = true;
+          }
       }
       
-      function appendItems() {
+      function appendItems(items) {
           const fragment = document.createDocumentFragment();
-          const nextBatch = currentFilteredList.slice(currentlyRenderedCount, currentlyRenderedCount + BATCH_SIZE);
           
-          nextBatch.forEach((it, i) => {
+          items.forEach((it, i) => {
               const el = document.createElement("article");
               el.className = (viewMode === "grid" ? "card" : "row") + (it.pending ? " pending" : "");
-              el.style.animationDelay = `${50 * i}ms`; 
+              // Stagger animation for new batches
+              el.style.animationDelay = `${50 * (i % 20)}ms`; 
               el.dataset.name = it.name; 
 
               const rawTitle = it.title.replace(/\(AI\)$/, '');
               const safeTitle = escapeHtml(rawTitle);
 
-
-              let authHtml;
-              let displayName = null;
-
-              if (verifiedFileMap.hasOwnProperty(it.name)) {
-                  displayName = verifiedFileMap[it.name];
-              } 
-
-              else if (it.user && verifiedUserMap.hasOwnProperty(it.user)) {
-                  displayName = verifiedUserMap[it.user];
+              // --- UPDATED AUTH DISPLAY LOGIC ---
+              let authHtml = escapeHtml(it.auth || "Anonymous");
+              
+              if (it.is_verified) {
+                  authHtml += ` <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
               }
-
-              if (displayName) {
-                  authHtml = `${escapeHtml(displayName)} <span class="verified-tag"><span class="material-symbols-rounded">verified</span></span>`;
-              } else {
-                  authHtml = escapeHtml(it.auth || "Anonymous");
-              }
+              // ----------------------------------
                       
               el.innerHTML = `
                 <div class="thumb">
@@ -1441,14 +1478,6 @@
           });
 
           els.container.appendChild(fragment);
-          currentlyRenderedCount += nextBatch.length;
-
-          if (currentlyRenderedCount < currentFilteredList.length) {
-              els.loadMoreCont.style.display = 'flex';
-              els.loadMoreBtn.textContent = `Load More (${currentFilteredList.length - currentlyRenderedCount} remaining)`;
-          } else {
-              els.loadMoreCont.style.display = 'none';
-          }
       }
 
       function updateHeaderUI() {
@@ -1488,117 +1517,45 @@
       function render(force = false) {
           const isMyNotesMode = location.hash.startsWith('#/mynotes');
           const newContext = isMyNotesMode ? 'mynotes' : 'home';
-            
-          if (activeContext !== 'mynotes' && newContext === 'mynotes') {
-              els.search.value = '';
-          }
-            
           const q = els.search.value.trim();
 
+          // Debounce/Prevent loop
           if (!force && initialLoadComplete &&
-              lastRenderState.context === newContext && 
+              activeContext === newContext && 
               lastRenderState.query === q &&
               lastRenderState.sort === currentSort &&
               lastRenderState.format === currentFormat &&
               lastRenderState.ai === showAI &&
-              lastRenderState.viewMode === viewMode &&
-              els.container.childElementCount > 0 
-              && !els.container.firstElementChild.classList.contains('skeleton')
-          ) {
-              return; 
-          }
+              lastRenderState.viewMode === viewMode
+          ) return;
 
           activeContext = newContext;
           updateHeaderUI();
 
-          if (isMyNotesMode && !currentUser) {
-              history.replaceState(null, '', ' ');
-              activeContext = 'home';
-              updateHeaderUI();
+          // Sync URL
+          const url = new URL(window.location);
+          if (activeContext === 'home') {
+             if(q) url.searchParams.set('q', q);
+             else url.searchParams.delete('q');
+             if(url.search !== window.location.search) history.replaceState(null, '', url);
           }
 
+          // Update State Tracker
           lastRenderState = {
-              query: q,
-              context: activeContext,
-              sort: currentSort,
-              format: currentFormat,
-              ai: showAI,
-              viewMode: viewMode
+              query: q, context: activeContext, sort: currentSort, 
+              format: currentFormat, ai: showAI, viewMode: viewMode
           };
 
-          let baseList = allItems;
-          if (activeContext === 'mynotes') {
-              baseList = allItems.filter(item => ownedNotes.includes(item.name));
-          }
-
-          currentFilteredList = searchNotes(baseList, q, {
-              showAI: showAI,
-              currentFormat: currentFormat,
-              verifiedFileMap: verifiedFileMap,
-              verifiedUserMap: verifiedUserMap
-          });
-
-          if (currentSort === 'relevance' && !q) {
-              currentFilteredList.sort((a, b) => (new Date(b.upd||0)) - (new Date(a.upd||0)));
-          } else if (currentSort !== 'relevance') {
-              currentFilteredList.sort((a,b) => {
-                  if(currentSort==="title-asc") return a.title.localeCompare(b.title);
-                  if(currentSort==="title-desc") return b.title.localeCompare(a.title);
-                  if(currentSort==="format-asc") return a.fmt.localeCompare(b.fmt) || a.title.localeCompare(b.title);
-                  if(currentSort==="updated-asc") return (new Date(a.upd||0)) - (new Date(b.upd||0));
-                  if(currentSort==="updated-desc") return (new Date(b.upd||0)) - (new Date(a.upd||0));
-                  return 0;
-              });
-          }
-
-          let isFilterActive = true;
-          if (currentSort === 'relevance') { isFilterActive = false; } 
-          else if (currentSort === 'updated-desc' && !q) { isFilterActive = false; }
+          // Trigger Server Fetch (True = Reset list)
+          fetchNotes(false);
+          
+          // Toggle UI Sort Button
+          const isFilterActive = currentSort !== 'relevance' || (currentSort === 'updated-desc' && q);
           els.sortBtn.classList.toggle("active-sort", isFilterActive);
-
-          const isOverlayOpen = document.querySelector('.overlay.open');
-          const url = new URL(window.location);
-
-          if (activeContext === 'mynotes') {
-              if (url.searchParams.has('q')) {
-                  url.searchParams.delete('q');
-                  history.replaceState(null, '', url);
-              }
-          } else if (!isOverlayOpen) {
-              if (q) url.searchParams.set('q', q);
-              else url.searchParams.delete('q');
-                
-              if (url.search !== window.location.search) {
-                  history.replaceState(null, '', url);
-              }
-          }
-
-          els.container.innerHTML = ""; 
-          els.container.className = viewMode;
-          currentlyRenderedCount = 0;
-            
-          if (currentFilteredList.length === 0) {
-              els.loadMoreCont.style.display = 'none';
-              if (activeContext === 'mynotes' && !q) {
-                  els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-                  <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">folder_off</span>
-                  <p>You haven't uploaded any notes yet.</p></div>`;
-              } else if (q) {
-                  els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-                  <span class="material-symbols-rounded" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">search_off</span>
-                  <p>No results found for "${escapeHtml(q)}"</p></div>`;
-              } else {
-                  els.container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-                  <p>No notes available.</p></div>`;
-              }
-              return;
-          }
-
-          appendItems();
       }
 
       els.loadMoreBtn.onclick = () => {
-          appendItems();
+          fetchNotes(true); // true = isAppend
       };
 
       async function openOverlay(it) {
@@ -1643,7 +1600,7 @@
           const oldWrap = document.getElementById('morphDeleteWrap');
           if(oldWrap) oldWrap.remove();
 
-          if (currentUser && (ownedNotes.includes(it.name) || isUserAdmin)) {
+          if (currentUser && (it.is_owner || isUserAdmin)) { 
               const wrap = document.createElement('div');
               wrap.id = 'morphDeleteWrap';
               wrap.className = 'morph-wrap';
@@ -2416,40 +2373,38 @@
       
       (async function() {
         try {
-            
           const params = new URLSearchParams(window.location.search);
           if (params.has('login_success')) {
               const token = params.get('t');
-                  if (token) {
-                      localStorage.setItem('auth_token_fallback', token);
-                  }
-               
+              if (token) localStorage.setItem('auth_token_fallback', token);
               const cleanUrl = window.location.pathname + window.location.hash;
               history.replaceState(null, '', cleanUrl);
-
+              
               if (sessionStorage.getItem('pendingUpload') === 'true') {
                   sessionStorage.removeItem('pendingUpload');
                   toggleOverlay(uploadEls.overlay, true);
               }
           }
+          
           fetchMessages();
-          allItems = await fetchNotes();
-                    
+          
+          // Initial Fetch Trigger
           const initialHash = location.hash;
           if (params.has('q')) els.search.value = params.get('q');
 
+          // Clean URLs
           if (initialHash.startsWith('#/notes/') || initialHash.startsWith('#/upload') || initialHash.endsWith('.md')) {
               const cleanUrl = window.location.pathname + window.location.search;
               history.replaceState(null, '', cleanUrl);
           }
 
-          initialLoadComplete = true;
+          // Trigger Render (which triggers fetchNotes)
           render(true);
 
+          // Deep Link Handling
           if(initialHash.startsWith('#/notes/')) { 
               const n = decodeURIComponent(initialHash.substr(8)); 
-              const it = allItems.find(i => i.name === n); 
-              if(it) openOverlay(it);
+
           }
           else if(initialHash.endsWith('.md')) {
               openInfo(`resources/${initialHash.substr(2)}`);
@@ -2460,10 +2415,7 @@
               }
           }
 
-      } catch(e) { 
-          console.error(e);
-          els.container.innerHTML="<p style='padding:20px;text-align:center'>Failed to load notes.</p>"; 
-      }
+      } catch(e) { console.error(e); }
       })();
 
       async function fetchMessages() {
