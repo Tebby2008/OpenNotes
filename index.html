@@ -1342,7 +1342,7 @@
               // Prepare Params
               const params = new URLSearchParams({
                   type: 'list',
-                  q: els.search.value.trim(),
+                  q: activeContext === 'mynotes' ? '' : els.search.value.trim(),
                   sort: currentSort,
                   format: currentFormat,
                   ai: showAI,
@@ -1373,7 +1373,7 @@
 
               // 2. Handle Items
               const newItems = data.items || [];
-              if (newItems.length < 20) hasMore = false; // Limit is 20 in backend
+              hasMore = newItems.length === 20;
               offset += newItems.length;
 
               // 3. Clear skeletons on first valid render
@@ -1420,7 +1420,6 @@
               els.loadMoreCont.style.display = hasMore ? 'flex' : 'none';
               els.loadMoreBtn.textContent = hasMore ? "Load More" : "No more notes";
               
-              // Init logic helper
               if (!initialLoadComplete) initialLoadComplete = true;
           }
       }
@@ -2326,6 +2325,9 @@
       (async function() {
         try {
           const params = new URLSearchParams(window.location.search);
+          const initialHash = location.hash;
+          
+          // 1. Handle Login Redirects
           if (params.has('login_success')) {
               const token = params.get('t');
               if (token) localStorage.setItem('auth_token_fallback', token);
@@ -2335,17 +2337,16 @@
           
           fetchMessages();
           
-          const initialHash = location.hash;
-          const queryParam = params.get('q');
-          
-          // Set active context based on hash
+          // 2. SET CONTEXT
           activeContext = initialHash.startsWith('#/mynotes') ? 'mynotes' : 'home';
-          
-          // Only load search param if we are on HOME
-          if (queryParam && activeContext === 'home') {
-              els.search.value = queryParam;
+          if (params.get('q') && activeContext === 'home') els.search.value = params.get('q');
+
+          if (initialHash.startsWith('#/notes/') || initialHash.startsWith('#/upload')) {
+              const cleanUrl = window.location.pathname + window.location.search;
+              history.replaceState({ modal: null }, '', cleanUrl); 
           }
 
+          // 4. Handle Deep Link Fetching
           let deepLinkItem = null;
           if (initialHash.startsWith('#/notes/')) {
               const fileName = decodeURIComponent(initialHash.substr(8));
@@ -2356,14 +2357,14 @@
               } catch (e) { console.error("Deep link fetch failed", e); }
           }
 
-          // Force initial load
+          // 5. Initial Render
           await fetchNotes(); 
 
+          // 6. Open Modals
           if (deepLinkItem) {
               openOverlay(deepLinkItem);
           } else if (initialHash.startsWith('#/notes/')) {
               showPopup("Note not found", "error");
-              history.replaceState(null, '', ' ');
           } else if (initialHash.endsWith('.md')) {
               openInfo(`resources/${initialHash.substr(2)}`);
           } else if (initialHash === '#/upload') {
