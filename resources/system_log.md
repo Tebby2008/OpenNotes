@@ -168,3 +168,6 @@
 | 2026-02-11 17:43:38 | ✨ ADD | New Entry | New note added: **IB Math AA Induction Set 1 67 Marks (by Mr Schopke).pdf** by Mr Schopke |
 | 2026-02-11 23:22 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Math AA Induction Set 1 67 Marks (by Mr Schopke)_pdf.jpg` (Original note deleted) |
 | 2026-02-11 23:23:01 | ❌ DEL | Removal | Note deleted from repo: **IB Math AA Induction Set 1 67 Marks (by Mr Schopke).pdf** |
+| 2026-02-19 02:47 | 🟢 THUMB | Generated | File: `Notes/IB Physics (Photoelectric Effect) (by Chenyu Li).pdf` |
+| 2026-02-19 02:47:46 | ✨ ADD | New Entry | New note added: **IB Physics (Blackbody Radiation and Greenhouse Effect) (by Chenyu Li).pdf** by Chenyu Li |
+| 2026-02-19 02:47:47 | ✨ ADD | New Entry | New note added: **IB Physics (Photoelectric Effect) (by Chenyu Li).pdf** by Chenyu Li |

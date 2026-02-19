@@ -154,6 +154,17 @@
     "is_ai_generated": false
   },
   {
+    "name": "IB Physics (Blackbody Radiation and Greenhouse Effect) (by Chenyu Li).pdf",
+    "path": "Notes/IB Physics (Blackbody Radiation and Greenhouse Effect) (by Chenyu Li).pdf",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Physics%20(Blackbody%20Radiation%20and%20Greenhouse%20Effect)%20(by%20Chenyu%20Li).pdf",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/IB%20Physics%20(Blackbody%20Radiation%20and%20Greenhouse%20Effect)%20(by%20Chenyu%20Li)_pdf.jpg",
+    "author": "Chenyu Li",
+    "author_username": null,
+    "last_updated": "2026-02-19T02:47:12Z",
+    "file_size": "4.77 MiB",
+    "is_ai_generated": false
+  },
+  {
     "name": "IB Physics (Electric Current and Circuits).pdf",
     "path": "Notes/IB Physics (Electric Current and Circuits).pdf",
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Physics%20(Electric%20Current%20and%20Circuits).pdf",
@@ -217,6 +228,17 @@
     "author_username": "Tebby2008",
     "last_updated": "2025-11-19T02:51:54Z",
     "file_size": "1.34 MiB",
+    "is_ai_generated": false
+  },
+  {
+    "name": "IB Physics (Photoelectric Effect) (by Chenyu Li).pdf",
+    "path": "Notes/IB Physics (Photoelectric Effect) (by Chenyu Li).pdf",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Physics%20(Photoelectric%20Effect)%20(by%20Chenyu%20Li).pdf",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/IB%20Physics%20(Photoelectric%20Effect)%20(by%20Chenyu%20Li)_pdf.jpg",
+    "author": "Chenyu Li",
+    "author_username": null,
+    "last_updated": "2026-02-19T02:46:50Z",
+    "file_size": "2.69 MiB",
     "is_ai_generated": false
   },
   {
