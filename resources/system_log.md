@@ -171,3 +171,5 @@
 | 2026-02-19 02:47 | 🟢 THUMB | Generated | File: `Notes/IB Physics (Photoelectric Effect) (by Chenyu Li).pdf` |
 | 2026-02-19 02:47:46 | ✨ ADD | New Entry | New note added: **IB Physics (Blackbody Radiation and Greenhouse Effect) (by Chenyu Li).pdf** by Chenyu Li |
 | 2026-02-19 02:47:47 | ✨ ADD | New Entry | New note added: **IB Physics (Photoelectric Effect) (by Chenyu Li).pdf** by Chenyu Li |
+| 2026-02-19 02:50 | 🟢 THUMB | Generated | File: `Notes/IB Physics (Blackbody Radiation and Greenhouse Effect) (by Chenyu Li).pdf` |
+| 2026-02-19 02:50 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Physics (Photoelectric Effect) (by Chenyu Li)_pdf.jpg` (Original note deleted) |
