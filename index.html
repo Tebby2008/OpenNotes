@@ -1473,7 +1473,7 @@
                       
               el.innerHTML = `
                 <div class="thumb">
-                    <img draggable="false" src="${it.thumb}" loading="lazy" decoding="async" onerror="this.style.display='none'">
+                    <img draggable="false" src="${it.thumb || 'resources/fallback.svg'}" loading="lazy" decoding="async" onerror="this.onerror=null; this.src='resources/fallback.svg';">
                     ${viewMode==='grid'?`<span class="fmt-badge fmt-${it.fmt}">${it.fmt.toUpperCase()}</span>`:''}
                 </div>
                 ${viewMode==='grid'? `<div class="body">
@@ -2278,13 +2278,16 @@
 
               showPopup("Upload successful! (It may take a while to appear)", "success");
               
+              const predictedThumbName = finalFileName.replace(/\.([^.]+)$/, '_$1') + '.jpg';
+              const predictedThumbUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${BRANCH}/resources/thumbnails/${encodeURIComponent(predictedThumbName)}`;
+
               const pendingItem = {
                   name: finalFileName,
                   title: safeTitle + (uploadEls.aiCheck.checked ? " (AI)" : ""),
                   auth: safeAuthor,
                   fmt: ext,
                   upd: new Date().toISOString(),
-                  thumb: 'resources/fallback.svg',
+                  thumb: predictedThumbUrl,
                   dl: '#',
                   v: 0, d: 0,
                   ai: uploadEls.aiCheck.checked,
