@@ -173,3 +173,13 @@
 | 2026-02-19 02:47:47 | ✨ ADD | New Entry | New note added: **IB Physics (Photoelectric Effect) (by Chenyu Li).pdf** by Chenyu Li |
 | 2026-02-19 02:50 | 🟢 THUMB | Generated | File: `Notes/IB Physics (Blackbody Radiation and Greenhouse Effect) (by Chenyu Li).pdf` |
 | 2026-02-19 02:50 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Physics (Photoelectric Effect) (by Chenyu Li)_pdf.jpg` (Original note deleted) |
+| 2026-06-10 03:54 | 🟢 THUMB | Generated | File: `Notes/IB Physics (Photoelectric Effect) (by Chenyu Li).pdf` |
+| 2026-06-10 03:54 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Mathematics AA HL Yr1.5_pdf.jpg` (Original note deleted) |
+| 2026-06-10 03:54:46 | ❌ DEL | Removal | Note deleted from repo: **IB Mathematics AA HL Yr1.5.pdf** |
+| 2026-06-10 03:54:46 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Atomic Structure) (by Chenyu Li).pdf** |
+| 2026-06-10 03:54:46 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Blackbody Radiation and Greenhouse Effect) (by Chenyu Li).pdf** |
+| 2026-06-10 03:54:46 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Electrostatics and Electric Fields).pdf** |
+| 2026-06-10 03:54:46 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Magnetism).pdf** |
+| 2026-06-10 03:54:46 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Nuclear Physics).pdf** |
+| 2026-06-10 03:54:46 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Photoelectric Effect) (by Chenyu Li).pdf** |
+| 2026-06-10 03:54:46 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Radioactivity and Nuclear Reactions).pdf** |
