@@ -33,6 +33,17 @@
     "is_ai_generated": false
   },
   {
+    "name": "AP Computer Science A (by Chenyu Li).pdf",
+    "path": "Notes/AP Computer Science A (by Chenyu Li).pdf",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/AP%20Computer%20Science%20A%20(by%20Chenyu%20Li).pdf",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/AP%20Computer%20Science%20A%20(by%20Chenyu%20Li)_pdf.jpg",
+    "author": "Chenyu Li",
+    "author_username": null,
+    "last_updated": "2026-06-10T03:56:35Z",
+    "file_size": "10.35 MiB",
+    "is_ai_generated": false
+  },
+  {
     "name": "AP Computer Science Principles (U1-U2).pdf",
     "path": "Notes/AP Computer Science Principles (U1-U2).pdf",
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/AP%20Computer%20Science%20Principles%20(U1-U2).pdf",
@@ -97,6 +108,17 @@
     "last_updated": "2025-08-17T01:57:26Z",
     "file_size": "6.03 MiB",
     "is_ai_generated": true
+  },
+  {
+    "name": "IB Economics Full Course Review (by Chenyu Li).pdf",
+    "path": "Notes/IB Economics Full Course Review (by Chenyu Li).pdf",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Economics%20Full%20Course%20Review%20(by%20Chenyu%20Li).pdf",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/IB%20Economics%20Full%20Course%20Review%20(by%20Chenyu%20Li)_pdf.jpg",
+    "author": "Chenyu Li",
+    "author_username": null,
+    "last_updated": "2026-06-10T03:57:16Z",
+    "file_size": "28.25 MiB",
+    "is_ai_generated": false
   },
   {
     "name": "IB Economics Real World Examples.pdf",
