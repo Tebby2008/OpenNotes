@@ -183,3 +183,15 @@
 | 2026-06-10 03:54:46 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Nuclear Physics).pdf** |
 | 2026-06-10 03:54:46 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Photoelectric Effect) (by Chenyu Li).pdf** |
 | 2026-06-10 03:54:46 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Radioactivity and Nuclear Reactions).pdf** |
+| 2026-06-10 03:56 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Physics (Atomic Structure) (by Chenyu Li)_pdf.jpg` (Original note deleted) |
+| 2026-06-10 03:56 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Physics (Blackbody Radiation and Greenhouse Effect) (by Chenyu Li)_pdf.jpg` (Original note deleted) |
+| 2026-06-10 03:56 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Physics (Electric Current and Circuits)_pdf.jpg` (Original note deleted) |
+| 2026-06-10 03:56 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Physics (Electrostatics and Electric Fields)_pdf.jpg` (Original note deleted) |
+| 2026-06-10 03:56 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Physics (Magnetism)_pdf.jpg` (Original note deleted) |
+| 2026-06-10 03:56 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Physics (Millikan's Experiment, Torque and Rotational Dynamics)_pdf.jpg` (Original note deleted) |
+| 2026-06-10 03:56 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Physics (Nuclear Physics)_pdf.jpg` (Original note deleted) |
+| 2026-06-10 03:56 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Physics (Photoelectric Effect) (by Chenyu Li)_pdf.jpg` (Original note deleted) |
+| 2026-06-10 03:56 | 🗑️ CLEANUP | Deleted Thumbnail | File: `IB Physics (Radioactivity and Nuclear Reactions)_pdf.jpg` (Original note deleted) |
+| 2026-06-10 03:56:12 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Electric Current and Circuits).pdf** |
+| 2026-06-10 03:56:12 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Gravitational Fields and Orbital Motion).pdf** |
+| 2026-06-10 03:56:12 | ❌ DEL | Removal | Note deleted from repo: **IB Physics (Millikan's Experiment, Torque and Rotational Dynamics).pdf** |
