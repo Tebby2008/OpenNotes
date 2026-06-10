@@ -202,3 +202,7 @@
 | 2026-06-10 03:59 | 🟢 THUMB | Generated | File: `Notes/IB Economics Full Course Review (by Chenyu Li).pdf` |
 | 2026-06-10 03:59 | 🟢 THUMB | Generated | File: `Notes/IB Mathematics Analysis and Approaches HL Yr 2 (by Chenyu Li).pdf` |
 | 2026-06-10 03:59:11 | ✨ ADD | New Entry | New note added: **IB Mathematics Analysis and Approaches HL Yr 2 (by Chenyu Li).pdf** by Chenyu Li |
+| 2026-06-10 04:08 | 🟢 THUMB | Generated | File: `Notes/IB Physics HL.pdf` |
+| 2026-06-10 04:08 | 🟢 THUMB | Generated | File: `Notes/IB Chemistry HL.pdf` |
+| 2026-06-10 04:08:16 | ✨ ADD | New Entry | New note added: **IB Chemistry HL.pdf** by Tebby2008 |
+| 2026-06-10 04:08:18 | ✨ ADD | New Entry | New note added: **IB Physics HL.pdf** by Tebby2008 |

@@ -99,6 +99,17 @@
     "is_ai_generated": false
   },
   {
+    "name": "IB Chemistry HL.pdf",
+    "path": "Notes/IB Chemistry HL.pdf",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Chemistry%20HL.pdf",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/IB%20Chemistry%20HL_pdf.jpg",
+    "author": "Tebby2008",
+    "author_username": "Tebby2008",
+    "last_updated": "2026-06-10T04:06:32Z",
+    "file_size": "64.39 MiB",
+    "is_ai_generated": false
+  },
+  {
     "name": "IB Chemistry Yr 1 Study Guide (AI).docx",
     "path": "Notes/IB Chemistry Yr 1 Study Guide (AI).docx",
     "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Chemistry%20Yr%201%20Study%20Guide%20(AI).docx",
@@ -173,6 +184,17 @@
     "author_username": "Tebby2008",
     "last_updated": "2025-12-13T03:50:48Z",
     "file_size": "3.21 MiB",
+    "is_ai_generated": false
+  },
+  {
+    "name": "IB Physics HL.pdf",
+    "path": "Notes/IB Physics HL.pdf",
+    "download_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/Notes/IB%20Physics%20HL.pdf",
+    "thumbnail_url": "https://raw.githubusercontent.com/Tebby2008/OpenNotes/main/resources/thumbnails/IB%20Physics%20HL_pdf.jpg",
+    "author": "Tebby2008",
+    "author_username": "Tebby2008",
+    "last_updated": "2026-06-10T04:06:32Z",
+    "file_size": "58.28 MiB",
     "is_ai_generated": false
   },
   {
